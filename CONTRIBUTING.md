@@ -45,7 +45,7 @@ Releases go through Changesets: merging changeset files to `main` opens a
 with provenance, through npm trusted publishing (GitHub Actions OIDC; no npm
 token is stored anywhere).
 
-**First release only.** npm trusted publishing can only be configured for a
+**First release only (done for 0.1.0).** npm trusted publishing can only be configured for a
 package that already exists, so the first version of each package is
 published by hand:
 

@@ -16,8 +16,17 @@ project matures.
 
 ## Release
 
-- **First publish** of all three packages by hand from the "Version Packages"
-  PR (#1), then npm trusted publishing (steps in CONTRIBUTING.md).
+- **Validate trusted publishing by 2026-10-14 08:38 UTC.** 0.1.0 was published
+  by hand; npm only validates each package's trusted-publisher connection
+  (`okforest/cli`, `release.yml`) when the workflow publishes through it.
+  Ship the next patch through the release workflow before then, or delete and
+  re-create the three connections before the next release.
+- **Staged publishing before January 2027.** npm is restricting "direct
+  publishing" in January 2027 and recommends staged publishing (CI uploads,
+  a maintainer approves each package with 2FA). Check whether the restriction
+  covers OIDC trusted publishing; if so, switch `release.yml` to pack with
+  pnpm and `npm stage publish` the tarballs, and uncheck "Allow npm publish"
+  on the three connections. Elicitly needs the same change.
 
 ## Validation
 
