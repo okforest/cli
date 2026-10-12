@@ -31,6 +31,21 @@ jobs:
           require-lockfile: true
 
       - name: Create release PR or publish
+        id: changesets
         uses: changesets/action@v2
         with:
           publish-script: pnpm release
+
+      # Changesets creates one GitHub Release per package seconds apart, and
+      # GitHub marks whichever lands last as Latest. Pin Latest to the CLI's
+      # release, the one users install. The packages version in lockstep, so
+      # every release that publishes includes an okforest@<version> release.
+      - name: Mark the CLI release as Latest
+        if: steps.changesets.outputs.published == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(jq -r .version packages/okforest/package.json)
+          if gh release view "okforest@$VERSION" >/dev/null 2>&1; then
+            gh release edit "okforest@$VERSION" --latest
+          fi
