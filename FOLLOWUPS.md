@@ -16,9 +16,8 @@ project matures.
 
 ## Release
 
-- **First publish** of all three packages by hand, then npm trusted
-  publishing (steps in CONTRIBUTING.md). Add the `CODECOV_TOKEN` secret and
-  enable private vulnerability reporting on the repository.
+- **First publish** of all three packages by hand from the "Version Packages"
+  PR (#1), then npm trusted publishing (steps in CONTRIBUTING.md).
 
 ## Validation
 
