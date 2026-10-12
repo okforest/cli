@@ -1,0 +1,13 @@
+# OKForest settings for this tree (an OKForest convention, not part of OKF).
+tree: {{tree}}
+title: {{title_yaml}}
+owner: user:{{owner}}            # exactly one person, accountable for the tree
+# backup_owner: user:...         # optional; acts for the Owner during absences
+stewards:                        # review and approve changes; groups are recommended
+  - user: {{owner}}
+sensitivity_default: internal
+# Files that are not concepts, in addition to README.md, LICENSE.md,
+# CONTRIBUTING.md, CHANGELOG.md, SECURITY.md, and CODE_OF_CONDUCT.md at the
+# root. Globs are relative to the tree root.
+# ignore:
+#   - FOLLOWUPS.md

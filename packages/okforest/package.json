@@ -1,0 +1,52 @@
+{
+  "name": "okforest",
+  "version": "0.0.0",
+  "description": "The OKForest CLI: validate Open Knowledge Format (OKF) v0.2 trees, inventory their metadata, and scaffold new trees from templates.",
+  "keywords": [
+    "okf",
+    "open-knowledge-format",
+    "cli",
+    "validator",
+    "knowledge-management",
+    "okforest"
+  ],
+  "license": "Apache-2.0",
+  "author": "Preneur LLC",
+  "homepage": "https://okforest.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/okforest/cli.git",
+    "directory": "packages/okforest"
+  },
+  "bugs": "https://github.com/okforest/cli/issues",
+  "type": "module",
+  "bin": {
+    "okforest": "./dist/cli.mjs"
+  },
+  "files": [
+    "dist",
+    "templates",
+    "NOTICE"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "start": "node dist/cli.mjs"
+  },
+  "dependencies": {
+    "@okforest/okf": "workspace:*",
+    "@okforest/validate": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

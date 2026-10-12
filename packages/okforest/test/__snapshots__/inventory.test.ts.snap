@@ -1,0 +1,42 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`okforest inventory > lists types, tags, keys, and near-duplicates 1`] = `
+"9 concepts · 3 types · 16 tags · 7 frontmatter keys
+Status: 9 stable, 0 draft, 0 deprecated · Trust: 0 human-reviewed, 0 machine-confirmed, 9 unverified · 0 stale
+
+Types
+  7  Reference
+  1  BigQuery Dataset
+  1  BigQuery Table
+
+Tags
+  9  ga4
+  7  audience
+  7  metric
+  2  analytics
+  1  acquired-users
+  1  active-users
+  1  cohorts
+  1  e-commerce
+  1  ecommerce
+  1  frequent-actives
+  1  high-actives
+  1  inactive-users
+  1  obfuscated
+  1  purchasers
+  1  sample-data
+  1  sharded-tables
+
+Frontmatter keys
+  9  description
+  9  generated
+  9  resource
+  9  sources
+  9  tags
+  9  title
+  9  type
+
+Near-duplicates
+  tag: e-commerce (1), ecommerce (1) - case or punctuation
+"
+`;

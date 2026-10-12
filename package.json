@@ -1,0 +1,35 @@
+{
+  "name": "okforest-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=11"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "test:coverage": "turbo run test:coverage",
+    "typecheck": "turbo run typecheck",
+    "check": "biome check",
+    "check:fix": "biome check --write",
+    "fixtures:refresh": "node scripts/refresh-okf-samples.mjs",
+    "release": "pnpm run build && pnpm -r publish --access public --no-git-checks && changeset git-tag"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@changesets/cli": "catalog:",
+    "turbo": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "packageManager": "pnpm@12.11.2",
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "^22.23.3",
+      "onFail": "download"
+    }
+  }
+}

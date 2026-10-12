@@ -1,0 +1,63 @@
+{
+  "name": "@okforest/okf",
+  "version": "0.0.0",
+  "description": "Read an Open Knowledge Format (OKF) v0.2 tree into a model: concepts, frontmatter, links, backlinks, trust tiers, staleness, and a metadata inventory. No SDKs or frameworks; runs in Node, browsers, and Workers.",
+  "keywords": [
+    "okf",
+    "open-knowledge-format",
+    "knowledge-management",
+    "markdown",
+    "frontmatter",
+    "okforest"
+  ],
+  "license": "Apache-2.0",
+  "author": "Preneur LLC",
+  "homepage": "https://okforest.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/okforest/cli.git",
+    "directory": "packages/okf"
+  },
+  "bugs": "https://github.com/okforest/cli/issues",
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "default": "./dist/index.mjs"
+    },
+    "./node": {
+      "types": "./dist/node.d.mts",
+      "default": "./dist/node.mjs"
+    }
+  },
+  "files": [
+    "dist",
+    "NOTICE"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@types/mdast": "catalog:",
+    "mdast-util-from-markdown": "catalog:",
+    "mdast-util-gfm": "catalog:",
+    "micromark-extension-gfm": "catalog:",
+    "yaml": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

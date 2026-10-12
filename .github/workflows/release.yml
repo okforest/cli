@@ -1,0 +1,36 @@
+name: Release
+
+# Changesets flow: merging changeset files into main opens/updates a
+# "Version Packages" PR; merging THAT PR publishes to npm via trusted
+# publishing (GitHub Actions OIDC — no long-lived token). Each package's npm
+# settings name this repo + workflow as its trusted publisher; the first
+# publish of each package is done by hand (see CONTRIBUTING.md). The publish
+# command is pnpm-based so workspace:* and catalog: ranges are resolved at
+# pack time; `changeset git-tag` reports the tags to the action, which pushes
+# them and creates the GitHub Releases. Provenance comes from the OIDC flow.
+on:
+  push:
+    branches: [main]
+
+concurrency: release-${{ github.ref }}
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write # OIDC trusted publishing + provenance
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/setup@v3
+        with:
+          cache: true
+          require-lockfile: true
+
+      - name: Create release PR or publish
+        uses: changesets/action@v2
+        with:
+          publish-script: pnpm release

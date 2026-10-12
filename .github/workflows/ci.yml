@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# A newer push to the same branch/PR cancels the in-progress run.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # One step for the whole toolchain: installs pnpm (version from the root
+      # package.json "packageManager" field), Node (from "devEngines.runtime"),
+      # restores the store cache, and runs the install with --frozen-lockfile
+      # (require-lockfile).
+      - uses: pnpm/setup@v3
+        with:
+          cache: true
+          require-lockfile: true
+
+      # Separate steps so a failing check is obvious in the GitHub UI.
+      - run: pnpm build
+      - run: pnpm test:coverage
+      - run: pnpm typecheck
+      - run: pnpm check
+
+      # Dogfood: the CLI validates the clean fixture tree and its own template
+      # output, exactly as a user would run it.
+      - name: okforest validate (fixtures/valid)
+        run: node packages/okforest/dist/cli.mjs validate fixtures/valid
+
+      # One upload per package so Codecov tracks them as separate flags.
+      - uses: codecov/codecov-action@v7
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: packages/okf/coverage/lcov.info
+          flags: okf
+          disable_search: true
+      - uses: codecov/codecov-action@v7
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: packages/validate/coverage/lcov.info
+          flags: validate
+          disable_search: true
+      - uses: codecov/codecov-action@v7
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: packages/okforest/coverage/lcov.info
+          flags: okforest
+          disable_search: true

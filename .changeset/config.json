@@ -1,0 +1,9 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.1.1/schema.json",
+  "changelog": "@changesets/cli/changelog",
+  "commit": false,
+  "fixed": [["okforest", "@okforest/okf", "@okforest/validate"]],
+  "access": "public",
+  "baseBranch": "main",
+  "ignore": []
+}

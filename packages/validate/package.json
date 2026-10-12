@@ -1,0 +1,71 @@
+{
+  "name": "@okforest/validate",
+  "version": "0.0.0",
+  "description": "Validate Open Knowledge Format (OKF) v0.2 trees: spec conformance, link and metadata checks, and D2 and Mermaid diagram syntax, as structured findings with stable rule IDs and file and line locations.",
+  "keywords": [
+    "okf",
+    "open-knowledge-format",
+    "validator",
+    "lint",
+    "d2",
+    "mermaid",
+    "okforest"
+  ],
+  "license": "Apache-2.0",
+  "author": "Preneur LLC",
+  "homepage": "https://okforest.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/okforest/cli.git",
+    "directory": "packages/validate"
+  },
+  "bugs": "https://github.com/okforest/cli/issues",
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "default": "./dist/index.mjs"
+    }
+  },
+  "files": [
+    "dist",
+    "NOTICE"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@okforest/okf": "workspace:*"
+  },
+  "peerDependencies": {
+    "@d2lang/d2": "catalog:",
+    "mermaid": "catalog:"
+  },
+  "peerDependenciesMeta": {
+    "@d2lang/d2": {
+      "optional": true
+    },
+    "mermaid": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@d2lang/d2": "catalog:",
+    "@types/mdast": "catalog:",
+    "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "mermaid": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

@@ -1,0 +1,94 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`OKF sample bundles > acme_retail 1`] = `
+{
+  "concepts": 9,
+  "files": 17,
+  "findings": [
+    "index.md:1:1 info okf/okf-version Declare the OKF version this bundle targets: frontmatter \`okf_version: "0.2"\`.",
+  ],
+}
+`;
+
+exports[`OKF sample bundles > crypto_bitcoin 1`] = `
+{
+  "concepts": 9,
+  "files": 15,
+  "findings": [
+    "datasets/crypto_bitcoin.md:-:- warning okforest/slug File name \`crypto_bitcoin\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`crypto-bitcoin\`).",
+    "index.md:1:1 info okf/okf-version Declare the OKF version this bundle targets: frontmatter \`okf_version: "0.2"\`.",
+    "references/joins/blocks___transactions.md:-:- warning okforest/slug File name \`blocks___transactions\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`blocks-transactions\`).",
+    "references/joins/inputs___transactions.md:-:- warning okforest/slug File name \`inputs___transactions\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`inputs-transactions\`).",
+    "references/joins/outputs___transactions.md:-:- warning okforest/slug File name \`outputs___transactions\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`outputs-transactions\`).",
+    "references/metrics/duplicate_transactions.md:-:- warning okforest/slug File name \`duplicate_transactions\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`duplicate-transactions\`).",
+  ],
+}
+`;
+
+exports[`OKF sample bundles > ga4 1`] = `
+{
+  "concepts": 9,
+  "files": 14,
+  "findings": [
+    "datasets/ga4_obfuscated_sample_ecommerce.md:-:- warning okforest/slug File name \`ga4_obfuscated_sample_ecommerce\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`ga4-obfuscated-sample-ecommerce\`).",
+    "index.md:1:1 info okf/okf-version Declare the OKF version this bundle targets: frontmatter \`okf_version: "0.2"\`.",
+    "references/metrics/acquired_users.md:-:- warning okforest/slug File name \`acquired_users\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`acquired-users\`).",
+    "references/metrics/frequently_active_users.md:-:- warning okforest/slug File name \`frequently_active_users\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`frequently-active-users\`).",
+    "references/metrics/google_acquired_cohorts.md:-:- warning okforest/slug File name \`google_acquired_cohorts\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`google-acquired-cohorts\`).",
+    "references/metrics/highly_active_users.md:-:- warning okforest/slug File name \`highly_active_users\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`highly-active-users\`).",
+    "references/metrics/n_day_active_users.md:-:- warning okforest/slug File name \`n_day_active_users\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`n-day-active-users\`).",
+    "references/metrics/n_day_inactive_users.md:-:- warning okforest/slug File name \`n_day_inactive_users\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`n-day-inactive-users\`).",
+    "tables/events_.md:-:- warning okforest/slug File name \`events_\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`events\`).",
+  ],
+}
+`;
+
+exports[`OKF sample bundles > stackoverflow 1`] = `
+{
+  "concepts": 26,
+  "files": 32,
+  "findings": [
+    "datasets/stackoverflow.md:8:1 warning okf/field-types \`tags\` should be a list, e.g. \`tags: [Stack Overflow, Q&A, developer, programming, public dataset]\`.",
+    "index.md:1:1 info okf/okf-version Declare the OKF version this bundle targets: frontmatter \`okf_version: "0.2"\`.",
+    "references/content_licenses.md:-:- warning okforest/slug File name \`content_licenses\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`content-licenses\`).",
+    "references/joins/comments__posts.md:-:- warning okforest/slug File name \`comments__posts\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`comments-posts\`).",
+    "references/joins/post_links__posts.md:-:- warning okforest/slug File name \`post_links__posts\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`post-links-posts\`).",
+    "references/joins/posts__votes.md:-:- warning okforest/slug File name \`posts__votes\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`posts-votes\`).",
+    "references/joins/posts_answers__posts_questions.md:-:- warning okforest/slug File name \`posts_answers__posts_questions\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`posts-answers-posts-questions\`).",
+    "references/metrics/accepted_answer_rate.md:-:- warning okforest/slug File name \`accepted_answer_rate\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`accepted-answer-rate\`).",
+    "references/metrics/bad_question_flag_ratio.md:-:- warning okforest/slug File name \`bad_question_flag_ratio\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`bad-question-flag-ratio\`).",
+    "references/post_types.md:-:- warning okforest/slug File name \`post_types\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`post-types\`).",
+    "references/vote_types.md:-:- warning okforest/slug File name \`vote_types\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`vote-types\`).",
+    "tables/post_history.md:-:- warning okforest/slug File name \`post_history\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`post-history\`).",
+    "tables/post_links.md:-:- warning okforest/slug File name \`post_links\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`post-links\`).",
+    "tables/posts_answers.md:-:- warning okforest/slug File name \`posts_answers\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`posts-answers\`).",
+    "tables/posts_answers.md:7:1 warning okf/field-types \`tags\` should be a list, e.g. \`tags: [stackoverflow, answers, posts, Q&A]\`.",
+    "tables/posts_moderator_nomination.md:-:- warning okforest/slug File name \`posts_moderator_nomination\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`posts-moderator-nomination\`).",
+    "tables/posts_moderator_nomination.md:7:1 warning okf/field-types \`tags\` should be a list, e.g. \`tags: [stackoverflow, posts, moderator, nomination]\`.",
+    "tables/posts_orphaned_tag_wiki.md:-:- warning okforest/slug File name \`posts_orphaned_tag_wiki\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`posts-orphaned-tag-wiki\`).",
+    "tables/posts_privilege_wiki.md:-:- warning okforest/slug File name \`posts_privilege_wiki\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`posts-privilege-wiki\`).",
+    "tables/posts_questions.md:-:- warning okforest/slug File name \`posts_questions\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`posts-questions\`).",
+    "tables/posts_questions.md:6:1 warning okf/field-types \`tags\` should be a list, e.g. \`tags: [stackoverflow, posts, questions]\`.",
+    "tables/posts_questions.md:21:243 warning okf/footnote-source Footnote [^1] matches no \`sources\` id (\`stackoverflow-posts-questions\`, \`meta_schema_doc\`).",
+    "tables/posts_questions.md:41:116 warning okf/footnote-source Footnote [^1] matches no \`sources\` id (\`stackoverflow-posts-questions\`, \`meta_schema_doc\`).",
+    "tables/posts_questions.md:92:141 warning okf/footnote-source Footnote [^1] matches no \`sources\` id (\`stackoverflow-posts-questions\`, \`meta_schema_doc\`).",
+    "tables/posts_questions.md:96:135 warning okf/footnote-source Footnote [^1] matches no \`sources\` id (\`stackoverflow-posts-questions\`, \`meta_schema_doc\`).",
+    "tables/posts_questions.md:97:119 warning okf/footnote-source Footnote [^1] matches no \`sources\` id (\`stackoverflow-posts-questions\`, \`meta_schema_doc\`).",
+    "tables/posts_questions.md:98:109 warning okf/footnote-source Footnote [^1] matches no \`sources\` id (\`stackoverflow-posts-questions\`, \`meta_schema_doc\`).",
+    "tables/posts_questions.md:99:135 warning okf/footnote-source Footnote [^1] matches no \`sources\` id (\`stackoverflow-posts-questions\`, \`meta_schema_doc\`).",
+    "tables/posts_tag_wiki.md:-:- warning okforest/slug File name \`posts_tag_wiki\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`posts-tag-wiki\`).",
+    "tables/posts_tag_wiki_excerpt.md:-:- warning okforest/slug File name \`posts_tag_wiki_excerpt\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`posts-tag-wiki-excerpt\`).",
+    "tables/posts_wiki_placeholder.md:-:- warning okforest/slug File name \`posts_wiki_placeholder\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`posts-wiki-placeholder\`).",
+    "tables/posts_wiki_placeholder.md:7:1 warning okf/field-types \`tags\` should be a list, e.g. \`tags: [stackoverflow, posts, wiki, placeholder, community]\`.",
+    "tables/stackoverflow_posts.md:-:- warning okforest/slug File name \`stackoverflow_posts\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`stackoverflow-posts\`).",
+    "tables/stackoverflow_posts.md:7:1 warning okf/field-types \`tags\` should be a list, e.g. \`tags: [stackoverflow, posts, deprecated]\`.",
+    "tables/users.md:6:1 warning okf/field-types \`tags\` should be a list, e.g. \`tags: [stackoverflow, users, community, reputation]\`.",
+    "tables/votes.md:6:1 warning okf/field-types \`tags\` should be a list, e.g. \`tags: [Stack Overflow, votes, posts, community]\`.",
+    "tables/votes.md:21:122 warning okf/footnote-source Footnote [^1] matches no \`sources\` id (\`bq-table\`, \`meta_schema_doc\`).",
+    "tables/votes.md:26:129 warning okf/footnote-source Footnote [^1] matches no \`sources\` id (\`bq-table\`, \`meta_schema_doc\`).",
+    "tables/votes.md:28:136 warning okf/footnote-source Footnote [^1] matches no \`sources\` id (\`bq-table\`, \`meta_schema_doc\`).",
+    "tables/votes.md:72:144 warning okf/footnote-source Footnote [^1] matches no \`sources\` id (\`bq-table\`, \`meta_schema_doc\`).",
+    "tables/votes.md:76:148 warning okf/footnote-source Footnote [^1] matches no \`sources\` id (\`bq-table\`, \`meta_schema_doc\`).",
+  ],
+}
+`;

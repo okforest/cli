@@ -1,0 +1,216 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`rule fixtures > okf/actor 1`] = `
+[
+  "actors.md:5:14 warning okf/actor \`Jane Smith\` is not an actor: use \`human:<id>\` for a person, \`process:<id>\` for an automated process, or \`<producer>/<version>\` for an agent or tool.",
+  "actors.md:7:7 warning okf/actor \`jane\` is not an actor: use \`human:<id>\` for a person, \`process:<id>\` for an automated process, or \`<producer>/<version>\` for an agent or tool.",
+]
+`;
+
+exports[`rule fixtures > okf/attested-computation 1`] = `
+[
+  "bad-contract.md:7:5 error okf/attested-computation Each parameter must be a mapping with a \`name\`: \`{ name, type, required }\`.",
+  "bad-contract.md:8:22 error okf/attested-computation A parameter's \`required\` must be \`true\` or \`false\`.",
+  "bad-contract.md:9:1 error okf/attested-computation \`executor\` must be a mapping with a \`resource\` path.",
+  "bad-contract.md:10:1 error okf/attested-computation \`computation\` must be a path to the file holding the computation.",
+  "no-runtime.md:2:1 error okf/attested-computation An Attested Computation needs \`runtime\`, e.g. \`runtime: bigquery\`.",
+  "no-runtime.md:2:1 error okf/attested-computation No computation: add a code block under a \`# Computation\` heading, or set \`computation\` to a file path.",
+]
+`;
+
+exports[`rule fixtures > okf/broken-link 1`] = `
+[
+  "links.md:5:1 warning okf/broken-link \`/missing/table.sql\` does not exist in this tree.",
+  "links.md:7:5 warning okf/broken-link \`../../outside.md\` climbs above the tree root.",
+  "links.md:11:1 warning okf/broken-link \`missing.md\` does not exist in this tree.",
+  "links.md:11:24 warning okf/broken-link \`../../outside.md\` climbs above the tree root.",
+  "links.md:11:53 warning okf/broken-link \`/nowhere/\` does not exist in this tree (looked for \`nowhere\`).",
+]
+`;
+
+exports[`rule fixtures > okf/datetime 1`] = `
+[
+  "dates.md:5:1 error okf/datetime \`stale_after\` must be an ISO 8601 datetime with an explicit UTC offset, such as \`2026-12-31T00:00:00Z\` (got \`2026-12-31\`).",
+  "dates.md:6:30 error okf/datetime \`generated.at\` must be an ISO 8601 datetime with an explicit UTC offset, such as \`2026-12-31T00:00:00Z\` (got \`2026-06-01T12:00:00\`).",
+  "dates.md:7:29 error okf/datetime \`verified.at\` must be an ISO 8601 datetime with an explicit UTC offset, such as \`2026-12-31T00:00:00Z\` (got \`2026-02-30T00:00:00Z\`).",
+  "dates.md:10:5 error okf/datetime \`sources[0].last_modified\` must be an ISO 8601 datetime with an explicit UTC offset, such as \`2026-12-31T00:00:00Z\` (got \`June 2026\`).",
+  "dates.md:11:49 error okf/datetime \`sources[0].usage_window.to\` must be an ISO 8601 datetime with an explicit UTC offset, such as \`2026-12-31T00:00:00Z\` (got \`2026-05-31\`).",
+]
+`;
+
+exports[`rule fixtures > okf/description 1`] = `
+[
+  "no-description.md:1:1 warning okf/description No \`description\`: index entries, search snippets, and previews use it.",
+]
+`;
+
+exports[`rule fixtures > okf/field-types 1`] = `
+[
+  "tag-items.md:5:15 warning okf/field-types Each tag should be a non-empty string (got \`3\`).",
+  "tag-items.md:5:18 warning okf/field-types Each tag should be a non-empty string (got \`\`).",
+  "types.md:3:1 warning okf/field-types \`title\` should be a non-empty string (got a number).",
+  "types.md:5:1 warning okf/field-types \`resource\` should be a non-empty string (got a list).",
+  "types.md:6:1 warning okf/field-types \`tags\` should be a list, e.g. \`tags: [sales, orders]\`.",
+]
+`;
+
+exports[`rule fixtures > okf/footnote-source 1`] = `
+[
+  "footnotes.md:10:27 warning okf/footnote-source Footnote [^1] matches no \`sources\` id (\`policy\`).",
+]
+`;
+
+exports[`rule fixtures > okf/frontmatter 1`] = `
+[
+  "a-list.md:2:1 error okf/frontmatter Frontmatter must be a YAML mapping of keys to values.",
+  "bad-yaml.md:3:12 error okf/frontmatter Invalid YAML: Flow sequence in block collection must be sufficiently indented and end with a ]",
+  "duplicate-keys.md:4:1 error okf/frontmatter Invalid YAML: Map keys must be unique",
+  "no-frontmatter.md:1:1 error okf/frontmatter No frontmatter: a concept must start with a \`---\` YAML block declaring at least \`type\`. If this is not a concept, add it to \`ignore:\` in .okforest/tree.yaml.",
+  "unclosed.md:1:1 error okf/frontmatter Frontmatter block is not closed: add a \`---\` line after the last key.",
+]
+`;
+
+exports[`rule fixtures > okf/generated 1`] = `
+[
+  "a-string.md:5:1 error okf/generated \`generated\` must be a mapping: \`generated: { by: <actor>, at: <datetime> }\`.",
+  "missing-by.md:5:1 error okf/generated \`generated.by\` is required: who or what produced the content (an actor).",
+]
+`;
+
+exports[`rule fixtures > okf/index-entries 1`] = `
+[
+  "empty/index.md:1:1 warning okf/index-entries This index lists nothing: add \`* [Title](path) - description\` entries.",
+  "index.md:7:1 warning okf/index-entries Index entries should start with a link: \`* [Title](path) - description\`.",
+]
+`;
+
+exports[`rule fixtures > okf/index-frontmatter 1`] = `
+[
+  "index.md:3:1 error okf/index-frontmatter The root index.md frontmatter may only declare \`okf_version\`; remove \`title\`.",
+  "sub/index.md:1:1 error okf/index-frontmatter Only the bundle-root index.md may have frontmatter; remove this block.",
+]
+`;
+
+exports[`rule fixtures > okf/legacy-v01 1`] = `
+[
+  "legacy.md:5:1 info okf/legacy-v01 \`timestamp\` is OKF v0.1: record the last change as \`generated: { by, at }\` instead.",
+  "legacy.md:12:1 info okf/legacy-v01 A \`# Citations\` list is OKF v0.1: move citations to \`sources\` and cite them with footnotes.",
+]
+`;
+
+exports[`rule fixtures > okf/log-date 1`] = `
+[
+  "log.md:3:1 error okf/log-date Log date headings must be ISO 8601 dates such as \`## 2026-05-22\` (got \`May 22, 2026\`).",
+  "log.md:6:1 error okf/log-date Log date headings must be ISO 8601 dates such as \`## 2026-05-22\` (got \`2026-02-30\`).",
+]
+`;
+
+exports[`rule fixtures > okf/log-order 1`] = `
+[
+  "log.md:6:1 warning okf/log-order 2026-06-01 comes after 2026-05-01; list dates newest first.",
+  "log.md:9:1 warning okf/log-order 2026-06-01 appears more than once; group its entries under one heading.",
+]
+`;
+
+exports[`rule fixtures > okf/okf-version 1`] = `
+[
+  "index.md:1:1 info okf/okf-version Declare the OKF version this bundle targets: frontmatter \`okf_version: "0.2"\`.",
+]
+`;
+
+exports[`rule fixtures > okf/sources 1`] = `
+[
+  "entries.md:6:5 error okf/sources A source needs \`resource\`: a URL, a bundle path, or a scope descriptor.",
+  "entries.md:8:5 error okf/sources Duplicate source id \`a\`: footnotes could not tell them apart.",
+  "entries.md:11:5 error okf/sources \`usage_count\` must be a whole number of uses (got \`-3\`).",
+  "entries.md:12:5 error okf/sources A source \`author\` must be a string (got a number).",
+  "entries.md:13:5 error okf/sources Each source must be a mapping with at least \`resource\`.",
+  "entries.md:14:1 error okf/sources \`usage_window\` must be a \`{ from, to }\` mapping of datetimes.",
+  "not-a-list.md:5:1 error okf/sources \`sources\` must be a list of \`{ resource, id, title, ... }\` mappings.",
+]
+`;
+
+exports[`rule fixtures > okf/status 1`] = `
+[
+  "capitalized.md:5:1 error okf/status \`status\` must be \`draft\`, \`stable\`, or \`deprecated\` (use lowercase \`draft\`); got \`Draft\`.",
+  "unknown.md:5:1 error okf/status \`status\` must be \`draft\`, \`stable\`, or \`deprecated\`; got \`published\`.",
+]
+`;
+
+exports[`rule fixtures > okf/title 1`] = `
+[
+  "no-title.md:1:1 warning okf/title No \`title\`: consumers will fall back to the file name.",
+]
+`;
+
+exports[`rule fixtures > okf/type 1`] = `
+[
+  "empty-type.md:2:1 error okf/type \`type\` must be a non-empty string (got \`\`).",
+  "list-type.md:2:1 error okf/type \`type\` must be a non-empty string (got \`["Metric","Policy"]\`).",
+  "missing-type.md:1:1 error okf/type Missing \`type\`, the one required key.",
+]
+`;
+
+exports[`rule fixtures > okf/verified 1`] = `
+[
+  "a-string.md:5:1 error okf/verified \`verified\` must be a \`{ by, at }\` mapping or a list of them.",
+  "missing-at.md:6:5 error okf/verified A verification needs \`at\`: when the content was confirmed.",
+  "missing-by.md:5:1 error okf/verified A verification needs \`by\`: the actor who confirmed the content.",
+  "not-a-mapping.md:6:5 error okf/verified Each verification must be a \`{ by, at }\` mapping.",
+]
+`;
+
+exports[`rule fixtures > okforest/d2-syntax 1`] = `
+[
+  "diagram.md:12:1 error okforest/d2-syntax D2 syntax error: connection missing destination",
+  "diagram.md:12:6 error okforest/d2-syntax D2 syntax error: maps must be terminated with }",
+]
+`;
+
+exports[`rule fixtures > okforest/diagram-unchecked 1`] = `
+[
+  "diagram.md:7:1 info okforest/diagram-unchecked Mermaid diagram not checked: Mermaid's parser for this diagram type needs a browser and cannot run here.",
+]
+`;
+
+exports[`rule fixtures > okforest/mermaid-syntax 1`] = `
+[
+  "diagram.md:14:1 error okforest/mermaid-syntax Mermaid syntax error: Parse error on line 3: Expecting 'AMP', 'COLON', 'PIPE', 'TESTSTR', ..., got 'EOF'",
+]
+`;
+
+exports[`rule fixtures > okforest/placeholder 1`] = `
+[
+  "placeholders.md:7:12 warning okforest/placeholder Unrendered template placeholder \`{{company_name}}\`.",
+  "placeholders.md:7:34 warning okforest/placeholder Unrendered placeholder \`<concept>\`.",
+  "placeholders.md:7:52 warning okforest/placeholder Unrendered placeholder \`<Type name>\`.",
+  "placeholders.md:9:9 warning okforest/placeholder Unrendered placeholder \`[INSERT CONTACT METHOD]\`.",
+  "placeholders.md:9:41 warning okf/broken-link \`path/to/guide.md\` does not exist in this tree.",
+  "placeholders.md:9:41 warning okforest/placeholder Link to a placeholder or example path \`path/to/guide.md\`.",
+]
+`;
+
+exports[`rule fixtures > okforest/slug 1`] = `
+[
+  "Bad_Name.md:-:- warning okforest/slug File name \`Bad_Name\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`bad-name\`).",
+  "My Dir/:-:- warning okforest/slug Directory name \`My Dir\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`my-dir\`).",
+]
+`;
+
+exports[`rule fixtures > okforest/tree-yaml 1`] = `
+[
+  ".okforest/tree.yaml:2:1 error okforest/tree-yaml \`owner\` must be a person (\`user:<id>\`), not a group: accountability lands on one individual.",
+  ".okforest/tree.yaml:3:1 error okforest/tree-yaml \`backup_owner\` must be exactly one person, not a list.",
+  ".okforest/tree.yaml:5:5 error okforest/tree-yaml Each steward is one \`user: <id>\` or \`group: <name>\` entry.",
+  ".okforest/tree.yaml:6:5 error okforest/tree-yaml Each steward is one \`user: <id>\` or \`group: <name>\` entry.",
+  ".okforest/tree.yaml:7:1 error okforest/tree-yaml \`title\` must be a non-empty string (got a number).",
+  ".okforest/tree.yaml:8:1 error okforest/tree-yaml \`ignore\` must be a list of globs relative to the tree root.",
+]
+`;
+
+exports[`rule fixtures > okforest/wikilink 1`] = `
+[
+  "wikilinks.md:7:5 warning okforest/wikilink \`[[Other Concept]]\` is a wikilink, not an OKF link: write \`[Other Concept](other-concept.md)\` with the concept's path.",
+  "wikilinks.md:7:27 warning okforest/wikilink \`[[orders]]\` is a wikilink, not an OKF link: write \`[orders](orders.md)\` with the concept's path.",
+]
+`;

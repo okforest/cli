@@ -1,0 +1,22 @@
+name: OKForest Validate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      # Fails on OKF errors; warnings are reported without failing. To also
+      # check D2 and Mermaid diagram syntax, add the optional packages:
+      #   npx --yes -p okforest@^{{version}} -p @d2lang/d2 -p mermaid okforest validate .
+      - run: npx --yes okforest@^{{version}} validate .
