@@ -1,0 +1,12 @@
+OKF sample bundles
+
+The acme_retail, crypto_bitcoin, ga4, and stackoverflow directories are
+copied unmodified from the Open Knowledge Format repository by Google LLC:
+https://github.com/GoogleCloudPlatform/open-knowledge-format/tree/main/bundles
+
+Copyright Google LLC. Licensed under the Apache License, Version 2.0 (see
+LICENSE.md in this directory). The exact upstream commit is recorded in
+SOURCE.json; refresh with `pnpm fixtures:refresh`.
+
+They are used here only as test fixtures. Their inclusion does not imply that
+Google endorses OKForest.

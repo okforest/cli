@@ -1,0 +1,13 @@
+{
+  "repository": "https://github.com/GoogleCloudPlatform/open-knowledge-format",
+  "commit": "ad30107c31c06aec8a7d5636e0d1058118604e6f",
+  "committed": "2026-08-21T20:08:36Z",
+  "path": "bundles",
+  "bundles": [
+    "acme_retail",
+    "crypto_bitcoin",
+    "ga4",
+    "stackoverflow"
+  ],
+  "license": "Apache-2.0"
+}
