@@ -13,10 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-      # Fails on OKF errors; warnings are reported without failing. To also
-      # check D2 and Mermaid diagram syntax, add the optional packages:
-      #   npx --yes -p okforest@^{{version}} -p @d2lang/d2 -p mermaid okforest validate .
-      - run: npx --yes okforest@^{{version}} validate .
+      # Annotates each finding on its file and line, lists them all in the job
+      # summary, and checks D2 and Mermaid diagram syntax. Fails on OKF errors;
+      # warnings are reported without failing. Inputs and outputs:
+      # https://github.com/okforest/validate-action
+      - uses: okforest/validate-action@v1

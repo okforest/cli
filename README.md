@@ -35,7 +35,8 @@ near-duplicates (`e-commerce` and `ecommerce`, `Policy` and `Policies`).
 **`okforest init [path] --template company`** creates a new tree: a root
 `index.md` declaring `okf_version: "0.2"`, `log.md`, `.okforest/tree.yaml`
 naming the Owner (`--owner`, defaulting to your git email), draft starter
-concepts, and a GitHub workflow that validates every pull request.
+concepts, and a GitHub workflow that validates every pull request with the
+OKForest Validate action.
 
 ### Diagram checks
 
@@ -50,6 +51,19 @@ npx -p okforest -p @d2lang/d2 -p mermaid okforest validate .
 Without them, diagram blocks are reported as not checked (`info`). Some
 Mermaid diagram types (pie, gitGraph, and others) need a browser to parse and
 are also reported as not checked.
+
+### In GitHub Actions
+
+[OKForest Validate](https://github.com/okforest/validate-action) runs the same
+rules on every pull request, annotates each finding on its file and line, and
+lists them all in the job summary. It includes the diagram checks; there is
+nothing to install.
+
+```yaml
+steps:
+  - uses: actions/checkout@v7
+  - uses: okforest/validate-action@v1
+```
 
 ## Rules
 

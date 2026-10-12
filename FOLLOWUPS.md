@@ -3,18 +3,8 @@
 The planning doc for this repository; move items to GitHub Issues as the
 project matures.
 
-## Next: Step 2, the OKForest Validate GitHub Action
+## Next
 
-- **`okforest/validate-action` repo:** a JavaScript action (`node24`) whose
-  bundle in `dist/` is committed on main, so users write
-  `uses: okforest/validate-action@v1`. It calls `@okforest/validate` directly:
-  Mermaid bundled, D2 downloaded on demand (checksum-verified) through the
-  `diagrams.d2` loader only when a tree has `d2` blocks. File and line
-  annotations, a job summary, a `toReport()` JSON file as an output, and a
-  configurable `fail-on`. Release with semantic version tags plus a moving
-  `v1` tag.
-- **Dogfood the action:** a `company-okf` workflow, and switch the `init`
-  template's workflow to `uses: okforest/validate-action@v1`.
 - **SARIF output** (`--format sarif`) so findings can also appear in GitHub
   code scanning.
 

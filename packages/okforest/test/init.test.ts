@@ -42,7 +42,7 @@ describe("okforest init", () => {
       join(work, "acme-okf", ".github", "workflows", "okforest-validate.yml"),
       "utf8",
     )
-    expect(workflow).toMatch(/npx --yes okforest@\^[\d.]+ validate \./)
+    expect(workflow).toContain("uses: okforest/validate-action@v1")
     expect(workflow).not.toMatch(/\{\{\w+\}\}/)
   })
 
