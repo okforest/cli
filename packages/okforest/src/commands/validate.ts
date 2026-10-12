@@ -1,4 +1,4 @@
-import { type Finding, type ValidationResult, validate } from "@okforest/validate"
+import { type Finding, toReport, type ValidationResult, validate } from "@okforest/validate"
 import { formatOption, parseCommand } from "../args.js"
 import { EXIT, type Io, paint, VERSION } from "../io.js"
 import { loadTree } from "../tree.js"
@@ -13,9 +13,6 @@ Options
   --format text|json   Output format (default: text). JSON is for CI and tools.
 `
 
-/** Version of the `--format json` document; bumped on breaking changes. */
-export const JSON_SCHEMA_VERSION = 1
-
 export async function validateCommand(args: readonly string[], io: Io): Promise<number> {
   const { values, path } = parseCommand(args, { format: { type: "string" } })
   if (values.help) {
@@ -28,16 +25,9 @@ export async function validateCommand(args: readonly string[], io: Io): Promise<
   return result.ok ? EXIT.ok : EXIT.failed
 }
 
+/** The shared validation report (`@okforest/validate`'s `toReport`), as JSON. */
 export function toJson(path: string, result: ValidationResult): string {
-  const { findings, errors, warnings, infos, concepts, files, ok } = result
-  const document = {
-    schemaVersion: JSON_SCHEMA_VERSION,
-    tool: { name: "okforest", version: VERSION },
-    path,
-    summary: { ok, errors, warnings, infos, concepts, files },
-    findings,
-  }
-  return `${JSON.stringify(document, null, 2)}\n`
+  return `${JSON.stringify(toReport(result, { tool: { name: "okforest", version: VERSION }, path }), null, 2)}\n`
 }
 
 const LABEL = { error: "error", warning: "warning", info: "info" } as const

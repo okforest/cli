@@ -1,7 +1,7 @@
 import { chmod, mkdir, mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { JSON_SCHEMA_VERSION } from "../src/commands/validate.js"
+import { REPORT_SCHEMA_VERSION } from "@okforest/validate"
 import { run } from "./helpers.js"
 
 describe("okforest validate", () => {
@@ -37,7 +37,7 @@ describe("okforest validate", () => {
     expect(result.code).toBe(1)
     const document = JSON.parse(result.stdout)
     expect(document).toMatchObject({
-      schemaVersion: JSON_SCHEMA_VERSION,
+      schemaVersion: REPORT_SCHEMA_VERSION,
       tool: { name: "okforest", version: expect.any(String) },
       path: "rules/okf/status",
       summary: { ok: false, errors: 2, warnings: 0, infos: 0, concepts: 2, files: 3 },

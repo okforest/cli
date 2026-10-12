@@ -25,7 +25,7 @@ Diagram syntax checks need the optional packages \`@d2lang/d2\` and \`mermaid\`
 installed alongside okforest, e.g.:
   npx -p okforest -p @d2lang/d2 -p mermaid okforest validate .
 
-Docs: https://okforest.ai/docs · Source: https://github.com/okforest/cli
+Docs and source: https://github.com/okforest/cli
 `
 
 const COMMANDS = {

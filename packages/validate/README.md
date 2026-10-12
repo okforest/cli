@@ -23,7 +23,22 @@ date checks). A rule is `{ id, severity, description, check(context) }`, so
 your own rules plug in alongside the built-in ones.
 
 Diagram checks load the optional peers `@d2lang/d2` and `mermaid` if they are
-installed; otherwise diagram blocks are reported as not checked (`info`).
+installed; otherwise diagram blocks are reported as not checked (`info`). To
+load them from somewhere else (a bundle, a download), pass `diagrams` loaders.
+Each runs at most once per validation, and only if the tree has diagrams of
+that language; return the module, or `{ unavailable: "<reason>" }`:
+
+```ts
+await validate(tree, {
+  diagrams: {
+    d2: async () => (await fetchD2()) ?? { unavailable: "D2 could not be downloaded." },
+  },
+})
+```
+
+`toReport(result, { tool, path })` wraps a result as the versioned JSON
+document that `okforest validate --format json` prints (`schemaVersion: 1`),
+so other tools can produce and consume the same format.
 
 The full rule list is in the [OKForest CLI README](https://github.com/okforest/cli#rules).
 

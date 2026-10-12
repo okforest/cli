@@ -1,4 +1,5 @@
 import type { Tree } from "@okforest/okf"
+import { defaultDiagramLoaders } from "./rules/diagrams.js"
 import { defaultRules } from "./rules/index.js"
 import type { Finding, RuleContext, ValidateOptions, ValidationResult } from "./types.js"
 
@@ -13,6 +14,10 @@ export async function validate(
 ): Promise<ValidationResult> {
   const rules = options.rules ?? defaultRules
   const now = options.now ?? new Date()
+  const diagrams = {
+    d2: options.diagrams?.d2 ?? defaultDiagramLoaders.d2,
+    mermaid: options.diagrams?.mermaid ?? defaultDiagramLoaders.mermaid,
+  }
   const findings: Finding[] = []
   const resources = new Map<string, Promise<unknown>>()
   const disposers: (() => unknown)[] = []
@@ -34,6 +39,7 @@ export async function validate(
         tree,
         now,
         once,
+        diagrams,
         // A fixed key order keeps JSON output stable for tools that consume it.
         report: ({ file, line, column, message }) =>
           findings.push({

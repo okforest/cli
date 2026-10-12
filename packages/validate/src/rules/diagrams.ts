@@ -1,5 +1,13 @@
 import type { CodeBlock } from "@okforest/okf"
-import type { Report, Rule, RuleContext } from "../types.js"
+import type {
+  D2Module,
+  DiagramLoaders,
+  MermaidModule,
+  Report,
+  Rule,
+  RuleContext,
+  Unavailable,
+} from "../types.js"
 
 type Language = "d2" | "mermaid"
 
@@ -20,28 +28,53 @@ type Checker = (source: string) => Promise<Located[] | undefined>
 
 class Unchecked extends Error {}
 
+/**
+ * The default loaders import the optional peers. When a peer is not installed,
+ * its diagrams are reported as not checked, so validation still runs without
+ * the ~200 MB of diagram tooling (`npx okforest validate` stays small).
+ */
+export const defaultDiagramLoaders: Required<DiagramLoaders> = {
+  d2: () => importPeer<D2Module>("d2", () => import("@d2lang/d2") as Promise<unknown>),
+  mermaid: () => importPeer<MermaidModule>("mermaid", () => import("mermaid") as Promise<unknown>),
+}
+
 const PACKAGES: Record<Language, string> = { d2: "@d2lang/d2", mermaid: "mermaid" }
 
-/**
- * Load the optional peer for a language once per run. Resolves to undefined
- * when the package is not installed, so validation still runs without the
- * ~200 MB of diagram tooling (`npx okforest validate` stays small).
- */
-async function loadChecker(context: RuleContext, language: Language): Promise<Checker | undefined> {
+async function importPeer<T>(
+  language: Language,
+  load: () => Promise<unknown>,
+): Promise<T | Unavailable> {
+  try {
+    return (await load()) as T
+  } catch (error) {
+    if (!isMissingModule(error)) throw error
+    const name = language === "d2" ? "D2" : "Mermaid"
+    return {
+      unavailable: `Install \`${PACKAGES[language]}\` alongside okforest to check ${name} syntax.`,
+    }
+  }
+}
+
+const isUnavailable = (value: object): value is Unavailable => "unavailable" in value
+
+/** Load a language's engine once per run: a checker, or why there is none. */
+async function loadChecker(
+  context: RuleContext,
+  language: Language,
+): Promise<Checker | Unavailable> {
   return context
     .once(
       `diagram-engine:${language}`,
-      async () => {
-        try {
-          return language === "d2" ? await loadD2() : await loadMermaid()
-        } catch (error) {
-          if (isMissingModule(error)) return undefined
-          throw error
-        }
+      async (): Promise<Engine | Unavailable> => {
+        const module = await context.diagrams[language]()
+        if (isUnavailable(module)) return module
+        return language === "d2"
+          ? d2Engine(module as D2Module)
+          : mermaidEngine(module as MermaidModule)
       },
-      (engine) => engine?.dispose(),
+      (engine) => (isUnavailable(engine) ? undefined : engine.dispose()),
     )
-    .then((engine) => engine?.check)
+    .then((engine) => (isUnavailable(engine) ? engine : engine.check))
 }
 
 interface Engine {
@@ -49,13 +82,7 @@ interface Engine {
   dispose(): unknown
 }
 
-interface D2Instance {
-  compile(source: string): Promise<unknown>
-  dispose(): Promise<void>
-}
-
-async function loadD2(): Promise<Engine> {
-  const { D2 } = (await import("@d2lang/d2")) as unknown as { D2: new () => D2Instance }
+function d2Engine({ D2 }: D2Module): Engine {
   const d2 = new D2()
   return {
     check: async (source) => {
@@ -89,13 +116,7 @@ function d2Errors(error: unknown): Located[] {
   })
 }
 
-interface MermaidApi {
-  initialize(config: Record<string, unknown>): void
-  parse(source: string): Promise<unknown>
-}
-
-async function loadMermaid(): Promise<Engine> {
-  const mermaid = (await import("mermaid")).default as unknown as MermaidApi
+function mermaidEngine({ default: mermaid }: MermaidModule): Engine {
   mermaid.initialize({ startOnLoad: false, logLevel: "fatal" })
   return {
     check: async (source) => {
@@ -155,13 +176,8 @@ function outcomes(context: RuleContext, language: Language): Promise<Outcome[]> 
     const check = await loadChecker(context, language)
     const results: Outcome[] = []
     for (const { file, block } of blocks) {
-      if (!check) {
-        results.push({
-          file,
-          block,
-          status: "unchecked",
-          reason: `Install \`${PACKAGES[language]}\` alongside okforest to check ${language === "d2" ? "D2" : "Mermaid"} syntax.`,
-        })
+      if (typeof check !== "function") {
+        results.push({ file, block, status: "unchecked", reason: check.unavailable })
         continue
       }
       try {

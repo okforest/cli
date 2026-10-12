@@ -26,8 +26,9 @@ internals (dependencies point one way: private → public).
   (Apache 2.0, see its NOTICE). Never edit them; refresh with
   `pnpm fixtures:refresh` and review the snapshot diff.
 - The `--format json` output of `validate` and `inventory` is a public
-  interface (the GitHub Action consumes it): bump `schemaVersion` on breaking
-  changes.
+  interface: bump `schemaVersion` on breaking changes. The validation report is
+  built by `toReport()` in `@okforest/validate`, shared with the GitHub Action
+  (`okforest/validate-action`), so both always emit the same document.
 - Examples use reserved domains (`acme.example`) and placeholder names.
 - Releases go through Changesets (`pnpm changeset`), lockstep 0.x across all
   three packages.
