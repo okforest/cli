@@ -49,8 +49,8 @@
   "dependencies": {
     "@types/mdast": "catalog:",
     "mdast-util-from-markdown": "catalog:",
-    "mdast-util-gfm": "catalog:",
-    "micromark-extension-gfm": "catalog:",
+    "mdast-util-gfm-footnote": "catalog:",
+    "micromark-extension-gfm-footnote": "catalog:",
     "yaml": "catalog:"
   },
   "devDependencies": {

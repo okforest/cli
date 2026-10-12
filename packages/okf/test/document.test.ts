@@ -136,6 +136,22 @@ describe("body", () => {
     ])
   })
 
+  it("finds links in table cells, which parse as paragraphs without the GFM table extension", () => {
+    const file = read(
+      [
+        "---",
+        "type: Table",
+        "---",
+        "| Column | Description |",
+        "|---|---|",
+        "| `customer_id` | Key into [customers](/tables/customers.md). |",
+      ].join("\n"),
+    )
+    expect(file.links.map((l) => [l.target, l.line, l.column])).toEqual([
+      ["/tables/customers.md", 6, 28],
+    ])
+  })
+
   it("does not read the frontmatter as markdown", () => {
     const file = read('---\ntype: x\ndescription: "[not a link](x.md)"\n---\n')
     expect(file.links).toEqual([])

@@ -49,6 +49,26 @@ project matures.
   errors (`okf/frontmatter`), and `okf/datetime` requires the `T` separator
   (RFC 3339 also allows a space).
 
+## Performance
+
+Measured with `pnpm bench` (400 copies of the stackoverflow sample: 10,400
+concepts, 12,800 markdown files, 26.9 MB) on an Apple M5 Pro, single-threaded:
+about 6 s, of which 5 s is markdown parsing and 0.3 s is all the rules. A
+realistic tree of a few hundred concepts takes well under a second. Parsing
+already uses CommonMark plus GFM footnotes only (1.5x faster than full GFM).
+Options if a real tree ever needs more:
+
+- **markdown-it** parses about 11x faster than micromark, but produces tokens
+  rather than mdast (a breaking change to `@okforest/okf`'s `ast`) and gives
+  line numbers only per block, so link and footnote columns would have to be
+  reconstructed from the source.
+- **Parallel parsing** with worker threads in `@okforest/okf/node` (the pure
+  core is unchanged). Standard GitHub-hosted runners for private repositories
+  have only 2 vCPUs (4 for public repositories) regardless of plan, so the
+  gain is at most about 2x where most trees run, minus worker start-up.
+  Revisit if GitHub upgrades the standard private runners, or if customers
+  commonly use larger runners.
+
 ## CLI
 
 - **`okforest index`**: generate or refresh `index.md` files from frontmatter

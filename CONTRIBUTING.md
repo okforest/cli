@@ -10,7 +10,9 @@ example-data rules. This file covers this repository.
     pnpm install
     pnpm build && pnpm test && pnpm typecheck && pnpm check
 
-All four gates must pass before a PR; CI runs the same commands. `pnpm install`
+All four gates must pass before a PR; CI runs the same commands. For changes
+that could affect speed (parsing, rules that walk every file), compare
+`pnpm bench` before and after on the same machine. `pnpm install`
 fetches the pinned pnpm and Node versions automatically (`packageManager` and
 `devEngines` in `package.json`).
 

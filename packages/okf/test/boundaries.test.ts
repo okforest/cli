@@ -27,8 +27,8 @@ describe("package boundaries", () => {
       "yaml",
       "mdast",
       "mdast-util-from-markdown",
-      "mdast-util-gfm",
-      "micromark-extension-gfm",
+      "mdast-util-gfm-footnote",
+      "micromark-extension-gfm-footnote",
     ])
     for (const file of files) {
       const external = imports(file).filter(
