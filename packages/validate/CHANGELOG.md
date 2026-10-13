@@ -1,5 +1,11 @@
 # @okforest/validate
 
+## 0.2.1
+
+### Patch Changes
+
+- @okforest/okf@0.2.1
+
 ## 0.2.0
 
 ### Minor Changes
