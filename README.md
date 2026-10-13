@@ -8,7 +8,7 @@
 
 Validate, inventory, and scaffold [Open Knowledge Format (OKF)](https://github.com/GoogleCloudPlatform/open-knowledge-format)
 v0.2 trees. Deterministic: no model calls, no network, the same results on
-every machine, and the same code that runs inside [OKForest](https://okforest.ai).
+every machine, and the same code that runs inside [OKForest](https://www.okforest.ai).
 
 ```sh
 npx okforest validate .

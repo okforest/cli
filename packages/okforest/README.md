@@ -26,4 +26,4 @@ pull request and the diagram checks included.
 Rules, options, and what counts as a concept: see the
 [OKForest CLI README](https://github.com/okforest/cli#readme).
 
-Apache-2.0 · © Preneur LLC · [okforest.ai](https://okforest.ai)
+Apache-2.0 · © Preneur LLC · [okforest.ai](https://www.okforest.ai)
