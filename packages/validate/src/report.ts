@@ -1,6 +1,8 @@
+import { ruleUrl } from "./docs.js"
 import type { Finding, ValidationResult } from "./types.js"
 
-/** Version of the {@link ValidationReport} document; bumped on breaking changes. */
+/** Version of the {@link ValidationReport} document; bumped on breaking changes
+ * (new fields are not breaking: consumers ignore what they don't know). */
 export const REPORT_SCHEMA_VERSION = 1
 
 /**
@@ -22,7 +24,12 @@ export interface ValidationReport {
     concepts: number
     files: number
   }
-  findings: Finding[]
+  findings: ReportFinding[]
+}
+
+/** A finding in the report, with the URL of its rule's documentation. */
+export interface ReportFinding extends Finding {
+  docs: string
 }
 
 export function toReport(
@@ -35,6 +42,6 @@ export function toReport(
     tool: { name: context.tool.name, version: context.tool.version },
     path: context.path,
     summary: { ok, errors, warnings, infos, concepts, files },
-    findings,
+    findings: findings.map((finding) => ({ ...finding, docs: ruleUrl(finding.ruleId) })),
   }
 }

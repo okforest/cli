@@ -29,8 +29,10 @@ project matures.
   `computation`, `executor.resource`, and `attester.resource` may be relative
   paths, but Google's sample bundles write bundle-root paths without a leading
   slash (`executor.resource: skills/run-on-bq.md` from `computations/`).
-  `okf/broken-link` therefore only checks `/…`, `./…`, and `../…` forms. Raise
-  the ambiguity upstream, then check bare paths once it is settled.
+  `okf/broken-link` therefore only checks `/…`, `./…`, and `../…` forms.
+  Upstream [PR #31](https://github.com/GoogleCloudPlatform/open-knowledge-format/pull/31)
+  (fixing issue #29) proposes the leading slash in the samples and spec
+  examples; check bare paths once it is settled.
 - **Rule configuration.** Per-tree severity overrides in
   `.okforest/tree.yaml` (the library already accepts `severity` overrides),
   plus CLI flags such as `--max-warnings` and `--rule <id>=off`.
@@ -75,14 +77,15 @@ Options if a real tree ever needs more:
 - **More templates** for `init`: department trees (HR, Sales, Finance, IT) and
   product; a starter type registry once the standards format exists; `--force`
   for non-empty directories.
-- **Rule documentation pages** at okforest.ai/docs, linked from each finding.
 
 ## Upstream
 
 - **Google sample bundles:** `stackoverflow` writes `tags` as one
-  comma-separated string in 8 concepts, and uses numeric footnotes (`[^1]`)
-  next to `sources` ids; the three BigQuery bundles use underscores in file
-  names. Worth small upstream PRs, as a good OKF community citizen.
+  comma-separated string in 8 concepts (reported as
+  [issue #39](https://github.com/GoogleCloudPlatform/open-knowledge-format/issues/39)),
+  and uses numeric footnotes (`[^1]`) next to `sources` ids (check the spec's
+  wording before raising it). Underscores in the BigQuery bundles' file names
+  break only OKForest's `okforest/slug` convention, not the spec.
 - **mermaid's type declarations** import `type-fest` without declaring it, so
   `packages/validate` sets `skipLibCheck`; remove it when fixed upstream
   ([mermaid-js/mermaid#6629](https://github.com/mermaid-js/mermaid/issues/6629),

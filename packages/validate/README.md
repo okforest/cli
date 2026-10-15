@@ -38,7 +38,9 @@ await validate(tree, {
 
 `toReport(result, { tool, path })` wraps a result as the versioned JSON
 document that `okforest validate --format json` prints (`schemaVersion: 1`),
-so other tools can produce and consume the same format.
+so other tools can produce and consume the same format. Each finding in it
+carries `docs`, the URL of its rule's page; `ruleUrl(ruleId)` gives the same
+URL (`https://www.okforest.ai/docs/rules/<rule id>/`).
 
 The full rule list is in the [OKForest CLI README](https://github.com/okforest/cli#rules).
 

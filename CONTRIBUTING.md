@@ -42,6 +42,10 @@ fetches the pinned pnpm and Node versions automatically (`packageManager` and
    `pnpm test -- -u` to record its snapshot; review the snapshot.
 4. Unit-test any branches the fixture doesn't reach.
 5. Add a changeset (`pnpm changeset`).
+6. After the release, bump `@okforest/validate` in okforest/platform and
+   deploy the site: the rule's page (`www.okforest.ai/docs/rules/<rule id>/`,
+   which findings link to) is generated from the package, so the link is a
+   404 until then. Then release okforest/validate-action with the new rules.
 
 ## Releasing
 

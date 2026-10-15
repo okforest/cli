@@ -7,6 +7,9 @@ exports[`okforest validate > exits 0 when there are only warnings and info, and 
 My Dir/
     warning  Directory name \`My Dir\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`my-dir\`).  okforest/slug
 
+Rule docs
+  okforest/slug  https://www.okforest.ai/docs/rules/okforest/slug/
+
 ✔ 0 errors, 2 warnings, 0 info · 3 concepts in 4 files
 "
 `;
@@ -20,6 +23,9 @@ list-type.md
 
 missing-type.md
   1:1  error    Missing \`type\`, the one required key.  okf/type
+
+Rule docs
+  okf/type  https://www.okforest.ai/docs/rules/okf/type/
 
 ✖ 3 errors, 0 warnings, 0 info · 3 concepts in 4 files
 "

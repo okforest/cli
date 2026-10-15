@@ -1,4 +1,10 @@
-import { type Finding, toReport, type ValidationResult, validate } from "@okforest/validate"
+import {
+  type Finding,
+  ruleUrl,
+  toReport,
+  type ValidationResult,
+  validate,
+} from "@okforest/validate"
 import { formatOption, parseCommand } from "../args.js"
 import { EXIT, type Io, paint, VERSION } from "../io.js"
 import { loadTree } from "../tree.js"
@@ -53,8 +59,21 @@ export function toText(result: ValidationResult, io: Io): string {
     })
     out.push("")
   }
+  out.push(...ruleDocs(result.findings, io))
   out.push(summary(result, io))
   return `${out.join("\n")}\n`
+}
+
+/** Each rule that reported something, with its documentation page. */
+function ruleDocs(findings: readonly Finding[], io: Io): string[] {
+  const ids = [...new Set(findings.map((f) => f.ruleId))]
+  if (ids.length === 0) return []
+  const width = Math.max(...ids.map((id) => id.length))
+  return [
+    paint(io, "underline", "Rule docs"),
+    ...ids.map((id) => `  ${id.padEnd(width)}  ${paint(io, "dim", ruleUrl(id))}`),
+    "",
+  ]
 }
 
 function summary(result: ValidationResult, io: Io): string {
