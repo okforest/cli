@@ -31,7 +31,10 @@ internals (dependencies point one way: private → public).
   (`okforest/validate-action`), so both always emit the same document.
 - Examples use reserved domains (`acme.example`) and placeholder names.
 - Releases go through Changesets (`pnpm changeset`), lockstep 0.x across all
-  three packages.
+  three packages. CI's `release` job publishes them (npm trusted publishing
+  names `ci.yml`) only after every check passes, using the `check` job's
+  build. `main` is protected by a ruleset (PRs with passing checks; admins
+  can bypass).
 
 <!-- BEGIN:turborepo-agent-rules -->
 

@@ -11,4 +11,8 @@ updates:
       interval: "weekly"
     cooldown:
       default-days: 1
+    # One PR a week; merging it publishes nothing until a changeset ships it.
+    groups:
+      npm:
+        patterns: ["*"]
     open-pull-requests-limit: 10

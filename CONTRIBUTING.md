@@ -10,7 +10,12 @@ example-data rules. This file covers this repository.
     pnpm install
     pnpm build && pnpm test && pnpm typecheck && pnpm check
 
-All four gates must pass before a PR; CI runs the same commands. For changes
+All four gates must pass before a PR; CI runs the same commands, on Linux
+(with coverage), macOS, and Windows. `main` is protected (the "Protect main"
+ruleset): changes land through pull requests once `check` and both `test`
+jobs pass. Repository admins can bypass it, for small direct commits and for
+merging "Version Packages" PRs, whose checks never run (GitHub runs no
+workflows for PRs that a workflow opens). For changes
 that could affect speed (parsing, rules that walk every file), compare
 `pnpm bench` before and after on the same machine. `pnpm install`
 fetches the pinned pnpm and Node versions automatically (`packageManager` and
@@ -41,22 +46,26 @@ fetches the pinned pnpm and Node versions automatically (`packageManager` and
 ## Releasing
 
 Releases go through Changesets: merging changeset files to `main` opens a
-"Version Packages" PR, and merging that PR publishes all three packages to npm
-with provenance, through npm trusted publishing (GitHub Actions OIDC; no npm
-token is stored anywhere).
+"Version Packages" PR, and merging that PR (an admin bypass, as above)
+publishes all three packages to npm with provenance, through npm trusted
+publishing (GitHub Actions OIDC; no npm token is stored anywhere). CI runs on
+the merged commit, and only when every check passes does its `release` job
+publish, using the build the `check` job tested, not a new one. PRs without a
+changeset (Dependabot's, docs) never open or change the Version Packages PR.
 
 **First release only (done for 0.1.0).** npm trusted publishing can only be configured for a
 package that already exists, so the first version of each package is
 published by hand:
 
-1. Let the release workflow open the "Version Packages" PR (it versions the
+1. Let CI's release job open the "Version Packages" PR (it versions the
    packages to 0.1.0 from `.changeset/initial-release.md`), and check out its
    branch locally.
 2. `pnpm install && pnpm build`, then `npm login` as an owner of the
    `@okforest` npm organization, and `pnpm -r publish --access public`.
 3. On npmjs.com, for each of `okforest`, `@okforest/okf`, and
    `@okforest/validate`: Settings → Trusted publishing → GitHub Actions, with
-   organization `okforest`, repository `cli`, and workflow `release.yml`.
+   organization `okforest`, repository `cli`, and workflow `ci.yml` (it was
+   `release.yml` until 0.2.2).
    Then disallow token publishing.
 4. Merge the "Version Packages" PR. The workflow finds the versions already
    published, skips them, and tags the release.
