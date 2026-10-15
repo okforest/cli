@@ -57,6 +57,14 @@ the merged commit, and only when every check passes does its `release` job
 publish, using the build the `check` job tested, not a new one. PRs without a
 changeset (Dependabot's, docs) never open or change the Version Packages PR.
 
+**Immutable releases.** The repository has release immutability on (Settings →
+Releases), from 0.3.1: once published, a GitHub Release's tag
+(`okforest@1.2.3`, `@okforest/okf@1.2.3`, `@okforest/validate@1.2.3`) can't be
+moved or deleted, matching npm, where a published version never changes. Fix a
+bad release with a new version. Titles and notes can still be edited. The
+release job warns if a new release didn't come out immutable, or if it
+couldn't mark `okforest@<version>` as Latest.
+
 **First release only (done for 0.1.0).** npm trusted publishing can only be configured for a
 package that already exists, so the first version of each package is
 published by hand:

@@ -147,5 +147,22 @@ jobs:
         run: |
           VERSION=$(jq -r .version packages/okforest/package.json)
           if gh release view "okforest@$VERSION" >/dev/null 2>&1; then
-            gh release edit "okforest@$VERSION" --latest
+            # Releases are immutable (tags locked; title and notes editable).
+            # The packages are already on npm, so a refusal only warns.
+            gh release edit "okforest@$VERSION" --latest ||
+              echo "::warning::Could not mark okforest@$VERSION as the Latest release; mark it by hand."
           fi
+
+      # Release immutability is on (Settings → Releases): published releases
+      # lock their tags. A warning, not a failure: npm already has the packages.
+      - name: Check the releases are immutable
+        if: steps.changesets.outputs.published == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(jq -r .version packages/okforest/package.json)
+          for tag in "okforest@$VERSION" "@okforest/okf@$VERSION" "@okforest/validate@$VERSION"; do
+            if [ "$(gh release view "$tag" --json isImmutable --jq .isImmutable 2>/dev/null)" != "true" ]; then
+              echo "::warning::$tag is not an immutable release. Is release immutability still on in Settings → Releases?"
+            fi
+          done
