@@ -1,12 +1,8 @@
 # Follow-ups
 
 The planning doc for this repository; move items to GitHub Issues as the
-project matures.
-
-## Next
-
-- **SARIF output** (`--format sarif`) so findings can also appear in GitHub
-  code scanning.
+project matures. Deferred items, each with the trigger to re-evaluate it, are
+already [issues](https://github.com/okforest/cli/issues) (SARIF output: #9).
 
 ## Release
 
