@@ -130,5 +130,5 @@ sample bundles (Apache 2.0, see [fixtures/okf-samples/NOTICE](fixtures/okf-sampl
 OKF is an open specification published by Google; OKForest is independent and
 not endorsed by Google.
 
-Open source under [Apache-2.0](LICENSE) · © Preneur LLC · OKForest is a
-trademark of Preneur LLC ([trademark policy](https://github.com/okforest/.github/blob/main/TRADEMARKS.md)).
+Open source under [Apache-2.0](LICENSE) · © Preneur LLC · OKForest™ is a
+trademark of Preneur LLC ([trademark policy](https://www.okforest.ai/trademarks/)).
