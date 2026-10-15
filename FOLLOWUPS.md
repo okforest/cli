@@ -84,4 +84,7 @@ Options if a real tree ever needs more:
   next to `sources` ids; the three BigQuery bundles use underscores in file
   names. Worth small upstream PRs, as a good OKF community citizen.
 - **mermaid's type declarations** import `type-fest` without declaring it, so
-  `packages/validate` sets `skipLibCheck`; remove it when fixed upstream.
+  `packages/validate` sets `skipLibCheck`; remove it when fixed upstream
+  ([mermaid-js/mermaid#6629](https://github.com/mermaid-js/mermaid/issues/6629),
+  fix in [#7433](https://github.com/mermaid-js/mermaid/pull/7433); still
+  unfixed in mermaid 12.2.0).
