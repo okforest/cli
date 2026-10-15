@@ -105,7 +105,8 @@ it in more detail.
 
 | Rule | Severity | Checks |
 |---|---|---|
-| `okforest/tree-yaml` | error | `.okforest/tree.yaml` names exactly one Owner as `user:<id>`, Stewards as `user`/`group` entries, and well-formed optional settings. |
+| `okforest/tree-yaml` | error | `.okforest/tree.yaml` (spelled `.yaml`) names exactly one Owner as `user:<id>`, Stewards as `user`/`group` entries, and well-formed optional settings. |
+| `okforest/tree-yaml-keys` | warning | `.okforest/tree.yaml` uses only the settings OKForest knows; others, such as a misspelled key, are ignored. |
 | `okforest/slug` | warning | File and directory names of concepts are slugs: lowercase letters, digits, and hyphens. |
 | `okforest/placeholder` | warning | Bodies contain no unrendered template placeholders (`{{name}}`, `<concept>`, `[INSERT ...]`) or example link paths (`path/to/...`). |
 | `okforest/wikilink` | warning | Concepts link with standard markdown links, not `[[wikilinks]]` (OKF §6.1). |
@@ -126,6 +127,21 @@ ignore:
   - FOLLOWUPS.md
   - drafts/
 ```
+
+Every setting in `.okforest/tree.yaml` is described in
+[Tree settings](https://www.okforest.ai/docs/tree-settings/). For completion
+and checks while you edit it, the file can start with a
+[JSON Schema](https://www.okforest.ai/schemas/tree.schema.json) comment, which
+editors with the YAML language server (VS Code's YAML extension, and others)
+read; `okforest init` writes it:
+
+```yaml
+# yaml-language-server: $schema=https://www.okforest.ai/schemas/tree.schema.json
+```
+
+The schema ships in `@okforest/validate` too
+(`@okforest/validate/tree.schema.json`), and a test keeps it in step with the
+`okforest/tree-yaml` and `okforest/tree-yaml-keys` rules.
 
 ## Development
 

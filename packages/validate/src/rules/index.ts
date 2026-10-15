@@ -23,7 +23,7 @@ import {
   verified,
 } from "./fields.js"
 import { brokenLink, footnoteSource } from "./links.js"
-import { placeholder, slug, treeYaml, wikilink } from "./okforest.js"
+import { placeholder, slug, treeYaml, treeYamlKeys, wikilink } from "./okforest.js"
 
 /** Rules from the OKF v0.2 specification. */
 export const okfRules: readonly Rule[] = [
@@ -52,6 +52,7 @@ export const okfRules: readonly Rule[] = [
 /** OKForest conventions beyond the spec: slugs, placeholders, settings, diagrams. */
 export const okforestRules: readonly Rule[] = [
   treeYaml,
+  treeYamlKeys,
   slug,
   placeholder,
   wikilink,

@@ -208,6 +208,13 @@ exports[`rule fixtures > okforest/tree-yaml 1`] = `
 ]
 `;
 
+exports[`rule fixtures > okforest/tree-yaml-keys 1`] = `
+[
+  ".okforest/tree.yaml:3:1 warning okforest/tree-yaml-keys Unknown setting \`stewrds\`: did you mean \`stewards\`? Unknown settings are ignored.",
+  ".okforest/tree.yaml:5:1 warning okforest/tree-yaml-keys Unknown setting \`sensitivity\`, ignored. The settings are \`owner\`, \`backup_owner\`, \`stewards\`, \`tree\`, \`title\`, \`ignore\`, \`sensitivity_default\`, \`standards\`.",
+]
+`;
+
 exports[`rule fixtures > okforest/wikilink 1`] = `
 [
   "wikilinks.md:7:5 warning okforest/wikilink \`[[Other Concept]]\` is a wikilink, not an OKF link: write \`[Other Concept](other-concept.md)\` with the concept's path.",

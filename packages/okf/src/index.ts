@@ -2,6 +2,7 @@ export { normalizeText } from "./document.js"
 export {
   buildInventory,
   type Count,
+  editDistance,
   findNearDuplicates,
   type Inventory,
   type NearDuplicates,

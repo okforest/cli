@@ -1,0 +1,5 @@
+tree: sales
+owner: user:jane@acme.example
+stewrds:
+  - group: sales-ops
+sensitivity: internal
