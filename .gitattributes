@@ -1,0 +1,5 @@
+# The init templates are shipped content: always LF, even in a Windows
+# checkout (Git there converts text files to CRLF by default). Everything
+# else keeps the default, so the Windows CI job also parses fixtures with
+# CRLF line endings, as Windows users' trees may have.
+packages/okforest/templates/** text eol=lf

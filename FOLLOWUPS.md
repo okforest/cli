@@ -13,7 +13,7 @@ project matures.
 - **Staged publishing before January 2027.** npm is restricting "direct
   publishing" in January 2027 and recommends staged publishing (CI uploads,
   a maintainer approves each package with 2FA). Check whether the restriction
-  covers OIDC trusted publishing; if so, switch `release.yml` to pack with
+  covers OIDC trusted publishing; if so, switch CI's release job to pack with
   pnpm and `npm stage publish` the tarballs, and uncheck "Allow npm publish"
   on the three connections. Elicitly needs the same change.
 

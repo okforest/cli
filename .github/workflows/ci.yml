@@ -1,15 +1,20 @@
 name: CI
 
+# Every PR and every push to main: build and test on Linux (with coverage),
+# macOS, and Windows, and validate the clean fixture tree with the built CLI.
+# On main, once all of that passes, the release job publishes the exact build
+# the check job tested (see the job).
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
 
-# A newer push to the same branch/PR cancels the in-progress run.
+# A newer push to the same PR cancels its in-progress run. Runs on main are
+# never cancelled: one might be publishing.
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -40,6 +45,16 @@ jobs:
       - name: okforest validate (fixtures/valid)
         run: node packages/okforest/dist/cli.mjs validate fixtures/valid
 
+      # The three packages' builds, which the release job publishes.
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: |
+            packages/okf/dist/
+            packages/validate/dist/
+            packages/okforest/dist/
+          retention-days: 7
+
       # One upload per package so Codecov tracks them as separate flags.
       - uses: codecov/codecov-action@v7
         with:
@@ -59,3 +74,78 @@ jobs:
           files: packages/okforest/coverage/lcov.info
           flags: okforest
           disable_search: true
+
+  # People run the CLI on macOS and Windows too, where paths and line endings
+  # differ: the same build, tests, and dogfood run there (coverage stays on
+  # the Linux check job).
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/setup@v3
+        with:
+          cache: true
+          require-lockfile: true
+
+      - run: pnpm build
+      - run: pnpm test
+
+      - name: okforest validate (fixtures/valid)
+        run: node packages/okforest/dist/cli.mjs validate fixtures/valid
+
+  # Changesets flow: merging changeset files into main opens/updates a
+  # "Version Packages" PR; merging THAT PR publishes all three packages to npm
+  # via trusted publishing (GitHub Actions OIDC, no long-lived token), once
+  # every check on that commit has passed. Each package's npm settings name
+  # this repo and this workflow (ci.yml) as its trusted publisher; the first
+  # publish of each package was done by hand (see CONTRIBUTING.md). It
+  # publishes the check job's build (not a new one), with pnpm, so workspace:
+  # and catalog: ranges are resolved at pack time; `changeset git-tag` reports
+  # the tags to the action, which pushes them and creates the GitHub Releases.
+  # Provenance comes from the OIDC flow.
+  release:
+    needs: [check, test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write # OIDC trusted publishing + provenance
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/setup@v3
+        with:
+          cache: true
+          require-lockfile: true
+
+      - name: Download the tested build
+        uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: packages/
+
+      - name: Open or update the Version Packages PR, or publish
+        id: changesets
+        uses: changesets/action@v2
+        with:
+          publish-script: pnpm release
+
+      # Changesets creates one GitHub Release per package seconds apart, and
+      # GitHub marks whichever lands last as Latest. Pin Latest to the CLI's
+      # release, the one users install. The packages version in lockstep, so
+      # every release that publishes includes an okforest@<version> release.
+      - name: Mark the CLI release as Latest
+        if: steps.changesets.outputs.published == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(jq -r .version packages/okforest/package.json)
+          if gh release view "okforest@$VERSION" >/dev/null 2>&1; then
+            gh release edit "okforest@$VERSION" --latest
+          fi
