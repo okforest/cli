@@ -27,10 +27,12 @@
     ".": {
       "types": "./dist/index.d.mts",
       "default": "./dist/index.mjs"
-    }
+    },
+    "./tree.schema.json": "./schemas/tree.schema.json"
   },
   "files": [
     "dist",
+    "schemas",
     "NOTICE"
   ],
   "sideEffects": false,
@@ -63,6 +65,7 @@
     "@types/mdast": "catalog:",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
+    "ajv": "catalog:",
     "mermaid": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",

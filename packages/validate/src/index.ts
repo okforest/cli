@@ -7,6 +7,7 @@ export {
 } from "./report.js"
 export { defaultDiagramLoaders } from "./rules/diagrams.js"
 export { defaultRules, okforestRules, okfRules } from "./rules/index.js"
+export { TREE_SETTINGS_KEYS } from "./rules/okforest.js"
 export type {
   D2Module,
   DiagramLoaders,

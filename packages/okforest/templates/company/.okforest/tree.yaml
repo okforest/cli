@@ -1,4 +1,6 @@
+# yaml-language-server: $schema=https://www.okforest.ai/schemas/tree.schema.json
 # OKForest settings for this tree (an OKForest convention, not part of OKF).
+# Every setting: https://www.okforest.ai/docs/tree-settings/
 tree: {{tree}}
 title: {{title_yaml}}
 owner: user:{{owner}}            # exactly one person, accountable for the tree

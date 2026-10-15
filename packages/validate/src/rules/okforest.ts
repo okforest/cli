@@ -1,4 +1,4 @@
-import { isRecord, type KeyPath, visit } from "@okforest/okf"
+import { editDistance, isRecord, type KeyPath, SETTINGS_PATH, visit } from "@okforest/okf"
 import type { Report, Rule } from "../types.js"
 import { describeType, show, slugify } from "../util.js"
 
@@ -142,8 +142,18 @@ export const treeYaml: Rule = {
   id: "okforest/tree-yaml",
   severity: "error",
   description:
-    "`.okforest/tree.yaml` names exactly one Owner as `user:<id>`, Stewards as `user`/`group` entries, and well-formed optional settings.",
+    "`.okforest/tree.yaml` (spelled `.yaml`) names exactly one Owner as `user:<id>`, Stewards as `user`/`group` entries, and well-formed optional settings.",
   check({ tree, report }) {
+    // Only `.okforest/tree.yaml` is read; a `.yml` file would be ignored
+    // without a word.
+    if (tree.files.includes(MISSPELLED_SETTINGS_PATH)) {
+      report({
+        file: MISSPELLED_SETTINGS_PATH,
+        line: 1,
+        column: 1,
+        message: `Rename \`${MISSPELLED_SETTINGS_PATH}\` to \`${SETTINGS_PATH}\`: only the \`.yaml\` name is read, so these settings are ignored.`,
+      })
+    }
     const settings = tree.settings
     if (!settings) return
     const problem = (path: KeyPath, message: string) =>
@@ -219,6 +229,46 @@ export const treeYaml: Rule = {
             problem(["ignore", i], "Each `ignore` entry must be a glob string.")
         })
       }
+    }
+  },
+}
+
+const MISSPELLED_SETTINGS_PATH = ".okforest/tree.yml"
+
+/** The settings `.okforest/tree.yaml` may hold (docs: /docs/tree-settings/;
+ * kept in step with `schemas/tree.schema.json` by a test). */
+export const TREE_SETTINGS_KEYS: readonly string[] = [
+  "owner",
+  "backup_owner",
+  "stewards",
+  "tree",
+  "title",
+  "ignore",
+  "sensitivity_default",
+  "standards",
+]
+
+/** Settings OKForest doesn't know are ignored, so a misspelled key loses its
+ * setting without a word; this says so. A warning: a newer OKForest may know
+ * keys an older one doesn't. */
+export const treeYamlKeys: Rule = {
+  id: "okforest/tree-yaml-keys",
+  severity: "warning",
+  description:
+    "`.okforest/tree.yaml` uses only the settings OKForest knows; others, such as a misspelled key, are ignored.",
+  check({ tree, report }) {
+    const settings = tree.settings
+    if (!settings?.data) return
+    for (const key of Object.keys(settings.data)) {
+      if (TREE_SETTINGS_KEYS.includes(key)) continue
+      const near = TREE_SETTINGS_KEYS.find((known) => editDistance(key, known, 2) <= 2)
+      report({
+        file: settings.path,
+        ...(settings.locate([key]) ?? { line: 1, column: 1 }),
+        message: near
+          ? `Unknown setting \`${key}\`: did you mean \`${near}\`? Unknown settings are ignored.`
+          : `Unknown setting \`${key}\`, ignored. The settings are ${TREE_SETTINGS_KEYS.map((k) => `\`${k}\``).join(", ")}.`,
+      })
     }
   },
 }

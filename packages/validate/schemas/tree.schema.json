@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://www.okforest.ai/schemas/tree.schema.json",
+  "title": "OKForest tree settings",
+  "description": "Settings for an OKF tree in .okforest/tree.yaml: who is accountable for it and who looks after it. An OKForest convention, not part of OKF. Docs: https://www.okforest.ai/docs/tree-settings/",
+  "markdownDescription": "Settings for an OKF tree in `.okforest/tree.yaml`: who is accountable for it and who looks after it. An OKForest convention, not part of OKF. [Docs](https://www.okforest.ai/docs/tree-settings/)",
+  "type": "object",
+  "required": ["owner"],
+  "additionalProperties": false,
+  "properties": {
+    "owner": {
+      "type": "string",
+      "pattern": "^user:\\S+$",
+      "description": "Required. The one person accountable for the tree's accuracy and relevance; never a group. One person, as user:<id> (usually an email address).",
+      "markdownDescription": "Required. The one person accountable for the tree's accuracy and relevance; never a group. One person, as `user:<id>` (usually an email address). [Docs](https://www.okforest.ai/docs/tree-settings/#owner)",
+      "examples": ["user:jane@acme.example"]
+    },
+    "backup_owner": {
+      "type": "string",
+      "pattern": "^user:\\S+$",
+      "description": "Acts for the Owner during absences; accountability stays with the Owner. One person, as user:<id> (usually an email address).",
+      "markdownDescription": "Acts for the Owner during absences; accountability stays with the Owner. One person, as `user:<id>` (usually an email address). [Docs](https://www.okforest.ai/docs/tree-settings/#backup_owner)",
+      "examples": ["user:jane@acme.example"]
+    },
+    "stewards": {
+      "type": "array",
+      "description": "The people who keep the tree current: they review and approve changes. Each entry is user: <id> or group: <name>; groups are recommended.",
+      "markdownDescription": "The people who keep the tree current: they review and approve changes. Each entry is `user: <id>` or `group: <name>`; groups are recommended. [Docs](https://www.okforest.ai/docs/tree-settings/#stewards)",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "user": {
+                "type": "string",
+                "description": "A person, by the ID your directory knows (usually an email address)."
+              }
+            },
+            "required": ["user"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "group": {
+                "type": "string",
+                "description": "A group in your directory."
+              }
+            },
+            "required": ["group"],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "examples": [
+        [
+          {
+            "group": "sales-ops"
+          },
+          {
+            "user": "maria@acme.example"
+          }
+        ]
+      ]
+    },
+    "tree": {
+      "type": "string",
+      "pattern": "\\S",
+      "description": "The tree's short name, independent of the repository's name.",
+      "markdownDescription": "The tree's short name, independent of the repository's name. [Docs](https://www.okforest.ai/docs/tree-settings/#tree)",
+      "examples": ["sales"]
+    },
+    "title": {
+      "type": "string",
+      "pattern": "\\S",
+      "description": "The tree's display name.",
+      "markdownDescription": "The tree's display name. [Docs](https://www.okforest.ai/docs/tree-settings/#title)",
+      "examples": ["Sales knowledge"]
+    },
+    "ignore": {
+      "type": "array",
+      "description": "Globs, relative to the tree root, of markdown files that are not concepts. * matches within a folder name, ** across folders, ? one character; a trailing / matches a whole folder.",
+      "markdownDescription": "Globs, relative to the tree root, of markdown files that are not concepts. `*` matches within a folder name, `**` across folders, `?` one character; a trailing `/` matches a whole folder. [Docs](https://www.okforest.ai/docs/tree-settings/#files-that-are-not-concepts)",
+      "items": {
+        "type": "string",
+        "pattern": "\\S"
+      },
+      "examples": [["FOLLOWUPS.md", "drafts/"]]
+    },
+    "sensitivity_default": {
+      "type": "string",
+      "pattern": "\\S",
+      "description": "The sensitivity of the tree's content when a concept doesn't say. Reserved for access control.",
+      "markdownDescription": "The sensitivity of the tree's content when a concept doesn't say. Reserved for access control. [Docs](https://www.okforest.ai/docs/tree-settings/#sensitivity_default)",
+      "examples": ["internal"]
+    },
+    "standards": {
+      "type": "string",
+      "pattern": "\\S",
+      "description": "Which version of the organization's standards applies. Reserved for organization standards.",
+      "markdownDescription": "Which version of the organization's standards applies. Reserved for organization standards. [Docs](https://www.okforest.ai/docs/tree-settings/#standards)",
+      "examples": ["acme-standards@v3"]
+    }
+  }
+}

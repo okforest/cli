@@ -156,7 +156,7 @@ function singularize(word: string): string {
 }
 
 /** Levenshtein distance, stopping early once it exceeds `limit`. */
-function editDistance(a: string, b: string, limit: number): number {
+export function editDistance(a: string, b: string, limit: number): number {
   if (Math.abs(a.length - b.length) > limit) return limit + 1
   let previous = Array.from({ length: b.length + 1 }, (_, j) => j)
   for (let i = 1; i <= a.length; i++) {

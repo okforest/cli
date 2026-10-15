@@ -254,4 +254,27 @@ describe("okforest/tree-yaml", () => {
       await settings("owner: user:a\nstewards:\n  - { team: x }\n  - { user: 3 }\n"),
     ).toHaveLength(2)
   })
+
+  it("reports a .yml settings file, which is never read", async () => {
+    expect(
+      await only("okforest/tree-yaml", { ".okforest/tree.yml": "owner: bob\n", "a.md": concept() }),
+    ).toEqual([
+      ".okforest/tree.yml:1:1 error okforest/tree-yaml Rename `.okforest/tree.yml` to `.okforest/tree.yaml`: only the `.yaml` name is read, so these settings are ignored.",
+    ])
+  })
+})
+
+describe("okforest/tree-yaml-keys", () => {
+  const keys = (text: string) => only("okforest/tree-yaml-keys", { ".okforest/tree.yaml": text })
+
+  it("is quiet for known settings", async () => {
+    expect(await keys("owner: user:a\ntree: t\ntitle: T\nstandards: s\n")).toEqual([])
+  })
+
+  it("names a likely misspelling, and lists the settings otherwise", async () => {
+    expect(await keys("owner: user:a\nstewrds: []\ncolor: green\n")).toEqual([
+      ".okforest/tree.yaml:2:1 warning okforest/tree-yaml-keys Unknown setting `stewrds`: did you mean `stewards`? Unknown settings are ignored.",
+      ".okforest/tree.yaml:3:1 warning okforest/tree-yaml-keys Unknown setting `color`, ignored. The settings are `owner`, `backup_owner`, `stewards`, `tree`, `title`, `ignore`, `sensitivity_default`, `standards`.",
+    ])
+  })
 })
