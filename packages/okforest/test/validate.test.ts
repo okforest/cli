@@ -72,7 +72,9 @@ describe("okforest validate", () => {
     expect(await run(["validate", "valid", "--format", "xml"])).toMatchObject({ code: 2 })
   })
 
-  it.skipIf(process.getuid?.() === 0)("reports an unreadable tree with exit 2", async () => {
+  // chmod 000 doesn't lock a directory for root, or at all on Windows.
+  const cannotLock = process.getuid?.() === 0 || process.platform === "win32"
+  it.skipIf(cannotLock)("reports an unreadable tree with exit 2", async () => {
     const dir = await mkdtemp(join(tmpdir(), "okforest-unreadable-"))
     await mkdir(join(dir, "locked"))
     await chmod(join(dir, "locked"), 0o000)
