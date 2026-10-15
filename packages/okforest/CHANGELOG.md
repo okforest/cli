@@ -1,5 +1,13 @@
 # okforest
 
+## 0.2.2
+
+### Patch Changes
+
+- cca6829: No code changes. Releases now publish only after the tests pass on Linux, macOS, and Windows, and they publish the build CI tested.
+- @okforest/okf@0.2.2
+  - @okforest/validate@0.2.2
+
 ## 0.2.1
 
 ### Patch Changes
