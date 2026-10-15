@@ -2,7 +2,9 @@
 
 The planning doc for this repository; move items to GitHub Issues as the
 project matures. Deferred items, each with the trigger to re-evaluate it, are
-already [issues](https://github.com/okforest/cli/issues) (SARIF output: #9).
+already [issues](https://github.com/okforest/cli/issues): SARIF output (#9),
+and removing `skipLibCheck` once mermaid declares `type-fest` (#10, blocked
+upstream).
 
 ## Release
 
@@ -82,8 +84,3 @@ Options if a real tree ever needs more:
   and uses numeric footnotes (`[^1]`) next to `sources` ids (check the spec's
   wording before raising it). Underscores in the BigQuery bundles' file names
   break only OKForest's `okforest/slug` convention, not the spec.
-- **mermaid's type declarations** import `type-fest` without declaring it, so
-  `packages/validate` sets `skipLibCheck`; remove it when fixed upstream
-  ([mermaid-js/mermaid#6629](https://github.com/mermaid-js/mermaid/issues/6629),
-  fix in [#7433](https://github.com/mermaid-js/mermaid/pull/7433); still
-  unfixed in mermaid 12.2.0).

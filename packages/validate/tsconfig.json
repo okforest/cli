@@ -4,6 +4,7 @@
     "types": ["vitest/globals", "node"],
     // mermaid's published .d.ts files import `type-fest`, which mermaid does
     // not declare as a dependency; skip checking third-party declarations.
+    // Remove once mermaid fixes it: okforest/cli#10.
     "skipLibCheck": true
   },
   "include": ["src", "test"]
