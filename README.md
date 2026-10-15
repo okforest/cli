@@ -26,7 +26,10 @@ npx okforest validate .
 OKF v0.2 specification and OKForest conventions. It exits 1 when there are
 errors; warnings and info never fail, so a conformant bundle with, say,
 broken links still passes (the spec says never to reject a bundle for those).
-`--format json` writes a versioned document for CI and tools.
+`--format json` writes a versioned document for CI and tools. Each finding
+names its rule, and every rule has a page explaining it at
+`https://www.okforest.ai/docs/rules/<rule id>/`; the text output ends with
+those links for the rules that reported something.
 
 **`okforest inventory [path] [--format text|json]`** lists every type, tag, and
 frontmatter key in use, with counts, lifecycle and trust totals, and likely
@@ -68,7 +71,9 @@ steps:
 ## Rules
 
 Errors are what the OKF v0.2 specification requires; warnings and info are
-what it recommends, plus OKForest conventions.
+what it recommends, plus OKForest conventions. Each rule's page on the site
+([www.okforest.ai/docs/rules](https://www.okforest.ai/docs/rules/)) explains
+it in more detail.
 
 
 **OKF v0.2 specification**

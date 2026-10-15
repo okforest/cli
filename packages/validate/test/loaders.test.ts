@@ -2,7 +2,10 @@ import { parseTree } from "@okforest/okf"
 import {
   type D2Module,
   type MermaidModule,
+  okforestRules,
+  okfRules,
   REPORT_SCHEMA_VERSION,
+  ruleUrl,
   toReport,
   validate,
 } from "../src/index.js"
@@ -113,8 +116,20 @@ describe("toReport", () => {
       tool: { name: "example-tool", version: "9.9.9" },
       path: "trees/a",
       summary: { ok: false, errors: 1, warnings: 1, infos: 1, concepts: 1, files: 1 },
-      findings: result.findings,
+      findings: result.findings.map((f) => ({ ...f, docs: ruleUrl(f.ruleId) })),
     })
+    expect(report.findings[0]?.docs).toMatch(/^https:\/\/www\.okforest\.ai\/docs\/rules\/okf\//)
     expect(REPORT_SCHEMA_VERSION).toBe(1)
+  })
+})
+
+describe("ruleUrl", () => {
+  // The site's rule pages (www.okforest.ai/docs/rules/<id>/) are generated
+  // from this same rule list, so every rule has one at this address.
+  it("gives every rule a page under /docs/rules/", () => {
+    for (const rule of [...okfRules, ...okforestRules]) {
+      expect(rule.id).toMatch(/^(okf|okforest)\/[a-z0-9]+(-[a-z0-9]+)*$/)
+      expect(ruleUrl(rule.id)).toBe(`https://www.okforest.ai/docs/rules/${rule.id}/`)
+    }
   })
 })

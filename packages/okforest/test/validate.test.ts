@@ -50,6 +50,7 @@ describe("okforest validate", () => {
       column: 1,
       message:
         "`status` must be `draft`, `stable`, or `deprecated` (use lowercase `draft`); got `Draft`.",
+      docs: "https://www.okforest.ai/docs/rules/okf/status/",
     })
   })
 

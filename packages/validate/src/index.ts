@@ -1,4 +1,10 @@
-export { REPORT_SCHEMA_VERSION, toReport, type ValidationReport } from "./report.js"
+export { RULE_DOCS_URL, ruleUrl } from "./docs.js"
+export {
+  REPORT_SCHEMA_VERSION,
+  type ReportFinding,
+  toReport,
+  type ValidationReport,
+} from "./report.js"
 export { defaultDiagramLoaders } from "./rules/diagrams.js"
 export { defaultRules, okforestRules, okfRules } from "./rules/index.js"
 export type {
