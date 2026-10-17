@@ -34,6 +34,12 @@ describe("readTree", () => {
     ])
   })
 
+  it("reads every markdown file when there are no settings", async () => {
+    expect(await readTreeFiles(join(root, "node_modules"))).toEqual([
+      { path: "pkg/README.md", text: "# pkg\n" },
+    ])
+  })
+
   it("builds the tree", async () => {
     const tree = await readTree(root)
     expect(tree.okfVersion).toBe("0.2")
