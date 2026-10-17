@@ -137,12 +137,9 @@ function offsetIn(value: string, index: number, start: { line: number; column: n
     : { line: start.line + newlines, column: index - before.lastIndexOf("\n") }
 }
 
-/** Settings files OKForest doesn't read, each with what to do about it. */
-const UNREAD_SETTINGS: Record<string, string> = {
-  ".okforest/tree.yaml": `OKForest now reads \`${SETTINGS_PATH}\`, so these settings are ignored: rename the file, move \`tree\` to \`name\`, and remove the settings OKForest no longer uses (https://www.okforest.ai/docs/settings/).`,
-  ".okforest/tree.yml": `Rename \`.okforest/tree.yml\` to \`${SETTINGS_PATH}\`: only that name is read, so these settings are ignored.`,
-  ".okforest/settings.yml": `Rename \`.okforest/settings.yml\` to \`${SETTINGS_PATH}\`: only the \`.yaml\` name is read, so these settings are ignored.`,
-}
+/** Only the `.yaml` spelling is read; a `.yml` file would be ignored without
+ * a word. */
+const MISSPELLED_SETTINGS_PATH = ".okforest/settings.yml"
 
 const LIMITS = { name: 100, description: 4000 } as const
 
@@ -154,8 +151,13 @@ export const settingsFile: Rule = {
   description:
     "`.okforest/settings.yaml` (spelled `.yaml`) holds well-formed settings: a `name` of up to 100 characters, a `description` of up to 4,000, and `ignore` globs.",
   check({ tree, report }) {
-    for (const [path, message] of Object.entries(UNREAD_SETTINGS)) {
-      if (tree.files.includes(path)) report({ file: path, line: 1, column: 1, message })
+    if (tree.files.includes(MISSPELLED_SETTINGS_PATH)) {
+      report({
+        file: MISSPELLED_SETTINGS_PATH,
+        line: 1,
+        column: 1,
+        message: `Rename \`${MISSPELLED_SETTINGS_PATH}\` to \`${SETTINGS_PATH}\`: only the \`.yaml\` name is read, so these settings are ignored.`,
+      })
     }
     const settings = tree.settings
     if (!settings) return
@@ -201,17 +203,6 @@ export const settingsFile: Rule = {
  * kept in step with `schemas/settings.schema.json` by a test). */
 export const SETTINGS_KEYS: readonly string[] = ["name", "description", "ignore"]
 
-/** Settings earlier versions read, and what became of each. */
-const RETIRED_KEYS: Record<string, string> = {
-  tree: "use `name`",
-  title: "use `name`",
-  owner: "who may read, propose, and approve is no longer set in this file",
-  backup_owner: "who may read, propose, and approve is no longer set in this file",
-  stewards: "who may read, propose, and approve is no longer set in this file",
-  sensitivity_default: "it may return once it has a design",
-  standards: "it may return once it has a design",
-}
-
 /** Settings OKForest doesn't know are ignored, so a misspelled key loses its
  * setting without a word; this says so. A warning: a newer OKForest may know
  * keys an older one doesn't. */
@@ -225,16 +216,13 @@ export const settingsKeys: Rule = {
     if (!settings?.data) return
     for (const key of Object.keys(settings.data)) {
       if (SETTINGS_KEYS.includes(key)) continue
-      const retired = RETIRED_KEYS[key]
       const near = SETTINGS_KEYS.find((known) => editDistance(key, known, 2) <= 2)
       report({
         file: settings.path,
         ...(settings.locate([key]) ?? { line: 1, column: 1 }),
-        message: retired
-          ? `\`${key}\` is no longer a setting, and is ignored: ${retired}.`
-          : near
-            ? `Unknown setting \`${key}\`: did you mean \`${near}\`? Unknown settings are ignored.`
-            : `Unknown setting \`${key}\`, ignored. The settings are ${SETTINGS_KEYS.map((k) => `\`${k}\``).join(", ")}.`,
+        message: near
+          ? `Unknown setting \`${key}\`: did you mean \`${near}\`? Unknown settings are ignored.`
+          : `Unknown setting \`${key}\`, ignored. The settings are ${SETTINGS_KEYS.map((k) => `\`${k}\``).join(", ")}.`,
       })
     }
   },

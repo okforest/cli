@@ -195,15 +195,13 @@ exports[`rule fixtures > okforest/settings 1`] = `
   ".okforest/settings.yaml:1:1 error okforest/settings \`name\` must be text (got a number).",
   ".okforest/settings.yaml:2:1 error okforest/settings \`description\` is blank: write it, or remove the setting.",
   ".okforest/settings.yaml:3:1 error okforest/settings \`ignore\` must be a list of globs relative to the bundle root.",
-  ".okforest/tree.yaml:1:1 error okforest/settings OKForest now reads \`.okforest/settings.yaml\`, so these settings are ignored: rename the file, move \`tree\` to \`name\`, and remove the settings OKForest no longer uses (https://www.okforest.ai/docs/settings/).",
 ]
 `;
 
 exports[`rule fixtures > okforest/settings-keys 1`] = `
 [
   ".okforest/settings.yaml:2:1 warning okforest/settings-keys Unknown setting \`nmae\`: did you mean \`name\`? Unknown settings are ignored.",
-  ".okforest/settings.yaml:3:1 warning okforest/settings-keys \`owner\` is no longer a setting, and is ignored: who may read, propose, and approve is no longer set in this file.",
-  ".okforest/settings.yaml:4:1 warning okforest/settings-keys Unknown setting \`sensitivity\`, ignored. The settings are \`name\`, \`description\`, \`ignore\`.",
+  ".okforest/settings.yaml:3:1 warning okforest/settings-keys Unknown setting \`sensitivity\`, ignored. The settings are \`name\`, \`description\`, \`ignore\`.",
 ]
 `;
 

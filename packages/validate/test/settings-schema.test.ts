@@ -35,7 +35,6 @@ const CASES: [name: string, yaml: string][] = [
   ["ignore not a list", "ignore: FOLLOWUPS.md\n"],
   ["blank ignore entry", 'ignore: [ok, ""]\n'],
   ["misspelled key", "nmae: Sales\n"],
-  ["retired key", "owner: user:jane@acme.example\n"],
   ["unknown key", "color: green\n"],
   ["not a mapping", "- name\n"],
 ]

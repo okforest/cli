@@ -249,18 +249,11 @@ describe("okforest/settings", () => {
     ])
   })
 
-  it("reports settings files under names that are never read", async () => {
+  it("reports a .yml settings file, which is never read", async () => {
     expect(
-      await only("okforest/settings", {
-        ".okforest/tree.yaml": "owner: user:bob\n",
-        ".okforest/tree.yml": "tree: x\n",
-        ".okforest/settings.yml": "name: x\n",
-        "a.md": concept(),
-      }),
+      await only("okforest/settings", { ".okforest/settings.yml": "name: x\n", "a.md": concept() }),
     ).toEqual([
       ".okforest/settings.yml:1:1 error okforest/settings Rename `.okforest/settings.yml` to `.okforest/settings.yaml`: only the `.yaml` name is read, so these settings are ignored.",
-      ".okforest/tree.yaml:1:1 error okforest/settings OKForest now reads `.okforest/settings.yaml`, so these settings are ignored: rename the file, move `tree` to `name`, and remove the settings OKForest no longer uses (https://www.okforest.ai/docs/settings/).",
-      ".okforest/tree.yml:1:1 error okforest/settings Rename `.okforest/tree.yml` to `.okforest/settings.yaml`: only that name is read, so these settings are ignored.",
     ])
   })
 })
@@ -276,14 +269,6 @@ describe("okforest/settings-keys", () => {
     expect(await keys("nmae: Sales\ncolor: green\n")).toEqual([
       ".okforest/settings.yaml:1:1 warning okforest/settings-keys Unknown setting `nmae`: did you mean `name`? Unknown settings are ignored.",
       ".okforest/settings.yaml:2:1 warning okforest/settings-keys Unknown setting `color`, ignored. The settings are `name`, `description`, `ignore`.",
-    ])
-  })
-
-  it("says what became of settings earlier versions read", async () => {
-    expect(await keys("tree: sales\nowner: user:a\nstandards: s\n")).toEqual([
-      ".okforest/settings.yaml:1:1 warning okforest/settings-keys `tree` is no longer a setting, and is ignored: use `name`.",
-      ".okforest/settings.yaml:2:1 warning okforest/settings-keys `owner` is no longer a setting, and is ignored: who may read, propose, and approve is no longer set in this file.",
-      ".okforest/settings.yaml:3:1 warning okforest/settings-keys `standards` is no longer a setting, and is ignored: it may return once it has a design.",
     ])
   })
 })

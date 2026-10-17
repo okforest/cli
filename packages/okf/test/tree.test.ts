@@ -89,7 +89,6 @@ describe("parseTree", () => {
       tree({ ".okforest/settings.yaml": 'name: " "\ndescription: 3\n' }).settings,
     ).not.toHaveProperty("name")
     expect(tree({ ".okforest/settings.yaml": "" }).settings?.data).toEqual({})
-    expect(tree({ ".okforest/tree.yaml": "name: Sales\n" }).settings).toBeUndefined()
     expect(tree({ ".okforest/settings.yaml": "name: [\n" }).settings).toMatchObject({
       data: undefined,
       error: { message: expect.any(String), line: expect.any(Number) },
