@@ -32,7 +32,7 @@ upstream).
   (fixing issue #29) proposes the leading slash in the samples and spec
   examples; check bare paths once it is settled.
 - **Rule configuration.** Per-tree severity overrides in
-  `.okforest/tree.yaml` (the library already accepts `severity` overrides),
+  `.okforest/settings.yaml` (the library already accepts `severity` overrides),
   plus CLI flags such as `--max-warnings` and `--rule <id>=off`.
 - **Organization standards** as a third rule pack (`standards/*`): the type
   registry, required fields per type, tag vocabulary, and policies from

@@ -65,7 +65,7 @@ exports[`rule fixtures > okf/frontmatter 1`] = `
   "a-list.md:2:1 error okf/frontmatter Frontmatter must be a YAML mapping of keys to values.",
   "bad-yaml.md:3:12 error okf/frontmatter Invalid YAML: Flow sequence in block collection must be sufficiently indented and end with a ]",
   "duplicate-keys.md:4:1 error okf/frontmatter Invalid YAML: Map keys must be unique",
-  "no-frontmatter.md:1:1 error okf/frontmatter No frontmatter: a concept must start with a \`---\` YAML block declaring at least \`type\`. If this is not a concept, add it to \`ignore:\` in .okforest/tree.yaml.",
+  "no-frontmatter.md:1:1 error okf/frontmatter No frontmatter: a concept must start with a \`---\` YAML block declaring at least \`type\`. If this is not a concept, add it to \`ignore:\` in .okforest/settings.yaml.",
   "unclosed.md:1:1 error okf/frontmatter Frontmatter block is not closed: add a \`---\` line after the last key.",
 ]
 `;
@@ -190,28 +190,25 @@ exports[`rule fixtures > okforest/placeholder 1`] = `
 ]
 `;
 
+exports[`rule fixtures > okforest/settings 1`] = `
+[
+  ".okforest/settings.yaml:1:1 error okforest/settings \`name\` must be text (got a number).",
+  ".okforest/settings.yaml:2:1 error okforest/settings \`description\` is blank: write it, or remove the setting.",
+  ".okforest/settings.yaml:3:1 error okforest/settings \`ignore\` must be a list of globs relative to the bundle root.",
+]
+`;
+
+exports[`rule fixtures > okforest/settings-keys 1`] = `
+[
+  ".okforest/settings.yaml:2:1 warning okforest/settings-keys Unknown setting \`nmae\`: did you mean \`name\`? Unknown settings are ignored.",
+  ".okforest/settings.yaml:3:1 warning okforest/settings-keys Unknown setting \`sensitivity\`, ignored. The settings are \`name\`, \`description\`, \`ignore\`.",
+]
+`;
+
 exports[`rule fixtures > okforest/slug 1`] = `
 [
   "Bad_Name.md:-:- warning okforest/slug File name \`Bad_Name\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`bad-name\`).",
   "My Dir/:-:- warning okforest/slug Directory name \`My Dir\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`my-dir\`).",
-]
-`;
-
-exports[`rule fixtures > okforest/tree-yaml 1`] = `
-[
-  ".okforest/tree.yaml:2:1 error okforest/tree-yaml \`owner\` must be a person (\`user:<id>\`), not a group: accountability lands on one individual.",
-  ".okforest/tree.yaml:3:1 error okforest/tree-yaml \`backup_owner\` must be exactly one person, not a list.",
-  ".okforest/tree.yaml:5:5 error okforest/tree-yaml Each steward is one \`user: <id>\` or \`group: <name>\` entry.",
-  ".okforest/tree.yaml:6:5 error okforest/tree-yaml Each steward is one \`user: <id>\` or \`group: <name>\` entry.",
-  ".okforest/tree.yaml:7:1 error okforest/tree-yaml \`title\` must be a non-empty string (got a number).",
-  ".okforest/tree.yaml:8:1 error okforest/tree-yaml \`ignore\` must be a list of globs relative to the tree root.",
-]
-`;
-
-exports[`rule fixtures > okforest/tree-yaml-keys 1`] = `
-[
-  ".okforest/tree.yaml:3:1 warning okforest/tree-yaml-keys Unknown setting \`stewrds\`: did you mean \`stewards\`? Unknown settings are ignored.",
-  ".okforest/tree.yaml:5:1 warning okforest/tree-yaml-keys Unknown setting \`sensitivity\`, ignored. The settings are \`owner\`, \`backup_owner\`, \`stewards\`, \`tree\`, \`title\`, \`ignore\`, \`sensitivity_default\`, \`standards\`.",
 ]
 `;
 

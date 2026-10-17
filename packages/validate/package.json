@@ -28,7 +28,7 @@
       "types": "./dist/index.d.mts",
       "default": "./dist/index.mjs"
     },
-    "./tree.schema.json": "./schemas/tree.schema.json"
+    "./settings.schema.json": "./schemas/settings.schema.json"
   },
   "files": [
     "dist",

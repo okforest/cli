@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=https://www.okforest.ai/schemas/settings.schema.json
+# OKForest's settings for this bundle (an OKForest convention, not part of OKF).
+# Every setting is optional: https://www.okforest.ai/docs/settings/
+name: {{name_yaml}}
+# description: What this bundle covers, in up to 4,000 characters.
+# Markdown files that are not concepts; every other .md file is one.
+ignore:
+  - README.md

@@ -9,7 +9,7 @@ export {
 } from "./inventory.js"
 export { visit } from "./markdown.js"
 export { globToRegExp } from "./paths.js"
-export { DEFAULT_IGNORED, parseTree, SETTINGS_PATH } from "./tree.js"
+export { parseTree, SETTINGS_PATH } from "./tree.js"
 export {
   deriveStatus,
   deriveTrustTier,

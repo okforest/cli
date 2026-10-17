@@ -1,11 +1,10 @@
-import { spawnSync } from "node:child_process"
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises"
 import { basename, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import { parseCommand } from "../args.js"
 import { EXIT, type Io, TEMPLATES_DIR, UsageError, VERSION } from "../io.js"
 
-const HELP = `Usage: okforest init [path] --template <name> [--owner <email>] [--tree <name>] [--title <title>]
+const HELP = `Usage: okforest init [path] --template <name> [--name <name>]
 
 Create a new OKF v0.2 tree at path (default: the current directory, which must
 be empty apart from .git) from a starter template. Starter concepts are drafts
@@ -13,17 +12,14 @@ for you to fill in.
 
 Options
   --template <name>   Starter template (available: company).
-  --owner <email>     The tree's Owner, one person (default: git config user.email).
-  --tree <name>       The tree's short name (default: the folder name without -okf).
-  --title <title>     Display title (default: "<Tree> knowledge").
+  --name <name>       The bundle's name, up to 100 characters
+                      (default: "<Folder> knowledge", without a -okf suffix).
 `
 
 export async function initCommand(args: readonly string[], io: Io): Promise<number> {
   const { values, path } = parseCommand(args, {
     template: { type: "string" },
-    owner: { type: "string" },
-    tree: { type: "string" },
-    title: { type: "string" },
+    name: { type: "string" },
   })
   if (values.help) {
     io.stdout(HELP)
@@ -46,30 +42,20 @@ export async function initCommand(args: readonly string[], io: Io): Promise<numb
     )
   }
 
-  const owner = (typeof values.owner === "string" ? values.owner : gitEmail(target, io.cwd))
-    ?.replace(/^user:/, "")
-    .trim()
-  if (!owner || /\s/.test(owner)) {
+  const name =
+    typeof values.name === "string"
+      ? values.name.trim()
+      : `${capitalize(slug(basename(target).replace(/-okf$/, "")) || "company")} knowledge`
+  if (name === "" || [...name].length > 100) {
     throw new UsageError(
-      owner
-        ? `--owner must be one identifier with no spaces (got \`${owner}\`).`
-        : "Name the tree's Owner with --owner <email> (no git user.email is configured).",
+      `--name must be 1 to 100 characters (got ${[...name].length.toLocaleString("en-US")}).`,
     )
   }
-  const tree =
-    slug(typeof values.tree === "string" ? values.tree : basename(target).replace(/-okf$/, "")) ||
-    "company"
-  const title =
-    typeof values.title === "string" && values.title.trim() !== ""
-      ? values.title.trim()
-      : `${capitalize(tree)} knowledge`
   const now = new Date()
   const tokens: Record<string, string> = {
-    owner,
-    tree,
-    title,
+    name,
     // A JSON string is also a valid YAML double-quoted scalar.
-    title_yaml: JSON.stringify(title),
+    name_yaml: JSON.stringify(name),
     version: VERSION,
     date: now.toISOString().slice(0, 10),
     now: `${now.toISOString().slice(0, 19)}Z`,
@@ -87,7 +73,7 @@ export async function initCommand(args: readonly string[], io: Io): Promise<numb
   io.stdout(
     `Created a ${template} tree in ${where} (${written.length} files).\n\n` +
       "Next steps\n" +
-      `  1. Review .okforest/tree.yaml (Owner: user:${owner}).\n` +
+      `  1. Review .okforest/settings.yaml (name: ${name}).\n` +
       `  2. Fill in the draft concepts: ${drafts.join(", ")}.\n` +
       `  3. Validate: npx okforest validate ${where}\n` +
       "  4. Commit and push; the included workflow validates every pull request.\n",
@@ -130,14 +116,6 @@ async function copyTemplate(
   }
   await walk("")
   return written
-}
-
-function gitEmail(target: string, cwd: string): string | undefined {
-  for (const dir of [target, cwd]) {
-    const result = spawnSync("git", ["config", "user.email"], { cwd: dir, encoding: "utf8" })
-    if (result.status === 0 && result.stdout.trim()) return result.stdout.trim()
-  }
-  return undefined
 }
 
 function slug(value: string): string {

@@ -20,7 +20,7 @@ export const frontmatter: Rule = {
           column: 1,
           message:
             "No frontmatter: a concept must start with a `---` YAML block declaring at least `type`. " +
-            "If this is not a concept, add it to `ignore:` in .okforest/tree.yaml.",
+            "If this is not a concept, add it to `ignore:` in .okforest/settings.yaml.",
         })
       }
     }

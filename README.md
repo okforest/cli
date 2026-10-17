@@ -36,10 +36,10 @@ frontmatter key in use, with counts, lifecycle and trust totals, and likely
 near-duplicates (`e-commerce` and `ecommerce`, `Policy` and `Policies`).
 
 **`okforest init [path] --template company`** creates a new tree: a root
-`index.md` declaring `okf_version: "0.2"`, `log.md`, `.okforest/tree.yaml`
-naming the Owner (`--owner`, defaulting to your git email), draft starter
-concepts, and a GitHub workflow that validates every pull request with the
-OKForest Validate action.
+`index.md` declaring `okf_version: "0.2"`, `log.md`, `.okforest/settings.yaml`
+with the bundle's `name` (`--name`, defaulting to the folder's name), draft
+starter concepts, and a GitHub workflow that validates every pull request with
+the OKForest Validate action.
 
 ### Diagram checks
 
@@ -105,8 +105,8 @@ it in more detail.
 
 | Rule | Severity | Checks |
 |---|---|---|
-| `okforest/tree-yaml` | error | `.okforest/tree.yaml` (spelled `.yaml`) names exactly one Owner as `user:<id>`, Stewards as `user`/`group` entries, and well-formed optional settings. |
-| `okforest/tree-yaml-keys` | warning | `.okforest/tree.yaml` uses only the settings OKForest knows; others, such as a misspelled key, are ignored. |
+| `okforest/settings` | error | `.okforest/settings.yaml` (spelled `.yaml`) holds well-formed settings: a `name` of up to 100 characters, a `description` of up to 4,000, and `ignore` globs. |
+| `okforest/settings-keys` | warning | `.okforest/settings.yaml` uses only the settings OKForest knows; others, such as a misspelled key, are ignored. |
 | `okforest/slug` | warning | File and directory names of concepts are slugs: lowercase letters, digits, and hyphens. |
 | `okforest/placeholder` | warning | Bodies contain no unrendered template placeholders (`{{name}}`, `<concept>`, `[INSERT ...]`) or example link paths (`path/to/...`). |
 | `okforest/wikilink` | warning | Concepts link with standard markdown links, not `[[wikilinks]]` (OKF §6.1). |
@@ -116,32 +116,33 @@ it in more detail.
 
 ## What counts as a concept
 
-Every `.md` file is a concept except `index.md` and `log.md` (reserved by
-OKF), files under hidden directories (`.github/`, `.okforest/`), and these
-repository files at the tree root: `README.md`, `LICENSE.md`,
-`CONTRIBUTING.md`, `CHANGELOG.md`, `SECURITY.md`, and `CODE_OF_CONDUCT.md`.
-Skip others with `ignore:` globs in `.okforest/tree.yaml`:
+Every `.md` file is a concept except `index.md` and `log.md` (reserved by OKF)
+and files under `.okforest/` and `.git/`, as the OKF specification says. That
+includes repository files such as `README.md` and files under `.github/`. Leave
+out the ones that are not concepts with `ignore:` globs in
+`.okforest/settings.yaml`:
 
 ```yaml
 ignore:
+  - README.md
   - FOLLOWUPS.md
   - drafts/
 ```
 
-Every setting in `.okforest/tree.yaml` is described in
-[Tree settings](https://www.okforest.ai/docs/tree-settings/). For completion
-and checks while you edit it, the file can start with a
-[JSON Schema](https://www.okforest.ai/schemas/tree.schema.json) comment, which
-editors with the YAML language server (VS Code's YAML extension, and others)
-read; `okforest init` writes it:
+Every setting in `.okforest/settings.yaml` is optional, and each is described in
+[Settings](https://www.okforest.ai/docs/settings/). For completion and checks
+while you edit the file, it can start with a
+[JSON Schema](https://www.okforest.ai/schemas/settings.schema.json) comment,
+which editors with the YAML language server (VS Code's YAML extension, and
+others) read; `okforest init` writes it:
 
 ```yaml
-# yaml-language-server: $schema=https://www.okforest.ai/schemas/tree.schema.json
+# yaml-language-server: $schema=https://www.okforest.ai/schemas/settings.schema.json
 ```
 
 The schema ships in `@okforest/validate` too
-(`@okforest/validate/tree.schema.json`), and a test keeps it in step with the
-`okforest/tree-yaml` and `okforest/tree-yaml-keys` rules.
+(`@okforest/validate/settings.schema.json`), and a test keeps it in step with
+the `okforest/settings` and `okforest/settings-keys` rules.
 
 ## Development
 

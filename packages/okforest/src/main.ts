@@ -8,7 +8,7 @@ export const HELP = `okforest ${VERSION}: validate, inventory, and scaffold Open
 Usage
   okforest validate [path] [--format text|json]
   okforest inventory [path] [--format text|json]
-  okforest init [path] --template company [--owner <email>] [--tree <name>] [--title <title>]
+  okforest init [path] --template company [--name <name>]
 
 Commands
   validate    Check a tree against OKF v0.2 and OKForest conventions.

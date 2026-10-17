@@ -1,8 +1,0 @@
-tree: sales
-owner: group:sales-ops
-backup_owner: [user:a@acme.example, user:b@acme.example]
-stewards:
-  - jane@acme.example
-  - { user: maria@acme.example, group: sales }
-title: 7
-ignore: FOLLOWUPS.md
