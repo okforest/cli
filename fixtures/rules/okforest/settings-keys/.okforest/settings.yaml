@@ -1,5 +1,4 @@
-tree: sales
+name: Sales knowledge
+nmae: Sales
 owner: user:jane@acme.example
-stewrds:
-  - group: sales-ops
 sensitivity: internal

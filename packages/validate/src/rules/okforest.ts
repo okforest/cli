@@ -1,4 +1,4 @@
-import { editDistance, isRecord, type KeyPath, SETTINGS_PATH, visit } from "@okforest/okf"
+import { editDistance, type KeyPath, SETTINGS_PATH, visit } from "@okforest/okf"
 import type { Report, Rule } from "../types.js"
 import { describeType, show, slugify } from "../util.js"
 
@@ -137,22 +137,25 @@ function offsetIn(value: string, index: number, start: { line: number; column: n
     : { line: start.line + newlines, column: index - before.lastIndexOf("\n") }
 }
 
-/** `.okforest/tree.yaml` (an OKForest convention): exactly one Owner, who is a person. */
-export const treeYaml: Rule = {
-  id: "okforest/tree-yaml",
+/** Settings files OKForest doesn't read, each with what to do about it. */
+const UNREAD_SETTINGS: Record<string, string> = {
+  ".okforest/tree.yaml": `OKForest now reads \`${SETTINGS_PATH}\`, so these settings are ignored: rename the file, move \`tree\` to \`name\`, and remove the settings OKForest no longer uses (https://www.okforest.ai/docs/settings/).`,
+  ".okforest/tree.yml": `Rename \`.okforest/tree.yml\` to \`${SETTINGS_PATH}\`: only that name is read, so these settings are ignored.`,
+  ".okforest/settings.yml": `Rename \`.okforest/settings.yml\` to \`${SETTINGS_PATH}\`: only the \`.yaml\` name is read, so these settings are ignored.`,
+}
+
+const LIMITS = { name: 100, description: 4000 } as const
+
+/** `.okforest/settings.yaml` (an OKForest convention): well-formed optional
+ * settings, under the one name OKForest reads. */
+export const settingsFile: Rule = {
+  id: "okforest/settings",
   severity: "error",
   description:
-    "`.okforest/tree.yaml` (spelled `.yaml`) names exactly one Owner as `user:<id>`, Stewards as `user`/`group` entries, and well-formed optional settings.",
+    "`.okforest/settings.yaml` (spelled `.yaml`) holds well-formed settings: a `name` of up to 100 characters, a `description` of up to 4,000, and `ignore` globs.",
   check({ tree, report }) {
-    // Only `.okforest/tree.yaml` is read; a `.yml` file would be ignored
-    // without a word.
-    if (tree.files.includes(MISSPELLED_SETTINGS_PATH)) {
-      report({
-        file: MISSPELLED_SETTINGS_PATH,
-        line: 1,
-        column: 1,
-        message: `Rename \`${MISSPELLED_SETTINGS_PATH}\` to \`${SETTINGS_PATH}\`: only the \`.yaml\` name is read, so these settings are ignored.`,
-      })
+    for (const [path, message] of Object.entries(UNREAD_SETTINGS)) {
+      if (tree.files.includes(path)) report({ file: path, line: 1, column: 1, message })
     }
     const settings = tree.settings
     if (!settings) return
@@ -167,62 +170,23 @@ export const treeYaml: Rule = {
       return
     }
     const data = settings.data ?? {}
-    const person = (key: string, required: boolean) => {
+    for (const [key, limit] of Object.entries(LIMITS)) {
       const value = data[key]
-      if (value === undefined) {
-        if (required)
-          problem(
-            [],
-            `Missing \`${key}\`: the one person accountable for this tree, as \`${key}: user:<id>\`.`,
-          )
-      } else if (Array.isArray(value)) {
-        problem([key], `\`${key}\` must be exactly one person, not a list.`)
-      } else if (typeof value === "string" && value.startsWith("group:")) {
+      if (value === undefined) continue
+      if (typeof value !== "string") {
+        problem([key], `\`${key}\` must be text (got ${describeType(value)}).`)
+      } else if (value.trim() === "") {
+        problem([key], `\`${key}\` is blank: write it, or remove the setting.`)
+      } else if ([...value].length > limit) {
         problem(
           [key],
-          `\`${key}\` must be a person (\`user:<id>\`), not a group: accountability lands on one individual.`,
+          `\`${key}\` is ${[...value].length.toLocaleString("en-US")} characters; the limit is ${limit.toLocaleString("en-US")}.`,
         )
-      } else if (typeof value !== "string" || !/^user:\S+$/.test(value)) {
-        problem(
-          [key],
-          `\`${key}\` must be \`user:<id>\`, e.g. \`user:jane@acme.example\` (got ${show(value)}).`,
-        )
-      }
-    }
-    person("owner", true)
-    person("backup_owner", false)
-
-    if (data.stewards !== undefined) {
-      if (!Array.isArray(data.stewards)) {
-        problem(
-          ["stewards"],
-          "`stewards` must be a list of `- user: <id>` or `- group: <name>` entries.",
-        )
-      } else {
-        data.stewards.forEach((steward, i) => {
-          const keys = isRecord(steward) ? Object.keys(steward) : []
-          const key = keys[0]
-          if (
-            keys.length !== 1 ||
-            (key !== "user" && key !== "group") ||
-            typeof (steward as Record<string, unknown>)[key] !== "string"
-          ) {
-            problem(["stewards", i], "Each steward is one `user: <id>` or `group: <name>` entry.")
-          }
-        })
-      }
-    }
-    for (const key of ["tree", "title", "standards", "sensitivity_default"]) {
-      if (
-        data[key] !== undefined &&
-        (typeof data[key] !== "string" || (data[key] as string).trim() === "")
-      ) {
-        problem([key], `\`${key}\` must be a non-empty string (got ${describeType(data[key])}).`)
       }
     }
     if (data.ignore !== undefined) {
       if (!Array.isArray(data.ignore)) {
-        problem(["ignore"], "`ignore` must be a list of globs relative to the tree root.")
+        problem(["ignore"], "`ignore` must be a list of globs relative to the bundle root.")
       } else {
         data.ignore.forEach((glob, i) => {
           if (typeof glob !== "string" || glob.trim() === "")
@@ -233,41 +197,44 @@ export const treeYaml: Rule = {
   },
 }
 
-const MISSPELLED_SETTINGS_PATH = ".okforest/tree.yml"
+/** The settings `.okforest/settings.yaml` may hold (docs: /docs/settings/;
+ * kept in step with `schemas/settings.schema.json` by a test). */
+export const SETTINGS_KEYS: readonly string[] = ["name", "description", "ignore"]
 
-/** The settings `.okforest/tree.yaml` may hold (docs: /docs/tree-settings/;
- * kept in step with `schemas/tree.schema.json` by a test). */
-export const TREE_SETTINGS_KEYS: readonly string[] = [
-  "owner",
-  "backup_owner",
-  "stewards",
-  "tree",
-  "title",
-  "ignore",
-  "sensitivity_default",
-  "standards",
-]
+/** Settings earlier versions read, and what became of each. */
+const RETIRED_KEYS: Record<string, string> = {
+  tree: "use `name`",
+  title: "use `name`",
+  owner: "who may read, propose, and approve is no longer set in this file",
+  backup_owner: "who may read, propose, and approve is no longer set in this file",
+  stewards: "who may read, propose, and approve is no longer set in this file",
+  sensitivity_default: "it may return once it has a design",
+  standards: "it may return once it has a design",
+}
 
 /** Settings OKForest doesn't know are ignored, so a misspelled key loses its
  * setting without a word; this says so. A warning: a newer OKForest may know
  * keys an older one doesn't. */
-export const treeYamlKeys: Rule = {
-  id: "okforest/tree-yaml-keys",
+export const settingsKeys: Rule = {
+  id: "okforest/settings-keys",
   severity: "warning",
   description:
-    "`.okforest/tree.yaml` uses only the settings OKForest knows; others, such as a misspelled key, are ignored.",
+    "`.okforest/settings.yaml` uses only the settings OKForest knows; others, such as a misspelled key, are ignored.",
   check({ tree, report }) {
     const settings = tree.settings
     if (!settings?.data) return
     for (const key of Object.keys(settings.data)) {
-      if (TREE_SETTINGS_KEYS.includes(key)) continue
-      const near = TREE_SETTINGS_KEYS.find((known) => editDistance(key, known, 2) <= 2)
+      if (SETTINGS_KEYS.includes(key)) continue
+      const retired = RETIRED_KEYS[key]
+      const near = SETTINGS_KEYS.find((known) => editDistance(key, known, 2) <= 2)
       report({
         file: settings.path,
         ...(settings.locate([key]) ?? { line: 1, column: 1 }),
-        message: near
-          ? `Unknown setting \`${key}\`: did you mean \`${near}\`? Unknown settings are ignored.`
-          : `Unknown setting \`${key}\`, ignored. The settings are ${TREE_SETTINGS_KEYS.map((k) => `\`${k}\``).join(", ")}.`,
+        message: retired
+          ? `\`${key}\` is no longer a setting, and is ignored: ${retired}.`
+          : near
+            ? `Unknown setting \`${key}\`: did you mean \`${near}\`? Unknown settings are ignored.`
+            : `Unknown setting \`${key}\`, ignored. The settings are ${SETTINGS_KEYS.map((k) => `\`${k}\``).join(", ")}.`,
       })
     }
   },

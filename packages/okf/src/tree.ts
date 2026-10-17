@@ -11,22 +11,11 @@ import {
 import type { Concept, Link, ReservedFile, Tree, TreeFile, TreeSettings } from "./types.js"
 import { isRecord, parseYaml } from "./yaml.js"
 
-/** Where OKForest keeps per-tree settings (an OKForest convention, not OKF). */
-export const SETTINGS_PATH = ".okforest/tree.yaml"
+/** Where OKForest keeps a bundle's settings (an OKForest convention, not OKF). */
+export const SETTINGS_PATH = ".okforest/settings.yaml"
 
-/**
- * Repository files at the tree root that are not concepts, though the OKF
- * spec letter would make them so. Matched case-insensitively. Extend per tree
- * with `ignore:` globs in `.okforest/tree.yaml`.
- */
-export const DEFAULT_IGNORED: readonly string[] = [
-  "README.md",
-  "LICENSE.md",
-  "CONTRIBUTING.md",
-  "CHANGELOG.md",
-  "SECURITY.md",
-  "CODE_OF_CONDUCT.md",
-]
+/** Folders never part of a tree: OKForest's own and version control's. */
+const SKIPPED_FOLDERS = new Set([".okforest", ".git"])
 
 const RESERVED = new Set(["index.md", "log.md"])
 
@@ -36,8 +25,8 @@ const RESERVED = new Set(["index.md", "log.md"])
  * reading a directory). Never throws on malformed content; problems are
  * recorded on the files for `@okforest/validate` to report.
  *
- * Markdown files under hidden directories (any path segment starting with
- * `.`) and `node_modules` are not part of the tree.
+ * Every markdown file is part of the tree except those under `.okforest/` and
+ * `.git/`, as OKF says; settings `ignore:` globs leave out others.
  */
 export function parseTree(input: Iterable<TreeFile>): Tree {
   const texts = new Map<string, string | undefined>()
@@ -53,19 +42,15 @@ export function parseTree(input: Iterable<TreeFile>): Tree {
   }
 
   const settings = readSettings(texts.get(SETTINGS_PATH))
-  const ignorePatterns = (settings?.ignore ?? []).map(globToRegExp)
-  const defaultIgnored = new Set(DEFAULT_IGNORED.map((name) => name.toLowerCase()))
+  const isIgnored = ignoreMatcher(settings?.ignore ?? [])
 
   const ignored: string[] = []
   const parsed: { file: ParsedFile; reserved: boolean }[] = []
   for (const path of files) {
     if (!path.endsWith(".md")) continue
     const segments = path.split("/")
-    if (segments.some((s) => s.startsWith(".") || s === "node_modules")) continue
-    if (
-      (segments.length === 1 && defaultIgnored.has(path.toLowerCase())) ||
-      ignorePatterns.some((pattern) => pattern.test(path))
-    ) {
+    if (segments.some((s) => SKIPPED_FOLDERS.has(s))) continue
+    if (isIgnored(path)) {
       ignored.push(path)
       continue
     }
@@ -219,13 +204,28 @@ function resolveLink(
   }
 }
 
-function readSettings(text: string | undefined): TreeSettings | undefined {
+/** Whether a bundle path matches one of the settings' `ignore:` globs. */
+export function ignoreMatcher(globs: readonly string[]): (path: string) => boolean {
+  const patterns = globs.map(globToRegExp)
+  return (path) => patterns.some((pattern) => pattern.test(path))
+}
+
+/** `.okforest/settings.yaml`, read leniently: what the `okforest/settings`
+ * rule reports as malformed is left out of `ignore`, `name`, and
+ * `description`. */
+export function readSettings(text: string | undefined): TreeSettings | undefined {
   if (text === undefined) return undefined
-  const parsed = parseYaml(text.replace(/^﻿/, "").replace(/\r\n?/g, "\n"), 1)
+  const parsed = parseYaml(text.replace(/^\uFEFF/, "").replace(/\r\n?/g, "\n"), 1)
   const data = parsed.value === null ? {} : isRecord(parsed.value) ? parsed.value : undefined
   const ignore = Array.isArray(data?.ignore)
     ? data.ignore.filter((g): g is string => typeof g === "string" && g.trim() !== "")
     : []
+  const nonBlank = (key: string) => {
+    const value = data?.[key]
+    return typeof value === "string" && value.trim() !== "" ? value : undefined
+  }
+  const name = nonBlank("name")
+  const description = nonBlank("description")
   const error =
     parsed.error ??
     (data === undefined
@@ -237,6 +237,8 @@ function readSettings(text: string | undefined): TreeSettings | undefined {
     data,
     ...(error ? { error } : {}),
     ignore,
+    ...(name !== undefined ? { name } : {}),
+    ...(description !== undefined ? { description } : {}),
     locate: parsed.locate,
   }
 }

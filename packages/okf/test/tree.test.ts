@@ -41,31 +41,29 @@ describe("parseTree", () => {
     expect(t.files).toEqual(["a/b.md"])
   })
 
-  it("skips hidden directories and node_modules", () => {
+  it("skips only .okforest and .git folders", () => {
     const t = tree({
+      ".okforest/notes.md": "# notes\n",
+      ".git/info.md": "# git\n",
+      "docs/.git/x.md": "# git\n",
       ".github/pull_request_template.md": "# PR\n",
       "node_modules/pkg/README.md": "# pkg\n",
-      "docs/.drafts/x.md": "# draft\n",
+      "README.md": "# Repo\n",
       "a.md": concept(),
     })
-    expect(t.concepts.map((c) => c.id)).toEqual(["a"])
+    expect(t.concepts.map((c) => c.id)).toEqual([
+      ".github/pull_request_template",
+      "README",
+      "a",
+      "node_modules/pkg/README",
+    ])
     expect(t.ignored).toEqual([])
   })
 
-  it("ignores root repository files case-insensitively, but only at the root", () => {
+  it("applies ignore globs from .okforest/settings.yaml", () => {
     const t = tree({
-      "README.md": "# Repo\n",
-      "license.md": "Apache\n",
-      "CODE_OF_CONDUCT.md": "Be kind\n",
-      "docs/README.md": concept(),
-    })
-    expect(t.ignored).toEqual(["CODE_OF_CONDUCT.md", "README.md", "license.md"])
-    expect(t.concepts.map((c) => c.id)).toEqual(["docs/README"])
-  })
-
-  it("applies ignore globs from .okforest/tree.yaml", () => {
-    const t = tree({
-      ".okforest/tree.yaml": "ignore:\n  - FOLLOWUPS.md\n  - drafts/\n  - '**/*.wip.md'\n  - 42\n",
+      ".okforest/settings.yaml":
+        "ignore:\n  - FOLLOWUPS.md\n  - drafts/\n  - '**/*.wip.md'\n  - 42\n",
       "FOLLOWUPS.md": "# Roadmap\n",
       "drafts/a/b.md": "# draft\n",
       "x/y.wip.md": "# wip\n",
@@ -78,18 +76,25 @@ describe("parseTree", () => {
 
   it("reads settings and reports unreadable ones", () => {
     expect(
-      tree({ ".okforest/tree.yaml": "tree: sales\nowner: user:jane@acme.example\n" }).settings,
+      tree({ ".okforest/settings.yaml": "name: Sales\ndescription: Deals and pricing.\n" })
+        .settings,
     ).toMatchObject({
-      path: ".okforest/tree.yaml",
-      data: { tree: "sales", owner: "user:jane@acme.example" },
+      path: ".okforest/settings.yaml",
+      data: { name: "Sales", description: "Deals and pricing." },
+      name: "Sales",
+      description: "Deals and pricing.",
       ignore: [],
     })
-    expect(tree({ ".okforest/tree.yaml": "" }).settings?.data).toEqual({})
-    expect(tree({ ".okforest/tree.yaml": "owner: [\n" }).settings).toMatchObject({
+    expect(
+      tree({ ".okforest/settings.yaml": 'name: " "\ndescription: 3\n' }).settings,
+    ).not.toHaveProperty("name")
+    expect(tree({ ".okforest/settings.yaml": "" }).settings?.data).toEqual({})
+    expect(tree({ ".okforest/tree.yaml": "name: Sales\n" }).settings).toBeUndefined()
+    expect(tree({ ".okforest/settings.yaml": "name: [\n" }).settings).toMatchObject({
       data: undefined,
       error: { message: expect.any(String), line: expect.any(Number) },
     })
-    expect(tree({ ".okforest/tree.yaml": "- a\n" }).settings?.error?.message).toMatch(/mapping/)
+    expect(tree({ ".okforest/settings.yaml": "- a\n" }).settings?.error?.message).toMatch(/mapping/)
     expect(tree({ "a.md": concept() }).settings).toBeUndefined()
   })
 

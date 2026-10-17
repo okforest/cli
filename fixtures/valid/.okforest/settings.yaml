@@ -1,0 +1,6 @@
+# yaml-language-server: $schema=https://www.okforest.ai/schemas/settings.schema.json
+name: Example knowledge
+description: A clean tree that exercises every family of rules.
+ignore:
+  - README.md
+  - FOLLOWUPS.md

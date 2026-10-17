@@ -146,7 +146,7 @@ export interface ReservedFile extends MarkdownFile {
   directory: string
 }
 
-/** `.okforest/tree.yaml`, OKForest's per-tree settings (not part of OKF). */
+/** `.okforest/settings.yaml`, OKForest's settings for a bundle (not part of OKF). */
 export interface TreeSettings {
   path: string
   text: string
@@ -155,6 +155,10 @@ export interface TreeSettings {
   error?: Diagnostic
   /** Validation ignore globs (`ignore:`), when well-formed. */
   ignore: string[]
+  /** The bundle's name (`name:`), when it is non-blank text. */
+  name?: string
+  /** What the bundle covers (`description:`), when it is non-blank text. */
+  description?: string
   locate(path: KeyPath): Position | undefined
 }
 
@@ -166,7 +170,7 @@ export interface Tree {
   concepts: Concept[]
   /** `index.md` and `log.md` files, sorted by path. */
   reserved: ReservedFile[]
-  /** Markdown files skipped as repository files or by `ignore:` settings. */
+  /** Markdown files left out by the settings' `ignore:` globs. */
   ignored: string[]
   settings?: TreeSettings
   /** The bundle-root `index.md` `okf_version` value, as written. */

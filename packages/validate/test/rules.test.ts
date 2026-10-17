@@ -222,59 +222,68 @@ describe("okforest/slug", () => {
   })
 })
 
-describe("okforest/tree-yaml", () => {
-  const settings = (text: string) => only("okforest/tree-yaml", { ".okforest/tree.yaml": text })
+describe("okforest/settings", () => {
+  const settings = (text: string) => only("okforest/settings", { ".okforest/settings.yaml": text })
 
   it("is quiet without settings and for a well-formed file", async () => {
-    expect(await only("okforest/tree-yaml", { "a.md": concept() })).toEqual([])
-    expect(await settings("owner: user:jane@acme.example\nstewards: []\nignore: []\n")).toEqual([])
+    expect(await only("okforest/settings", { "a.md": concept() })).toEqual([])
+    expect(await settings("")).toEqual([])
+    expect(await settings("name: Sales\ndescription: Deals.\nignore: []\n")).toEqual([])
   })
 
   it("reports unreadable settings", async () => {
-    expect(await settings("owner: [\n")).toEqual([
-      expect.stringMatching(/^\.okforest\/tree\.yaml:\d+:\d+ error okforest\/tree-yaml /),
+    expect(await settings("name: [\n")).toEqual([
+      expect.stringMatching(/^\.okforest\/settings\.yaml:\d+:\d+ error okforest\/settings /),
     ])
   })
 
-  it("requires an owner and checks its form", async () => {
-    expect(await settings("tree: sales\n")).toEqual([
-      ".okforest/tree.yaml:1:1 error okforest/tree-yaml Missing `owner`: the one person accountable for this tree, as `owner: user:<id>`.",
+  it("checks name, description, and ignore entries", async () => {
+    expect(await settings(`name: 7\ndescription: ${"d".repeat(4001)}\nignore: [ok, 3]\n`)).toEqual([
+      ".okforest/settings.yaml:1:1 error okforest/settings `name` must be text (got a number).",
+      ".okforest/settings.yaml:2:1 error okforest/settings `description` is 4,001 characters; the limit is 4,000.",
+      ".okforest/settings.yaml:3:14 error okforest/settings Each `ignore` entry must be a glob string.",
     ])
-    expect(await settings("owner: jane@acme.example\n")).toEqual([
-      ".okforest/tree.yaml:1:1 error okforest/tree-yaml `owner` must be `user:<id>`, e.g. `user:jane@acme.example` (got `jane@acme.example`).",
+    expect(await settings(`name: ${"🌲".repeat(100)}\n`)).toEqual([])
+    expect(await settings("ignore: drafts/\n")).toEqual([
+      ".okforest/settings.yaml:1:1 error okforest/settings `ignore` must be a list of globs relative to the bundle root.",
     ])
   })
 
-  it("checks stewards and ignore entries", async () => {
-    expect(await settings("owner: user:a\nstewards: sales-ops\nignore: [ok, 3]\n")).toEqual([
-      ".okforest/tree.yaml:2:1 error okforest/tree-yaml `stewards` must be a list of `- user: <id>` or `- group: <name>` entries.",
-      ".okforest/tree.yaml:3:14 error okforest/tree-yaml Each `ignore` entry must be a glob string.",
-    ])
+  it("reports settings files under names that are never read", async () => {
     expect(
-      await settings("owner: user:a\nstewards:\n  - { team: x }\n  - { user: 3 }\n"),
-    ).toHaveLength(2)
-  })
-
-  it("reports a .yml settings file, which is never read", async () => {
-    expect(
-      await only("okforest/tree-yaml", { ".okforest/tree.yml": "owner: bob\n", "a.md": concept() }),
+      await only("okforest/settings", {
+        ".okforest/tree.yaml": "owner: user:bob\n",
+        ".okforest/tree.yml": "tree: x\n",
+        ".okforest/settings.yml": "name: x\n",
+        "a.md": concept(),
+      }),
     ).toEqual([
-      ".okforest/tree.yml:1:1 error okforest/tree-yaml Rename `.okforest/tree.yml` to `.okforest/tree.yaml`: only the `.yaml` name is read, so these settings are ignored.",
+      ".okforest/settings.yml:1:1 error okforest/settings Rename `.okforest/settings.yml` to `.okforest/settings.yaml`: only the `.yaml` name is read, so these settings are ignored.",
+      ".okforest/tree.yaml:1:1 error okforest/settings OKForest now reads `.okforest/settings.yaml`, so these settings are ignored: rename the file, move `tree` to `name`, and remove the settings OKForest no longer uses (https://www.okforest.ai/docs/settings/).",
+      ".okforest/tree.yml:1:1 error okforest/settings Rename `.okforest/tree.yml` to `.okforest/settings.yaml`: only that name is read, so these settings are ignored.",
     ])
   })
 })
 
-describe("okforest/tree-yaml-keys", () => {
-  const keys = (text: string) => only("okforest/tree-yaml-keys", { ".okforest/tree.yaml": text })
+describe("okforest/settings-keys", () => {
+  const keys = (text: string) => only("okforest/settings-keys", { ".okforest/settings.yaml": text })
 
   it("is quiet for known settings", async () => {
-    expect(await keys("owner: user:a\ntree: t\ntitle: T\nstandards: s\n")).toEqual([])
+    expect(await keys("name: n\ndescription: d\nignore: []\n")).toEqual([])
   })
 
   it("names a likely misspelling, and lists the settings otherwise", async () => {
-    expect(await keys("owner: user:a\nstewrds: []\ncolor: green\n")).toEqual([
-      ".okforest/tree.yaml:2:1 warning okforest/tree-yaml-keys Unknown setting `stewrds`: did you mean `stewards`? Unknown settings are ignored.",
-      ".okforest/tree.yaml:3:1 warning okforest/tree-yaml-keys Unknown setting `color`, ignored. The settings are `owner`, `backup_owner`, `stewards`, `tree`, `title`, `ignore`, `sensitivity_default`, `standards`.",
+    expect(await keys("nmae: Sales\ncolor: green\n")).toEqual([
+      ".okforest/settings.yaml:1:1 warning okforest/settings-keys Unknown setting `nmae`: did you mean `name`? Unknown settings are ignored.",
+      ".okforest/settings.yaml:2:1 warning okforest/settings-keys Unknown setting `color`, ignored. The settings are `name`, `description`, `ignore`.",
+    ])
+  })
+
+  it("says what became of settings earlier versions read", async () => {
+    expect(await keys("tree: sales\nowner: user:a\nstandards: s\n")).toEqual([
+      ".okforest/settings.yaml:1:1 warning okforest/settings-keys `tree` is no longer a setting, and is ignored: use `name`.",
+      ".okforest/settings.yaml:2:1 warning okforest/settings-keys `owner` is no longer a setting, and is ignored: who may read, propose, and approve is no longer set in this file.",
+      ".okforest/settings.yaml:3:1 warning okforest/settings-keys `standards` is no longer a setting, and is ignored: it may return once it has a design.",
     ])
   })
 })

@@ -8,7 +8,7 @@ v0.2 trees.
 npx okforest validate .                 # exit 1 on errors; warnings never fail
 npx okforest validate . --format json   # for CI and tools
 npx okforest inventory .                # types, tags, keys, near-duplicates
-npx okforest init sales-okf --template company --owner jane@acme.example
+npx okforest init sales-okf --template company --name "Sales knowledge"
 ```
 
 To also check D2 and Mermaid diagram syntax, install the optional packages
