@@ -3,3 +3,7 @@
 # else keeps the default, so the Windows CI job also parses fixtures with
 # CRLF line endings, as Windows users' trees may have.
 packages/okforest/templates/** text eol=lf
+
+# Google's sample bundles, kept as test fixtures: third-party content, so
+# GitHub's language bar doesn't count their viz.html files as this repo's.
+fixtures/okf-samples/** linguist-vendored
