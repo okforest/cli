@@ -10,6 +10,6 @@ v0.2 tree: one markdown file per concept, with YAML frontmatter.
 - This README is not a concept: [`.okforest/settings.yaml`](.okforest/settings.yaml)
   lists it under `ignore`.
 - Validate with `npx okforest validate .`; the workflow in
-  `.github/workflows/okforest-validate.yml` runs it on every pull request.
+  `.github/workflows/okforest-validate.yaml` runs it on every pull request.
 
 Created with the [OKForest CLI](https://github.com/okforest/cli) `company` template.
