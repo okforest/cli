@@ -1,5 +1,6 @@
 import { initCommand } from "./commands/init.js"
 import { inventoryCommand } from "./commands/inventory.js"
+import { ruleCommand } from "./commands/rule.js"
 import { validateCommand } from "./commands/validate.js"
 import { EXIT, type Io, UsageError, VERSION } from "./io.js"
 
@@ -9,6 +10,7 @@ Usage
   okforest validate [path] [--format text|json]
   okforest inventory [path] [--format text|json]
   okforest init [path] --template company [--name <name>]
+  okforest rule [rule] [--format text|json]
 
 Commands
   validate    Check a tree against OKF v0.2 and OKForest conventions.
@@ -16,6 +18,8 @@ Commands
   inventory   List every type, tag, and frontmatter key in use, with counts
               and likely near-duplicates.
   init        Create a new tree from a starter template (templates: company).
+  rule        Explain a rule: why it exists, an example, and the fix.
+              Without a rule, list every rule.
 
 Options
   -h, --help      Show help (also: okforest <command> --help)
@@ -32,6 +36,7 @@ const COMMANDS = {
   validate: validateCommand,
   inventory: inventoryCommand,
   init: initCommand,
+  rule: ruleCommand,
 } as const
 
 /** Run the CLI and return its exit code. */

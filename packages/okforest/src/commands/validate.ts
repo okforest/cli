@@ -72,6 +72,7 @@ function ruleDocs(findings: readonly Finding[], io: Io): string[] {
   return [
     paint(io, "underline", "Rule docs"),
     ...ids.map((id) => `  ${id.padEnd(width)}  ${paint(io, "dim", ruleUrl(id))}`),
+    `  ${paint(io, "dim", "Run `okforest rule <rule>` for why and how to fix.")}`,
     "",
   ]
 }

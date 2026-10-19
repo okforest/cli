@@ -1,0 +1,82 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`okforest rule > explains a rule: why, the example, what validate reports, and the fix 1`] = `
+"okf/broken-link  warning  OKF specification
+
+Links within the tree point at files that exist (a warning: OKF says never
+reject a bundle for broken links, §6.1, §11).
+
+Why
+  Concepts link to each other with ordinary markdown links: bundle-relative,
+  like \`/tables/customers.md\` (recommended, as it survives moving the linking
+  file), or relative, like \`./other.md\` (§6.1 [1]). OKF says a broken link isn't
+  malformed, since it may point at knowledge not written yet, and consumers must
+  not reject a bundle for one (§11 [2]). So this is a warning: it finds links to
+  files that don't exist, and links that climb out of the tree.
+
+Example: churn.md breaks the rule
+  ---
+  type: Metric
+  title: Monthly churn
+  description: The share of customers who cancel in a month.
+  ---
+
+  Churn counts the cancellations in the [customer table](/tables/customer.md).
+
+okforest validate reports
+  churn.md
+    7:39  warning  \`/tables/customer.md\` does not exist in this tree (looked for \`tables/customer.md\`).
+
+Fixed
+  ---
+  type: Metric
+  title: Monthly churn
+  description: The share of customers who cancel in a month.
+  ---
+
+  Churn counts the cancellations in the [customer table](/tables/customers.md).
+
+Links
+  [1] https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md#61-links-between-concepts
+  [2] https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md#11-conformance
+
+Docs: https://www.okforest.ai/docs/rules/okf/broken-link/
+"
+`;
+
+exports[`okforest rule > lists every rule without one 1`] = `
+"OKF specification
+  okf/actor                   warning  \`generated.by\` and \`verified[].by\` follow the actor convention: \`<producer>/<version>\`, \`human:<id>\`, or \`process:<id>\` (OKF §7).
+  okf/attested-computation    error    An Attested Computation has a \`runtime\`, well-formed \`parameters\`, \`executor\`, and \`attester\`, and a computation (a \`computation\` path or a code block under \`# Computation\`) (OKF §10).
+  okf/broken-link             warning  Links within the tree point at files that exist (a warning: OKF says never reject a bundle for broken links, §6.1, §11).
+  okf/datetime                error    Timestamps are ISO 8601 datetimes with an explicit UTC offset, e.g. \`2026-06-30T14:00:00Z\` (OKF §5).
+  okf/description             warning  Concepts have a one-sentence \`description\` (recommended, OKF §4.1).
+  okf/field-types             warning  \`title\`, \`description\`, and \`resource\` are strings, and \`tags\` is a list of strings (OKF §4.1).
+  okf/footnote-source         warning  In a concept that has \`sources\` with \`id\`s, every footnote label matches one of them (OKF §5.1 per-claim attribution).
+  okf/frontmatter             error    Every concept starts with a parseable YAML frontmatter block (OKF §4, §11).
+  okf/generated               error    \`generated\` is a mapping with a required \`by\` actor (OKF §5.2).
+  okf/index-entries           warning  index.md lists its directory as \`* [Title](path) - description\` entries under headings (OKF §8).
+  okf/index-frontmatter       error    index.md files carry no frontmatter, except an \`okf_version\` key in the bundle-root index.md (OKF §8, §12).
+  okf/legacy-v01              info     Flags OKF v0.1 conventions superseded in v0.2: \`timestamp\` and a body \`# Citations\` list (OKF §13).
+  okf/log-date                error    log.md groups entries under second-level headings in ISO 8601 \`YYYY-MM-DD\` form (OKF §9).
+  okf/log-order               warning  log.md lists its dates newest first, each once (OKF §9).
+  okf/okf-version             info     The bundle-root index.md declares \`okf_version: "0.2"\` (OKF §12).
+  okf/sources                 error    \`sources\` is a list of mappings, each with a \`resource\`, unique \`id\`s, and well-formed credibility signals (OKF §5.1).
+  okf/status                  error    \`status\` is one of \`draft\`, \`stable\`, or \`deprecated\` (OKF §5.4).
+  okf/title                   warning  Concepts have a \`title\` (recommended, OKF §4.1).
+  okf/type                    error    Every concept's frontmatter has a non-empty string \`type\` (OKF §4.1, §11).
+  okf/verified                error    \`verified\` is a \`{ by, at }\` mapping or a list of them (OKF §5.2).
+
+OKForest conventions
+  okforest/d2-syntax          error    \`d2\` code blocks are valid D2 (diagrams as code).
+  okforest/diagram-unchecked  info     Reports diagram blocks whose syntax could not be checked (tool not installed or unsupported here).
+  okforest/mermaid-syntax     error    \`mermaid\` code blocks are valid Mermaid (diagrams as code).
+  okforest/placeholder        warning  Bodies contain no unrendered template placeholders (\`{{name}}\`, \`<concept>\`, \`[INSERT ...]\`) or example link paths (\`path/to/...\`).
+  okforest/settings           error    \`.okforest/settings.yaml\` (spelled \`.yaml\`) holds well-formed settings: a \`name\` of up to 100 characters, a \`description\` of up to 4,000, and \`ignore\` globs.
+  okforest/settings-keys      warning  \`.okforest/settings.yaml\` uses only the settings OKForest knows; others, such as a misspelled key, are ignored.
+  okforest/slug               warning  File and directory names of concepts are slugs: lowercase letters, digits, and hyphens.
+  okforest/wikilink           warning  Concepts link with standard markdown links, not \`[[wikilinks]]\` (OKF §6.1).
+
+Run \`okforest rule <rule>\` for why a rule exists and how to fix it.
+"
+`;

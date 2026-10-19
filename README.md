@@ -29,7 +29,8 @@ broken links still passes (the spec says never to reject a bundle for those).
 `--format json` writes a versioned document for CI and tools. Each finding
 names its rule, and every rule has a page explaining it at
 `https://www.okforest.ai/docs/rules/<rule id>/`; the text output ends with
-those links for the rules that reported something.
+those links for the rules that reported something, and `okforest rule <rule
+id>` explains one in the terminal.
 
 **`okforest inventory [path] [--format text|json]`** lists every type, tag, and
 frontmatter key in use, with counts, lifecycle and trust totals, and likely
@@ -40,6 +41,13 @@ near-duplicates (`e-commerce` and `ecommerce`, `Policy` and `Policies`).
 with the bundle's `name` (`--name`, defaulting to the folder's name), draft
 starter concepts, and a GitHub workflow that validates every pull request with
 the OKForest Validate action.
+
+**`okforest rule [rule] [--format text|json]`** explains a rule: why it exists,
+an example that breaks it, what `okforest validate` reports for it, and the
+fix, the same as its page on the web, offline. `okforest rule okf/type`, for
+example; with no rule, it lists them all. A coding agent that runs `okforest
+validate` can run it to learn how to fix what it found; `--format json` gives
+the same as data.
 
 ### Diagram checks
 

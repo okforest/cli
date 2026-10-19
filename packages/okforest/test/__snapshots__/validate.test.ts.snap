@@ -9,6 +9,7 @@ My Dir/
 
 Rule docs
   okforest/slug  https://www.okforest.ai/docs/rules/okforest/slug/
+  Run \`okforest rule <rule>\` for why and how to fix.
 
 ✔ 0 errors, 2 warnings, 0 info · 3 concepts in 4 files
 "
@@ -26,6 +27,7 @@ missing-type.md
 
 Rule docs
   okf/type  https://www.okforest.ai/docs/rules/okf/type/
+  Run \`okforest rule <rule>\` for why and how to fix.
 
 ✖ 3 errors, 0 warnings, 0 info · 3 concepts in 4 files
 "
