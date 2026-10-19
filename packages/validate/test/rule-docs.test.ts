@@ -19,9 +19,10 @@ describe("rule docs", () => {
     ).toEqual(findings.map((finding) => `${id} ${file} ${finding}`))
   })
 
-  it.each(Object.entries(ruleDocs))("%s: the fix passes", async (_id, docs) => {
-    const { file, fixed, context = {} } = docs.example
-    const result = await validateFiles({ ...context, [file]: fixed })
+  const fixable = Object.entries(ruleDocs).filter(([, docs]) => docs.example.fixed !== undefined)
+  it.each(fixable)("%s: the fix passes", async (_id, docs) => {
+    const { file, fixed, fixedFile = file, context = {} } = docs.example
+    const result = await validateFiles({ ...context, [fixedFile]: fixed })
     expect(result.findings).toEqual([])
   })
 })
