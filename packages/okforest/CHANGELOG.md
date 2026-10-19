@@ -1,5 +1,14 @@
 # okforest
 
+## 0.6.1
+
+### Patch Changes
+
+- b422365: `okforest init` writes its workflow as `.github/workflows/okforest-validate.yaml`,
+  with YAML's preferred extension (GitHub reads either).
+- @okforest/okf@0.6.1
+  - @okforest/validate@0.6.1
+
 ## 0.6.0
 
 ### Minor Changes
