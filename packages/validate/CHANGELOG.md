@@ -1,5 +1,18 @@
 # @okforest/validate
 
+## 0.6.0
+
+### Minor Changes
+
+- 088ceeb: `ruleDocs`: for every rule, why it exists (linking the OKF specification or
+  OKForest's docs) and an example that breaks it, with the findings it
+  produces and the fix, tested so they stay true. The rule pages at
+  https://www.okforest.ai/docs/rules/ show them.
+
+### Patch Changes
+
+- @okforest/okf@0.6.0
+
 ## 0.5.0
 
 ### Minor Changes
