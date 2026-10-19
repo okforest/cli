@@ -5,6 +5,7 @@ export {
   toReport,
   type ValidationReport,
 } from "./report.js"
+export { type RuleDocs, type RuleExample, ruleDocs } from "./rule-docs.js"
 export { defaultDiagramLoaders } from "./rules/diagrams.js"
 export { defaultRules, okforestRules, okfRules } from "./rules/index.js"
 export { SETTINGS_KEYS } from "./rules/okforest.js"
