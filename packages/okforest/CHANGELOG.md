@@ -1,5 +1,21 @@
 # okforest
 
+## 0.6.0
+
+### Minor Changes
+
+- 4ad2984: `okforest rule <rule>` explains a rule in the terminal: why it exists, an
+  example that breaks it, what `okforest validate` reports for it, and the
+  fix. With no rule it lists every rule; `--format json` gives the same as
+  data, for tools and coding agents. `okforest validate`'s text output now
+  points to it.
+
+### Patch Changes
+
+- Updated dependencies [088ceeb]
+  - @okforest/validate@0.6.0
+  - @okforest/okf@0.6.0
+
 ## 0.5.0
 
 ### Minor Changes
