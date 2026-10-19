@@ -30,7 +30,7 @@ describe("okforest init", () => {
       /generated: \{ by: okforest\/[\d.]+, at: \d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ \}/,
     )
     const workflow = await readFile(
-      join(work, "acme-okf", ".github", "workflows", "okforest-validate.yml"),
+      join(work, "acme-okf", ".github", "workflows", "okforest-validate.yaml"),
       "utf8",
     )
     expect(workflow).toContain("uses: okforest/validate-action@v1")

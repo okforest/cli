@@ -79,8 +79,10 @@ published by hand:
    `@okforest` npm organization, and `pnpm -r publish --access public`.
 3. On npmjs.com, for each of `okforest`, `@okforest/okf`, and
    `@okforest/validate`: Settings → Trusted publishing → GitHub Actions, with
-   organization `okforest`, repository `cli`, and workflow `ci.yml` (it was
-   `release.yml` until 0.2.2).
+   organization `okforest`, repository `cli`, and workflow `ci.yaml` (it was
+   `release.yml` until 0.2.2, and `ci.yml` until 0.6.0). Renaming the
+   workflow file means changing it here for all three packages, or the next
+   release can't publish.
    Then disallow token publishing.
 4. Merge the "Version Packages" PR. The workflow finds the versions already
    published, skips them, and tags the release.

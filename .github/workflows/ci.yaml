@@ -102,7 +102,7 @@ jobs:
   # "Version Packages" PR; merging THAT PR publishes all three packages to npm
   # via trusted publishing (GitHub Actions OIDC, no long-lived token), once
   # every check on that commit has passed. Each package's npm settings name
-  # this repo and this workflow (ci.yml) as its trusted publisher; the first
+  # this repo and this workflow (ci.yaml) as its trusted publisher; the first
   # publish of each package was done by hand (see CONTRIBUTING.md). It
   # publishes the check job's build (not a new one), with pnpm, so workspace:
   # and catalog: ranges are resolved at pack time; `changeset git-tag` reports

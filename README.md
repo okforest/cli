@@ -3,7 +3,7 @@
 [![npm — okforest](https://img.shields.io/npm/v/okforest?label=okforest)](https://www.npmjs.com/package/okforest)
 [![npm — @okforest/validate](https://img.shields.io/npm/v/%40okforest%2Fvalidate?label=%40okforest%2Fvalidate)](https://www.npmjs.com/package/@okforest/validate)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-green)](./LICENSE)
-[![CI](https://github.com/okforest/cli/actions/workflows/ci.yml/badge.svg)](https://github.com/okforest/cli/actions/workflows/ci.yml)
+[![CI](https://github.com/okforest/cli/actions/workflows/ci.yaml/badge.svg)](https://github.com/okforest/cli/actions/workflows/ci.yaml)
 [![Coverage](https://codecov.io/gh/okforest/cli/graph/badge.svg)](https://codecov.io/gh/okforest/cli)
 
 Validate, inventory, and scaffold [Open Knowledge Format (OKF)](https://github.com/GoogleCloudPlatform/open-knowledge-format)
