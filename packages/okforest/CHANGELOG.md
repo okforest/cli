@@ -1,5 +1,14 @@
 # okforest
 
+## 0.6.2
+
+### Patch Changes
+
+- 7b638dc: The README says how to install the CLI (globally, or as a development
+  dependency) besides running it with `npx`, and lists `okforest rule`.
+- @okforest/okf@0.6.2
+  - @okforest/validate@0.6.2
+
 ## 0.6.1
 
 ### Patch Changes

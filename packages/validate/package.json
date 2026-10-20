@@ -1,6 +1,6 @@
 {
   "name": "@okforest/validate",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "Validate Open Knowledge Format (OKF) v0.2 trees: spec conformance, link and metadata checks, and D2 and Mermaid diagram syntax, as structured findings with stable rule IDs and file and line locations.",
   "keywords": [
     "okf",

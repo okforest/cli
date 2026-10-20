@@ -1,5 +1,11 @@
 # @okforest/validate
 
+## 0.6.2
+
+### Patch Changes
+
+- @okforest/okf@0.6.2
+
 ## 0.6.1
 
 ### Patch Changes
