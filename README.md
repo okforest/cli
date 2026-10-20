@@ -14,9 +14,13 @@ every machine, and the same code that runs inside [OKForest](https://www.okfores
 npx okforest validate .
 ```
 
+It needs Node.js 22 or later. `npx` runs it without installing anything; to
+run `okforest` directly, `npm install --global okforest`, or in a repository
+`npm install --save-dev okforest`, so everyone and CI run the same version.
+
 | Package | What it is |
 |---|---|
-| [`okforest`](packages/okforest) | The CLI: `validate`, `inventory`, and `init`. |
+| [`okforest`](packages/okforest) | The CLI: `validate`, `rule`, `inventory`, and `init`. |
 | [`@okforest/validate`](packages/validate) | The validation rules, as a library with structured findings. |
 | [`@okforest/okf`](packages/okf) | Read an OKF tree into a model: concepts, links, backlinks, trust tiers, staleness, and the metadata inventory. Runs in Node, browsers, and Workers. |
 
