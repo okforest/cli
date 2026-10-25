@@ -36,7 +36,10 @@ fetches the pinned pnpm and Node versions automatically (`packageManager` and
 
 1. Write it in `packages/validate/src/rules/` with a stable ID (`okf/*` for the
    OKF spec, `okforest/*` for OKForest conventions), a default severity, and a
-   one-sentence description. Error only for what the spec requires.
+   one-sentence description. Error only for what the spec requires. Check
+   each file in `checkFile` and the tree's paths and settings in `checkTree`,
+   never the whole parsed tree, so the rule also runs on trees read a file at
+   a time (`treeChecker`; `tree-checker.test.ts` runs every fixture both ways).
 2. Register it in `src/rules/index.ts`.
 3. Add a failing tree at `fixtures/rules/<rule id>/` and run
    `pnpm test -- -u` to record its snapshot; review the snapshot.

@@ -20,7 +20,7 @@ describe("validate", () => {
       id: "test/order",
       severity: "warning",
       description: "Reports out of order.",
-      check({ report }) {
+      checkTree({ report }) {
         report({ file: "b.md", line: 2, message: "z" })
         report({ file: "a.md", line: 3, column: 2, message: "y" })
         report({ file: "a.md", line: 3, column: 1, message: "y" })
@@ -53,7 +53,7 @@ describe("validate", () => {
       id,
       severity: "info",
       description: "Uses a shared resource.",
-      async check({ once, report }) {
+      async checkTree({ once, report }) {
         const resource = await once("shared", created, disposed)
         report({ file: "a.md", message: `${resource.value}` })
       },
@@ -62,7 +62,7 @@ describe("validate", () => {
       id: "test/fails",
       severity: "error",
       description: "Throws.",
-      check() {
+      checkTree() {
         throw new Error("boom")
       },
     }
@@ -78,7 +78,7 @@ describe("validate", () => {
       id: "test/resources",
       severity: "info",
       description: "Creates resources.",
-      async check({ once }) {
+      async checkTree({ once }) {
         await once(
           "bad-dispose",
           async () => 1,
@@ -105,7 +105,12 @@ describe("validate", () => {
       {
         now,
         rules: [
-          { id: "t/now", severity: "info", description: "", check: (c) => void seen.push(c.now) },
+          {
+            id: "t/now",
+            severity: "info",
+            description: "",
+            checkTree: (c) => void seen.push(c.now),
+          },
         ],
       },
     )

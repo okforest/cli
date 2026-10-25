@@ -15,6 +15,10 @@ internals (dependencies point one way: private → public).
   with dynamic `import()` only; never add them as dependencies.
 - Validation is deterministic: no model calls, no network, and output sorted
   so it is identical on every machine.
+- Rules check one markdown file at a time (`checkFile`) and the tree's
+  outline, its paths and settings (`checkTree`), never the whole parsed tree,
+  so trees too large to hold parsed at once are validated a file at a time
+  (`outlineTree`, `treeChecker`) with the same findings.
 - Rules have stable, namespaced IDs (`okf/*` for the OKF v0.2 spec,
   `okforest/*` for OKForest conventions). Severity follows the spec: what it
   requires is an `error`; what it recommends, and OKForest conventions, are

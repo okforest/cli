@@ -34,6 +34,21 @@ const tree = parseTree([
 ])
 ```
 
+A tree too large to hold parsed at once can be read one file at a time.
+`outlineTree` works out the tree from its paths alone (and the settings
+file's text); `read` then parses one of its markdown files, with its links
+resolved against the whole tree, as `parseTree` would:
+
+```ts
+import { outlineTree } from "@okforest/okf"
+
+const outline = outlineTree(paths, settingsText) // .okforest/settings.yaml, if any
+for (const path of outline.markdown) {
+  const file = outline.read(path, await textOf(path)) // a Concept or ReservedFile
+  // ...use it, and let it go
+}
+```
+
 Parsing never throws on malformed content: problems are recorded on each file
 (`frontmatterError`) for [`@okforest/validate`](https://www.npmjs.com/package/@okforest/validate)
 to report.

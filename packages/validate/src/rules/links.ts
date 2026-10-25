@@ -1,5 +1,5 @@
 import { type Concept, isRecord, type KeyPath } from "@okforest/okf"
-import type { Rule } from "../types.js"
+import type { CheckContext, Rule } from "../types.js"
 import { at, show } from "../util.js"
 
 /**
@@ -31,11 +31,29 @@ function pathFields(concept: Concept): { value: string; path: KeyPath }[] {
   )
 }
 
+/** Each outline's paths, files and directories, as sets: built once a run. */
+const pathSets = new WeakMap<CheckContext["outline"], ReadonlySet<string>>()
+
+function pathsOf(outline: CheckContext["outline"]): ReadonlySet<string> {
+  let paths = pathSets.get(outline)
+  if (!paths) {
+    const set = new Set<string>(outline.files)
+    for (const file of outline.files) {
+      for (let i = file.indexOf("/"); i !== -1; i = file.indexOf("/", i + 1)) {
+        set.add(file.slice(0, i))
+      }
+    }
+    paths = set
+    pathSets.set(outline, paths)
+  }
+  return paths
+}
+
 /** Resolve an explicit path field the same way as a body link. */
 function resolveField(
   concept: Concept,
   value: string,
-  files: ReadonlySet<string>,
+  paths: ReadonlySet<string>,
 ): "ok" | "missing" | "outside" {
   const target = value.replace(/[?#].*$/, "")
   const base = target.startsWith("/") ? [] : concept.path.split("/").slice(0, -1)
@@ -50,10 +68,7 @@ function resolveField(
     }
   }
   const resolved = parts.join("/")
-  if (resolved === "" || files.has(resolved)) return "ok"
-  const prefix = `${resolved}/`
-  for (const file of files) if (file.startsWith(prefix)) return "ok"
-  return "missing"
+  return resolved === "" || paths.has(resolved) ? "ok" : "missing"
 }
 
 /** OKF §6.1: consumers tolerate broken links, so this is a warning, never an error. */
@@ -62,8 +77,8 @@ export const brokenLink: Rule = {
   severity: "warning",
   description:
     "Links within the tree point at files that exist (a warning: OKF says never reject a bundle for broken links, §6.1, §11).",
-  check({ tree, report }) {
-    for (const link of tree.links) {
+  checkFile(file, { outline, report }) {
+    for (const link of file.links) {
       if (link.kind !== "internal" || link.exists) continue
       report({
         file: link.from,
@@ -78,20 +93,18 @@ export const brokenLink: Rule = {
             }.`,
       })
     }
-    const files = new Set(tree.files)
-    for (const concept of tree.concepts) {
-      for (const { value, path } of pathFields(concept)) {
-        const result = resolveField(concept, value, files)
-        if (result === "ok") continue
-        report({
-          file: concept.path,
-          ...at(concept, path),
-          message:
-            result === "outside"
-              ? `${show(value)} climbs above the tree root.`
-              : `${show(value)} does not exist in this tree.`,
-        })
-      }
+    if (file.kind !== "concept") return
+    for (const { value, path } of pathFields(file)) {
+      const result = resolveField(file, value, pathsOf(outline))
+      if (result === "ok") continue
+      report({
+        file: file.path,
+        ...at(file, path),
+        message:
+          result === "outside"
+            ? `${show(value)} climbs above the tree root.`
+            : `${show(value)} does not exist in this tree.`,
+      })
     }
   },
 }
@@ -102,19 +115,18 @@ export const footnoteSource: Rule = {
   severity: "warning",
   description:
     "In a concept that has `sources` with `id`s, every footnote label matches one of them (OKF §5.1 per-claim attribution).",
-  check({ tree, report }) {
-    for (const concept of tree.concepts) {
-      const ids = new Set(concept.sources.flatMap((s) => (s.id ? [s.id] : [])))
-      if (ids.size === 0) continue
-      for (const footnote of concept.footnotes) {
-        if (ids.has(footnote.label)) continue
-        report({
-          file: concept.path,
-          line: footnote.line,
-          column: footnote.column,
-          message: `Footnote [^${footnote.label}] matches no \`sources\` id (${[...ids].map((id) => `\`${id}\``).join(", ")}).`,
-        })
-      }
+  checkFile(concept, { report }) {
+    if (concept.kind !== "concept") return
+    const ids = new Set(concept.sources.flatMap((s) => (s.id ? [s.id] : [])))
+    if (ids.size === 0) return
+    for (const footnote of concept.footnotes) {
+      if (ids.has(footnote.label)) continue
+      report({
+        file: concept.path,
+        line: footnote.line,
+        column: footnote.column,
+        message: `Footnote [^${footnote.label}] matches no \`sources\` id (${[...ids].map((id) => `\`${id}\``).join(", ")}).`,
+      })
     }
   },
 }
