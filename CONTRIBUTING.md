@@ -23,14 +23,14 @@ fetches the pinned pnpm and Node versions automatically (`packageManager` and
 
 ## Layout
 
-| Path | What it is |
-|---|---|
-| `packages/okf` | `@okforest/okf`: parse a tree into a model. Browser- and Worker-safe; Node file access only in `src/node.ts`. |
-| `packages/validate` | `@okforest/validate`: the rules (`src/rules/`) and the runner. |
-| `packages/okforest` | The `okforest` CLI and its tree templates (`templates/`). |
-| `fixtures/okf-samples` | Google's OKF sample bundles, vendored unmodified. Refresh with `pnpm fixtures:refresh`. |
-| `fixtures/rules/<rule id>` | One small failing tree per rule. |
-| `fixtures/valid` | A clean tree that exercises every family; must produce no findings. |
+| Path                       | What it is                                                                                                    |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `packages/okf`             | `@okforest/okf`: parse a tree into a model. Browser- and Worker-safe; Node file access only in `src/node.ts`. |
+| `packages/validate`        | `@okforest/validate`: the rules (`src/rules/`) and the runner.                                                |
+| `packages/okforest`        | The `okforest` CLI and its tree templates (`templates/`).                                                     |
+| `fixtures/okf-samples`     | Google's OKF sample bundles, vendored unmodified. Refresh with `pnpm fixtures:refresh`.                       |
+| `fixtures/rules/<rule id>` | One small failing tree per rule.                                                                              |
+| `fixtures/valid`           | A clean tree that exercises every family; must produce no findings.                                           |
 
 ## Adding a rule
 
