@@ -1,5 +1,13 @@
 # okforest
 
+## 0.7.0
+
+### Patch Changes
+
+- Updated dependencies [50d62a9]
+  - @okforest/okf@0.7.0
+  - @okforest/validate@0.7.0
+
 ## 0.6.2
 
 ### Patch Changes
