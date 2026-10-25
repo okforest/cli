@@ -1,11 +1,11 @@
-import type { CodeBlock } from "@okforest/okf"
+import type { CodeBlock, MarkdownFile } from "@okforest/okf"
 import type {
+  CheckContext,
   D2Module,
   DiagramLoaders,
   MermaidModule,
   Report,
   Rule,
-  RuleContext,
   Unavailable,
 } from "../types.js"
 
@@ -59,7 +59,7 @@ const isUnavailable = (value: object): value is Unavailable => "unavailable" in 
 
 /** Load a language's engine once per run: a checker, or why there is none. */
 async function loadChecker(
-  context: RuleContext,
+  context: CheckContext,
   language: Language,
 ): Promise<Checker | Unavailable> {
   return context
@@ -164,34 +164,63 @@ function isMissingModule(error: unknown): boolean {
   return false
 }
 
-/** Every diagram of a language, checked once per run and shared by the rules below. */
-function outcomes(context: RuleContext, language: Language): Promise<Outcome[]> {
-  return context.once(`diagram-outcomes:${language}`, async () => {
-    const blocks = [...context.tree.concepts, ...context.tree.reserved].flatMap((file) =>
-      file.codeBlocks
-        .filter((block) => block.lang?.toLowerCase() === language)
-        .map((block) => ({ file: file.path, block })),
-    )
-    if (blocks.length === 0) return []
-    const check = await loadChecker(context, language)
-    const results: Outcome[] = []
-    for (const { file, block } of blocks) {
-      if (typeof check !== "function") {
-        results.push({ file, block, status: "unchecked", reason: check.unavailable })
-        continue
-      }
-      try {
-        const errors = await check(block.value)
-        results.push(
-          errors ? { file, block, status: "error", errors } : { file, block, status: "ok" },
-        )
-      } catch (error) {
-        if (!(error instanceof Unchecked)) throw error
-        results.push({ file, block, status: "unchecked", reason: error.message })
-      }
+/** Each file's diagrams of a language, checked once per run (its `once`)
+ * and shared by the rules below; kept only while the file is. */
+const checked = new WeakMap<
+  CheckContext["once"],
+  WeakMap<MarkdownFile, Map<Language, Promise<Outcome[]>>>
+>()
+
+function outcomes(
+  file: MarkdownFile,
+  context: CheckContext,
+  language: Language,
+): Promise<Outcome[]> {
+  let files = checked.get(context.once)
+  if (!files) {
+    files = new WeakMap()
+    checked.set(context.once, files)
+  }
+  let languages = files.get(file)
+  if (!languages) {
+    languages = new Map()
+    files.set(file, languages)
+  }
+  let found = languages.get(language)
+  if (!found) {
+    found = checkBlocks(file, context, language)
+    languages.set(language, found)
+  }
+  return found
+}
+
+async function checkBlocks(
+  file: MarkdownFile,
+  context: CheckContext,
+  language: Language,
+): Promise<Outcome[]> {
+  const blocks = file.codeBlocks.filter((block) => block.lang?.toLowerCase() === language)
+  if (blocks.length === 0) return []
+  const check = await loadChecker(context, language)
+  const results: Outcome[] = []
+  for (const block of blocks) {
+    if (typeof check !== "function") {
+      results.push({ file: file.path, block, status: "unchecked", reason: check.unavailable })
+      continue
     }
-    return results
-  })
+    try {
+      const errors = await check(block.value)
+      results.push(
+        errors
+          ? { file: file.path, block, status: "error", errors }
+          : { file: file.path, block, status: "ok" },
+      )
+    } catch (error) {
+      if (!(error instanceof Unchecked)) throw error
+      results.push({ file: file.path, block, status: "unchecked", reason: error.message })
+    }
+  }
+  return results
 }
 
 function syntaxRule(language: Language, name: string): Rule {
@@ -199,8 +228,8 @@ function syntaxRule(language: Language, name: string): Rule {
     id: `okforest/${language}-syntax`,
     severity: "error",
     description: `\`${language}\` code blocks are valid ${name} (diagrams as code).`,
-    async check(context) {
-      for (const outcome of await outcomes(context, language)) {
+    async checkFile(file, context) {
+      for (const outcome of await outcomes(file, context, language)) {
         if (outcome.status !== "error") continue
         // Parsers report end-of-input one line past the source; keep findings
         // inside the block rather than on its closing fence.
@@ -226,9 +255,9 @@ export const diagramUnchecked: Rule = {
   severity: "info",
   description:
     "Reports diagram blocks whose syntax could not be checked (tool not installed or unsupported here).",
-  async check(context) {
+  async checkFile(file, context) {
     for (const language of ["d2", "mermaid"] as const) {
-      for (const outcome of await outcomes(context, language)) {
+      for (const outcome of await outcomes(file, context, language)) {
         if (outcome.status !== "unchecked") continue
         context.report({
           file: outcome.file,

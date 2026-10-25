@@ -162,6 +162,26 @@ export interface TreeSettings {
   locate(path: KeyPath): Position | undefined
 }
 
+/**
+ * A tree without its documents: every path in it, the markdown files that are
+ * part of it, and its settings, worked out from paths alone (and the settings
+ * file's text). A tree too large to hold parsed at once is read one file at a
+ * time with {@link TreeOutline.read}; {@link Tree} is the same, read whole.
+ */
+export interface TreeOutline {
+  /** Every file path in the tree, sorted. */
+  files: string[]
+  /** The markdown files that are part of the tree, sorted: its concepts,
+   * `index.md`, and `log.md` files, without those the settings ignore. */
+  markdown: string[]
+  /** Markdown files left out by the settings' `ignore:` globs. */
+  ignored: string[]
+  settings?: TreeSettings
+  /** Read one of {@link markdown}, with its links resolved against the whole
+   * tree, as {@link Tree} holds it. Throws for any other path. */
+  read(path: string, text: string): Concept | ReservedFile
+}
+
 /** A tree (an OKF bundle) read into a model. */
 export interface Tree {
   /** Every file path in the tree, sorted. */

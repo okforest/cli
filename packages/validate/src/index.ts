@@ -10,16 +10,16 @@ export { defaultDiagramLoaders } from "./rules/diagrams.js"
 export { defaultRules, okforestRules, okfRules } from "./rules/index.js"
 export { SETTINGS_KEYS } from "./rules/okforest.js"
 export type {
+  CheckContext,
   D2Module,
   DiagramLoaders,
   Finding,
   MermaidModule,
   Report,
   Rule,
-  RuleContext,
   Severity,
   Unavailable,
   ValidateOptions,
   ValidationResult,
 } from "./types.js"
-export { validate } from "./validate.js"
+export { type TreeChecker, treeChecker, validate } from "./validate.js"

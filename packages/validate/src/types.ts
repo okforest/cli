@@ -1,4 +1,4 @@
-import type { Tree } from "@okforest/okf"
+import type { Concept, ReservedFile, TreeOutline } from "@okforest/okf"
 
 /** `error` fails validation; `warning` and `info` are reported but never fail. */
 export type Severity = "error" | "warning" | "info"
@@ -14,7 +14,7 @@ export interface Finding {
   column?: number
 }
 
-/** What a rule passes to {@link RuleContext.report}. */
+/** What a rule passes to {@link CheckContext.report}. */
 export interface Report {
   message: string
   file: string
@@ -22,8 +22,10 @@ export interface Report {
   column?: number
 }
 
-export interface RuleContext {
-  tree: Tree
+/** What a rule's checks are given: the tree's outline (its paths and
+ * settings), and the run's means of reporting and sharing. */
+export interface CheckContext {
+  outline: TreeOutline
   /** The instant staleness and dates are judged against. */
   now: Date
   report(report: Report): void
@@ -40,6 +42,11 @@ export interface RuleContext {
  * A validation rule. IDs are stable and namespaced: `okf/*` for the OKF
  * specification, `okforest/*` for OKForest conventions; organization
  * standards will plug in as another namespace.
+ *
+ * A rule checks each markdown file on its own ({@link checkFile}) and the
+ * tree's paths and settings ({@link checkTree}), never the whole parsed
+ * tree, so it also runs on a tree read one file at a time
+ * ({@link treeChecker}).
  */
 export interface Rule {
   id: string
@@ -47,7 +54,12 @@ export interface Rule {
   severity: Severity
   /** One sentence: what the rule checks. */
   description: string
-  check(context: RuleContext): void | Promise<void>
+  /** Checks one of the tree's markdown files: a concept, `index.md`, or
+   * `log.md`. Runs once for each, in any order. */
+  checkFile?(file: Concept | ReservedFile, context: CheckContext): void | Promise<void>
+  /** Checks what belongs to the tree as a whole, from its outline: its
+   * paths and settings. Runs once, after every file. */
+  checkTree?(context: CheckContext): void | Promise<void>
 }
 
 export interface ValidateOptions {

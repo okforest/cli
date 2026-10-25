@@ -11,16 +11,17 @@ export const slug: Rule = {
   severity: "warning",
   description:
     "File and directory names of concepts are slugs: lowercase letters, digits, and hyphens.",
-  check({ tree, report }) {
+  checkFile(file, { report }) {
+    if (file.kind !== "concept") return
+    const stem = (file.path.split("/").at(-1) as string).slice(0, -".md".length)
+    if (!SLUG.test(stem)) report({ file: file.path, message: notSlug(stem, "File name") })
+  },
+  // The directories holding the tree's markdown.
+  checkTree({ outline, report }) {
     const directories = new Set<string>()
-    for (const file of [...tree.concepts, ...tree.reserved]) {
-      const segments = file.path.split("/")
+    for (const path of outline.markdown) {
+      const segments = path.split("/")
       for (let i = 1; i < segments.length; i++) directories.add(segments.slice(0, i).join("/"))
-      if (file.kind !== "concept") continue
-      const stem = (segments.at(-1) as string).slice(0, -".md".length)
-      if (!SLUG.test(stem)) {
-        report({ file: file.path, message: notSlug(stem, "File name") })
-      }
     }
     for (const directory of [...directories].sort()) {
       const name = directory.slice(directory.lastIndexOf("/") + 1)
@@ -67,43 +68,41 @@ export const placeholder: Rule = {
   severity: "warning",
   description:
     "Bodies contain no unrendered template placeholders (`{{name}}`, `<concept>`, `[INSERT ...]`) or example link paths (`path/to/...`).",
-  check({ tree, report }) {
-    for (const file of [...tree.concepts, ...tree.reserved]) {
-      visit(file.ast, (node) => {
-        const start = node.position?.start
-        if (!start) return
-        if (node.type === "text") {
-          for (const { pattern, what } of TEXT_PLACEHOLDERS) {
-            for (const match of node.value.matchAll(pattern)) {
-              report({
-                file: file.path,
-                ...offsetIn(node.value, match.index, start),
-                message: `Unrendered ${what} ${show(match[0])}.`,
-              })
-            }
-          }
-        } else if (node.type === "html") {
-          const tag = TAG.exec(node.value.trim())
-          if (tag && !HTML_ELEMENTS.has((tag[1] as string).toLowerCase())) {
+  checkFile(file, { report }) {
+    visit(file.ast, (node) => {
+      const start = node.position?.start
+      if (!start) return
+      if (node.type === "text") {
+        for (const { pattern, what } of TEXT_PLACEHOLDERS) {
+          for (const match of node.value.matchAll(pattern)) {
             report({
               file: file.path,
-              line: start.line,
-              column: start.column,
-              message: `Unrendered placeholder ${show(node.value.trim())}.`,
-            })
-          }
-        } else if (node.type === "link" || node.type === "image") {
-          if (/\{\{|\}\}|%7b%7b|[<>]|(?:^|\/)path\/to\//i.test(node.url)) {
-            report({
-              file: file.path,
-              line: start.line,
-              column: start.column,
-              message: `Link to a placeholder or example path ${show(node.url)}.`,
+              ...offsetIn(node.value, match.index, start),
+              message: `Unrendered ${what} ${show(match[0])}.`,
             })
           }
         }
-      })
-    }
+      } else if (node.type === "html") {
+        const tag = TAG.exec(node.value.trim())
+        if (tag && !HTML_ELEMENTS.has((tag[1] as string).toLowerCase())) {
+          report({
+            file: file.path,
+            line: start.line,
+            column: start.column,
+            message: `Unrendered placeholder ${show(node.value.trim())}.`,
+          })
+        }
+      } else if (node.type === "link" || node.type === "image") {
+        if (/\{\{|\}\}|%7b%7b|[<>]|(?:^|\/)path\/to\//i.test(node.url)) {
+          report({
+            file: file.path,
+            line: start.line,
+            column: start.column,
+            message: `Link to a placeholder or example path ${show(node.url)}.`,
+          })
+        }
+      }
+    })
   },
 }
 
@@ -112,19 +111,17 @@ export const wikilink: Rule = {
   id: "okforest/wikilink",
   severity: "warning",
   description: "Concepts link with standard markdown links, not `[[wikilinks]]` (OKF §6.1).",
-  check({ tree, report }) {
-    for (const file of [...tree.concepts, ...tree.reserved]) {
-      visit(file.ast, (node) => {
-        if (node.type !== "text" || !node.position) return
-        for (const match of node.value.matchAll(/\[\[([^[\]\n]+)\]\]/g)) {
-          report({
-            file: file.path,
-            ...offsetIn(node.value, match.index, node.position.start),
-            message: `${show(match[0])} is a wikilink, not an OKF link: write \`[${match[1]}](${slugify(match[1] as string) || "concept"}.md)\` with the concept's path.`,
-          })
-        }
-      })
-    }
+  checkFile(file, { report }) {
+    visit(file.ast, (node) => {
+      if (node.type !== "text" || !node.position) return
+      for (const match of node.value.matchAll(/\[\[([^[\]\n]+)\]\]/g)) {
+        report({
+          file: file.path,
+          ...offsetIn(node.value, match.index, node.position.start),
+          message: `${show(match[0])} is a wikilink, not an OKF link: write \`[${match[1]}](${slugify(match[1] as string) || "concept"}.md)\` with the concept's path.`,
+        })
+      }
+    })
   },
 }
 
@@ -150,8 +147,8 @@ export const settingsFile: Rule = {
   severity: "error",
   description:
     "`.okforest/settings.yaml` (spelled `.yaml`) holds well-formed settings: a `name` of up to 100 characters, a `description` of up to 4,000, and `ignore` globs.",
-  check({ tree, report }) {
-    if (tree.files.includes(MISSPELLED_SETTINGS_PATH)) {
+  checkTree({ outline, report }) {
+    if (outline.files.includes(MISSPELLED_SETTINGS_PATH)) {
       report({
         file: MISSPELLED_SETTINGS_PATH,
         line: 1,
@@ -159,7 +156,7 @@ export const settingsFile: Rule = {
         message: `Rename \`${MISSPELLED_SETTINGS_PATH}\` to \`${SETTINGS_PATH}\`: only the \`.yaml\` name is read, so these settings are ignored.`,
       })
     }
-    const settings = tree.settings
+    const settings = outline.settings
     if (!settings) return
     const problem = (path: KeyPath, message: string) =>
       report({
@@ -211,8 +208,8 @@ export const settingsKeys: Rule = {
   severity: "warning",
   description:
     "`.okforest/settings.yaml` uses only the settings OKForest knows; others, such as a misspelled key, are ignored.",
-  check({ tree, report }) {
-    const settings = tree.settings
+  checkTree({ outline, report }) {
+    const settings = outline.settings
     if (!settings?.data) return
     for (const key of Object.keys(settings.data)) {
       if (SETTINGS_KEYS.includes(key)) continue

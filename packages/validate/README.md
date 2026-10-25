@@ -19,8 +19,24 @@ for (const f of result.findings) {
 
 Options: `rules` (defaults to `defaultRules`, which is `okfRules` plus
 `okforestRules`), `severity` (per-rule overrides, or `"off"`), and `now` (for
-date checks). A rule is `{ id, severity, description, check(context) }`, so
-your own rules plug in alongside the built-in ones.
+date checks). A rule is `{ id, severity, description }` with
+`checkFile(file, context)`, run for each concept, `index.md`, and `log.md`,
+and `checkTree(context)`, run once on the tree's outline (its paths and
+settings), so your own rules plug in alongside the built-in ones.
+
+A tree too large to hold parsed at once is validated a file at a time, as
+[`@okforest/okf`](https://www.npmjs.com/package/@okforest/okf)'s
+`outlineTree` reads it, with the same findings as `validate`:
+
+```ts
+import { outlineTree } from "@okforest/okf"
+import { treeChecker } from "@okforest/validate"
+
+const outline = outlineTree(paths, settingsText)
+const checker = treeChecker(outline)
+for (const path of outline.markdown) await checker.check(outline.read(path, await textOf(path)))
+const result = await checker.finish() // always call it: it disposes of diagram engines
+```
 
 Diagram checks load the optional peers `@d2lang/d2` and `mermaid` if they are
 installed; otherwise diagram blocks are reported as not checked (`info`). To

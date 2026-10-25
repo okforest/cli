@@ -1,4 +1,4 @@
-import { parseTree } from "../src/index.js"
+import { outlineTree, parseTree } from "../src/index.js"
 
 const tree = (files: Record<string, string | undefined>) =>
   parseTree(
@@ -199,5 +199,57 @@ describe("links", () => {
     ])
     expect(t.backlinks("tables/orders").map((l) => l.from)).toEqual(["metrics/revenue.md"])
     expect(t.backlinks("nothing")).toEqual([])
+  })
+})
+
+describe("outlineTree", () => {
+  const files = {
+    ".okforest/settings.yaml": "name: Acme\nignore:\n  - drafts/\n",
+    "index.md": '---\nokf_version: "0.2"\n---\n* [Orders](tables/orders.md) - orders\n',
+    "tables/orders.md": concept("See [notes](../notes.md) and [the policy](/policy.md)."),
+    "notes.md": concept("Back to [orders](tables/orders.md)."),
+    "drafts/idea.md": concept(),
+    ".git/HEAD.md": "ref",
+    "logo.png": undefined,
+  }
+
+  it("outlines a tree from its paths and settings, without its markdown", () => {
+    const outline = outlineTree(Object.keys(files), files[".okforest/settings.yaml"])
+    expect(outline.files).toEqual(Object.keys(files).sort())
+    expect(outline.markdown).toEqual(["index.md", "notes.md", "tables/orders.md"])
+    expect(outline.ignored).toEqual(["drafts/idea.md"])
+    expect(outline.settings?.name).toBe("Acme")
+  })
+
+  it("reads each file as parseTree does, one at a time", () => {
+    const whole = tree(files)
+    const outline = outlineTree(Object.keys(files), files[".okforest/settings.yaml"])
+    const read = outline.markdown.map((path) =>
+      outline.read(path, files[path as keyof typeof files] ?? ""),
+    )
+    const comparable = (file: object) =>
+      JSON.parse(
+        JSON.stringify(file, (_key, value) => (typeof value === "function" ? "fn" : value)),
+      )
+    expect(read.map(comparable)).toEqual(
+      [...whole.concepts, ...whole.reserved]
+        .sort((a, b) => (a.path < b.path ? -1 : 1))
+        .map(comparable),
+    )
+    // Links resolve against the whole tree, though nothing else was read.
+    const orders = read.find((file) => file.path === "tables/orders.md")
+    expect(orders?.links.map((link) => [link.target, link.exists, link.concept])).toEqual([
+      ["../notes.md", true, "notes"],
+      ["/policy.md", false, undefined],
+    ])
+  })
+
+  it("refuses to read a file that isn't one of the tree's markdown files", () => {
+    const outline = outlineTree(Object.keys(files), files[".okforest/settings.yaml"])
+    for (const path of ["drafts/idea.md", "logo.png", "missing.md"]) {
+      expect(() => outline.read(path, "# x\n"), path).toThrow(
+        "not one of the tree's markdown files",
+      )
+    }
   })
 })

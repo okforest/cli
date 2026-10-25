@@ -1,4 +1,4 @@
-import { type ParsedFile, readMarkdownFile } from "./document.js"
+import { readMarkdownFile } from "./document.js"
 import type { RawLink } from "./markdown.js"
 import { basename, dirname, globToRegExp, isExternal, normalize } from "./paths.js"
 import {
@@ -8,7 +8,15 @@ import {
   normalizeSources,
   normalizeVerified,
 } from "./trust.js"
-import type { Concept, Link, ReservedFile, Tree, TreeFile, TreeSettings } from "./types.js"
+import type {
+  Concept,
+  Link,
+  ReservedFile,
+  Tree,
+  TreeFile,
+  TreeOutline,
+  TreeSettings,
+} from "./types.js"
 import { isRecord, parseYaml } from "./yaml.js"
 
 /** Where OKForest keeps a bundle's settings (an OKForest convention, not OKF). */
@@ -34,53 +42,13 @@ export function parseTree(input: Iterable<TreeFile>): Tree {
     const path = normalize(file.path.replaceAll("\\", "/"))
     if (path) texts.set(path, file.text)
   }
-  const files = [...texts.keys()].sort()
-  const fileSet = new Set(files)
-  const directories = new Set<string>([""])
-  for (const path of files) {
-    for (let dir = dirname(path); dir !== ""; dir = dirname(dir)) directories.add(dir)
-  }
-
-  const settings = readSettings(texts.get(SETTINGS_PATH))
-  const isIgnored = ignoreMatcher(settings?.ignore ?? [])
-
-  const ignored: string[] = []
-  const parsed: { file: ParsedFile; reserved: boolean }[] = []
-  for (const path of files) {
-    if (!path.endsWith(".md")) continue
-    const segments = path.split("/")
-    if (segments.some((s) => SKIPPED_FOLDERS.has(s))) continue
-    if (isIgnored(path)) {
-      ignored.push(path)
-      continue
-    }
-    parsed.push({
-      file: readMarkdownFile(path, texts.get(path) ?? ""),
-      reserved: RESERVED.has(basename(path)),
-    })
-  }
-
-  const conceptIds = new Set(
-    parsed.filter((p) => !p.reserved).map((p) => p.file.path.slice(0, -".md".length)),
-  )
-  const resolve = (raw: RawLink, from: string): Link =>
-    resolveLink(raw, from, fileSet, directories, conceptIds)
-
+  const outline = outlineTree(texts.keys(), texts.get(SETTINGS_PATH))
   const concepts: Concept[] = []
   const reserved: ReservedFile[] = []
-  for (const { file, reserved: isReserved } of parsed) {
-    const { rawLinks, ...rest } = file
-    const links = rawLinks.map((raw) => resolve(raw, file.path))
-    if (isReserved) {
-      reserved.push({
-        ...rest,
-        links,
-        kind: basename(file.path) === "index.md" ? "index" : "log",
-        directory: dirname(file.path),
-      })
-    } else {
-      concepts.push(buildConcept({ ...rest, links }))
-    }
+  for (const path of outline.markdown) {
+    const file = outline.read(path, texts.get(path) ?? "")
+    if (file.kind === "concept") concepts.push(file)
+    else reserved.push(file)
   }
 
   const byId = new Map(concepts.map((c) => [c.id, c]))
@@ -96,11 +64,11 @@ export function parseTree(input: Iterable<TreeFile>): Tree {
   const rootIndex = reserved.find((r) => r.path === "index.md")
 
   return {
-    files,
+    files: outline.files,
     concepts,
     reserved,
-    ignored,
-    ...(settings ? { settings } : {}),
+    ignored: outline.ignored,
+    ...(outline.settings ? { settings: outline.settings } : {}),
     ...(rootIndex?.frontmatter && "okf_version" in rootIndex.frontmatter
       ? { okfVersion: rootIndex.frontmatter.okf_version }
       : {}),
@@ -109,6 +77,63 @@ export function parseTree(input: Iterable<TreeFile>): Tree {
       .flatMap((doc) => doc.links),
     concept: (id) => byId.get(id),
     backlinks: (id) => backlinks.get(id) ?? [],
+  }
+}
+
+/**
+ * Outline a tree from its file paths and the text of its settings file
+ * (`.okforest/settings.yaml`, when it has one), without reading its markdown:
+ * a tree too large to hold parsed at once is then read one file at a time
+ * with {@link TreeOutline.read}, each file as {@link parseTree} reads it.
+ */
+export function outlineTree(paths: Iterable<string>, settingsText?: string): TreeOutline {
+  const unique = new Set<string>()
+  for (const raw of paths) {
+    const path = normalize(raw.replaceAll("\\", "/"))
+    if (path) unique.add(path)
+  }
+  const files = [...unique].sort()
+  const fileSet = new Set(files)
+  const directories = new Set<string>([""])
+  for (const path of files) {
+    for (let dir = dirname(path); dir !== ""; dir = dirname(dir)) directories.add(dir)
+  }
+
+  const settings = readSettings(settingsText)
+  const isIgnored = ignoreMatcher(settings?.ignore ?? [])
+
+  const ignored: string[] = []
+  const markdown: string[] = []
+  for (const path of files) {
+    if (!path.endsWith(".md")) continue
+    const segments = path.split("/")
+    if (segments.some((s) => SKIPPED_FOLDERS.has(s))) continue
+    if (isIgnored(path)) ignored.push(path)
+    else markdown.push(path)
+  }
+  const inTree = new Set(markdown)
+  const conceptIds = new Set(
+    markdown.filter((path) => !RESERVED.has(basename(path))).map((path) => path.slice(0, -3)),
+  )
+
+  return {
+    files,
+    markdown,
+    ignored,
+    ...(settings ? { settings } : {}),
+    read(path, text) {
+      if (!inTree.has(path)) throw new Error(`${path} is not one of the tree's markdown files.`)
+      const { rawLinks, ...rest } = readMarkdownFile(path, text)
+      const links = rawLinks.map((raw) => resolveLink(raw, path, fileSet, directories, conceptIds))
+      const name = basename(path)
+      if (!RESERVED.has(name)) return buildConcept({ ...rest, links })
+      return {
+        ...rest,
+        links,
+        kind: name === "index.md" ? "index" : "log",
+        directory: dirname(path),
+      }
+    },
   }
 }
 
