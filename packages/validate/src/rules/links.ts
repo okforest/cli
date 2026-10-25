@@ -1,5 +1,5 @@
-import { type Concept, isRecord, type KeyPath, type TreeOutline } from "@okforest/okf"
-import type { Rule } from "../types.js"
+import { type Concept, isRecord, type KeyPath } from "@okforest/okf"
+import type { CheckContext, Rule } from "../types.js"
 import { at, show } from "../util.js"
 
 /**
@@ -32,9 +32,9 @@ function pathFields(concept: Concept): { value: string; path: KeyPath }[] {
 }
 
 /** Each outline's paths, files and directories, as sets: built once a run. */
-const pathSets = new WeakMap<TreeOutline, ReadonlySet<string>>()
+const pathSets = new WeakMap<CheckContext["outline"], ReadonlySet<string>>()
 
-function pathsOf(outline: TreeOutline): ReadonlySet<string> {
+function pathsOf(outline: CheckContext["outline"]): ReadonlySet<string> {
   let paths = pathSets.get(outline)
   if (!paths) {
     const set = new Set<string>(outline.files)

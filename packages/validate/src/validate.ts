@@ -13,19 +13,15 @@ export async function validate(
   options: ValidateOptions = {},
 ): Promise<ValidationResult> {
   const files = [...tree.concepts, ...tree.reserved].sort((a, b) => compare(a.path, b.path))
-  const byPath = new Map(files.map((file) => [file.path, file]))
-  const outline: TreeOutline = {
-    files: tree.files,
-    markdown: files.map((file) => file.path),
-    ignored: tree.ignored,
-    ...(tree.settings ? { settings: tree.settings } : {}),
-    read(path) {
-      const file = byPath.get(path)
-      if (!file) throw new Error(`${path} is not one of the tree's markdown files.`)
-      return file
+  const run = new Run(
+    {
+      files: tree.files,
+      markdown: files.map((file) => file.path),
+      ignored: tree.ignored,
+      ...(tree.settings ? { settings: tree.settings } : {}),
     },
-  }
-  const run = new Run(outline, options)
+    options,
+  )
   try {
     for (const file of files) await run.file(file)
     return await run.finish()
@@ -72,7 +68,7 @@ class Run {
   #concepts = 0
   #files = 0
 
-  constructor(outline: TreeOutline, options: ValidateOptions) {
+  constructor(outline: CheckContext["outline"], options: ValidateOptions) {
     const now = options.now ?? new Date()
     const diagrams = {
       d2: options.diagrams?.d2 ?? defaultDiagramLoaders.d2,

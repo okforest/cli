@@ -25,7 +25,9 @@ export interface Report {
 /** What a rule's checks are given: the tree's outline (its paths and
  * settings), and the run's means of reporting and sharing. */
 export interface CheckContext {
-  outline: TreeOutline
+  /** The tree's paths and settings. Rules are given each file, so they
+   * never read one themselves. */
+  outline: Omit<TreeOutline, "read">
   /** The instant staleness and dates are judged against. */
   now: Date
   report(report: Report): void
