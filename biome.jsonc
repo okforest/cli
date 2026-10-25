@@ -4,10 +4,19 @@
 
   // Respect .gitignore (skips dist/, node_modules/, .turbo/, etc.). Fixtures
   // and tree templates are data, not source: vendored or hand-made trees are
-  // kept byte-for-byte.
+  // kept byte-for-byte. pnpm and Changesets own the formatting of the lockfile
+  // and changelogs.
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
   "files": {
-    "includes": ["**", "!**/dist", "!.claude", "!fixtures", "!packages/okforest/templates"]
+    "includes": [
+      "**",
+      "!**/dist",
+      "!.claude",
+      "!fixtures",
+      "!packages/okforest/templates",
+      "!pnpm-lock.yaml",
+      "!**/CHANGELOG.md"
+    ]
   },
 
   "assist": {
