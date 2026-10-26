@@ -20,7 +20,7 @@ catalog:
   micromark-extension-gfm-footnote: ^2.1.0
   # Held at 0.23.1: 0.23.2 needs rolldown-plugin-dts 0.29 (beta), which builds
   # declarations under TypeScript 7 only with `isolatedDeclarations` enabled.
-  tsdown: 0.23.1
+  tsdown: 0.23.2
   turbo: ^2.11.10
   typescript: ^7.0.2
   vitest: ^5.0.5
