@@ -60,9 +60,12 @@ describe("okforest/type-schema", () => {
         },
         secret: false,
         code: { type: "string", pattern: "^[A-Z]+$" },
+        host: { type: "string", format: "ipv4" },
+        meta: { type: ["object", "null"] },
       },
     }
-    const extra = "kind: letter\nsize: big\nowner:\n  team: 3\nsecret: yes\ncode: abc"
+    const extra =
+      "kind: letter\nsize: big\nowner:\n  team: 3\nsecret: yes\ncode: abc\nhost: example\nmeta: 3"
     expect(await check(schema, extra)).toEqual([
       "note.md:5:1 error okforest/type-schema `kind` must be `memo` (got `letter`).",
       "note.md:6:1 error okforest/type-schema `size` doesn't match any of the forms the Note type allows (got `big`).",
@@ -70,6 +73,8 @@ describe("okforest/type-schema", () => {
       "note.md:8:3 error okforest/type-schema `owner.team` must be a string or a list (got a number).",
       "note.md:9:1 error okforest/type-schema `secret` isn't allowed in the Note type.",
       "note.md:10:1 error okforest/type-schema `code` must match the pattern `^[A-Z]+$` (got `abc`).",
+      "note.md:11:1 error okforest/type-schema `host` must be in the `ipv4` format (got `example`).",
+      "note.md:12:1 error okforest/type-schema `meta` must be a mapping or null (got a number).",
     ])
   })
 

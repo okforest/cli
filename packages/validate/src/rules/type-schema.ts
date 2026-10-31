@@ -68,6 +68,7 @@ export const typeSchema: Rule = {
         ([key]) => !OKF_KEYS.includes(key) || usable.named.has(key),
       ),
     )
+    const typeLine = file.locate(["type"]) ?? { line: 1, column: 1 }
     let units: OutputUnit[]
     try {
       units = usable.validator.validate(instance).errors
@@ -76,8 +77,8 @@ export const typeSchema: Rule = {
       // regular expression is compiled when a string meets it.
       context.report({
         file: file.path,
-        ...(file.locate(["type"]) ?? { line: 1, column: 1 }),
-        message: `${usable.path} can't check this concept: ${cause instanceof Error ? cause.message.split("\n")[0] : cause}`,
+        ...typeLine,
+        message: `${usable.path} can't check this concept: ${(cause as Error).message.split("\n")[0]}`,
       })
       return
     }
@@ -86,12 +87,17 @@ export const typeSchema: Rule = {
       // An unknown field is reported where it's written; a missing one, at
       // the mapping that lacks it (the concept's `type` for the top level).
       const at = unit.keyword === "additionalProperties" ? [...path, propertyOf(unit.error)] : path
-      const where = (at.length > 0 && file.locate(at)) ||
-        file.locate(["type"]) || { line: 1, column: 1 }
+      const where = at.length > 0 ? file.locate(at) : undefined
       context.report({
         file: file.path,
-        ...where,
-        message: explain(unit, path, valueAt(file.frontmatter, path), file.type, usable.data),
+        ...(where ?? typeLine),
+        message: explain(
+          unit,
+          path,
+          pointTo(file.frontmatter, unit.instanceLocation),
+          file.type,
+          usable.data,
+        ),
       })
     }
   },
@@ -308,7 +314,7 @@ function kind(type: unknown): string {
 
 /** The property a `required` or `additionalProperties` message names. */
 function propertyOf(error: string): string {
-  return /property "(.+?)"|Property "(.+?)"/.exec(error)?.slice(1).find(Boolean) ?? ""
+  return /property "(.+?)"/i.exec(error)?.[1] ?? ""
 }
 
 /** A JSON Pointer (`#/regions/1`) as a frontmatter key path. */
@@ -328,14 +334,4 @@ function label(path: KeyPath): string {
       typeof segment === "number" ? `[${segment}]` : i === 0 ? segment : `.${segment}`,
     )
     .join("")
-}
-
-function valueAt(frontmatter: Record<string, unknown>, path: KeyPath): unknown {
-  let value: unknown = frontmatter
-  for (const segment of path) {
-    if (Array.isArray(value) && typeof segment === "number") value = value[segment]
-    else if (isRecord(value) && typeof segment === "string") value = value[segment]
-    else return undefined
-  }
-  return value
 }
