@@ -10,6 +10,7 @@ npx okforest validate . --format json   # for CI and tools
 npx okforest inventory .                # types, tags, keys, near-duplicates
 npx okforest init sales-okf --template company --name "Sales knowledge"
 npx okforest rule okf/type              # why a rule exists, and how to fix it
+npx okforest types init .               # draft a JSON Schema for each type
 ```
 
 `npx` runs it without installing anything. It needs Node.js 22 or later. To

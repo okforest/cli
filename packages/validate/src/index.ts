@@ -1,4 +1,5 @@
 export { RULE_DOCS_URL, ruleUrl } from "./docs.js"
+export { draftTypeSchema } from "./draft.js"
 export {
   REPORT_SCHEMA_VERSION,
   type ReportFinding,

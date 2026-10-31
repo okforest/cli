@@ -1,30 +1,7 @@
 import { type OutputUnit, type SchemaDraft, Validator } from "@cfworker/json-schema"
-import { isRecord, type KeyPath } from "@okforest/okf"
+import { isRecord, type KeyPath, OKF_FIELDS } from "@okforest/okf"
 import type { CheckContext, Rule } from "../types.js"
 import { describeType, show } from "../util.js"
-
-/** The frontmatter keys OKF defines (§4.1, §5, §10.2). A type's schema
- * describes its own fields; these are left out of what it checks unless it
- * names them in `properties`, so `additionalProperties: false` still lets a
- * concept carry its `title` or `verified`. */
-const OKF_KEYS: readonly string[] = [
-  "type",
-  "title",
-  "description",
-  "resource",
-  "tags",
-  "sources",
-  "usage_window",
-  "generated",
-  "verified",
-  "status",
-  "stale_after",
-  "runtime",
-  "parameters",
-  "computation",
-  "executor",
-  "attester",
-]
 
 /** The JSON Schema drafts a schema's `$schema` can name; 2020-12 otherwise. */
 const DRAFTS: readonly [RegExp, SchemaDraft][] = [
@@ -63,9 +40,12 @@ export const typeSchema: Rule = {
     if (file.kind !== "concept" || typeof file.type !== "string" || !file.frontmatter) return
     const usable = (await schemasOf(context)).get(file.type)
     if (!usable) return
+    // OKF's own fields are left to the okf/* rules unless the schema names
+    // them, so `additionalProperties: false` still lets a concept carry its
+    // `title` or `verified`.
     const instance = Object.fromEntries(
       Object.entries(file.frontmatter).filter(
-        ([key]) => !OKF_KEYS.includes(key) || usable.named.has(key),
+        ([key]) => !OKF_FIELDS.includes(key) || usable.named.has(key),
       ),
     )
     const typeLine = file.locate(["type"]) ?? { line: 1, column: 1 }
