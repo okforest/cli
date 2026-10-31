@@ -212,6 +212,24 @@ exports[`rule fixtures > okforest/slug 1`] = `
 ]
 `;
 
+exports[`rule fixtures > okforest/type-schema 1`] = `
+[
+  ".okforest/types/broken.schema.json:3:1 error okforest/type-schema Not valid JSON: Expected double-quoted property name.",
+  ".okforest/types/customer.v2.schema.json:1:3 error okforest/type-schema .okforest/types/customer.schema.json is already the schema for \`Customer\`; a type has one schema.",
+  ".okforest/types/dangling.schema.json:3:30 error okforest/type-schema \`$ref\` \`#/$defs/person\` leads nowhere in this schema.",
+  ".okforest/types/list.schema.json:3:3 error okforest/type-schema A type schema describes frontmatter, which is a mapping: its \`type\` must be \`object\`, not \`array\`.",
+  ".okforest/types/not-object.schema.json:1:1 error okforest/type-schema A type schema must be a JSON object (got a list).",
+  ".okforest/types/untitled.schema.json:1:1 error okforest/type-schema A type schema needs a \`title\`: the type it's for, as concepts write it in \`type\`.",
+  "acme.md:2:1 error okforest/type-schema Missing \`account_owner\`, which the Customer type requires.",
+  "acme.md:5:1 error okforest/type-schema \`tags\`: Array does not contain item matching schema.",
+  "acme.md:6:1 error okforest/type-schema \`relationship\` must be one of \`prospect\`, \`active\`, \`former\` (got \`lost\`).",
+  "acme.md:7:1 error okforest/type-schema \`since\` must be a date like \`2026-06-30\` (got \`2026-13-45\`).",
+  "acme.md:8:1 error okforest/type-schema \`seats\`: 0 is less than 1.",
+  "acme.md:9:15 error okforest/type-schema \`regions[1]\` must be a string (got a number).",
+  "acme.md:10:1 error okforest/type-schema \`renewal\` isn't a field of the Customer type.",
+]
+`;
+
 exports[`rule fixtures > okforest/wikilink 1`] = `
 [
   "wikilinks.md:7:5 warning okforest/wikilink \`[[Other Concept]]\` is a wikilink, not an OKF link: write \`[Other Concept](other-concept.md)\` with the concept's path.",

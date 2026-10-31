@@ -528,6 +528,34 @@ description: What Acme's teams know about customers, billing, and retention.
     },
   },
 
+  "okforest/type-schema": {
+    why: `OKF lets each team name its types and add any fields it likes ([§4.1](${SPEC}#41-frontmatter)), so nothing in the format keeps a team's \`Metric\` concepts alike. A JSON Schema for the type, in \`.okforest/types/\` (\`metric.schema.json\`), says which fields they carry, what each may hold, and which they must have; every concept of that type must match it. The schema's \`title\` is the type, as concepts write it in \`type\`. OKF's own fields (\`title\`, \`tags\`, \`verified\`, ...) are left to the \`okf/*\` rules, so a schema lists only its type's fields, and can still name one, such as \`tags\`, to narrow it. A schema that can't be used (not JSON, no \`title\`, a second schema for the same type, a \`$ref\` that leads nowhere) is reported on its file, and no concept is checked against it.`,
+    example: {
+      file: "churn.md",
+      fails: churn("unit: percentage\n"),
+      findings: [
+        "2:1 Missing `owner`, which the Metric type requires.",
+        "5:1 `unit` must be one of `percent`, `count`, `usd` (got `percentage`).",
+      ],
+      fixed: churn("unit: percent\nowner: data-team@acme.example\n"),
+      context: {
+        "index.md": rootIndex(CHURN_ENTRY),
+        ".okforest/types/metric.schema.json": `{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Metric",
+  "description": "A number the business tracks.",
+  "type": "object",
+  "properties": {
+    "unit": { "enum": ["percent", "count", "usd"] },
+    "owner": { "type": "string", "format": "email" }
+  },
+  "required": ["unit", "owner"]
+}
+`,
+      },
+    },
+  },
+
   "okforest/slug": {
     why: `A concept's ID is its path without \`.md\` (\`metrics/monthly-churn\`), and OKForest uses it in addresses and citations. Names made of lowercase letters, digits, and hyphens read the same everywhere: in URLs, without escaping; on file systems that ignore case; and when people and AI assistants type them.`,
     example: {

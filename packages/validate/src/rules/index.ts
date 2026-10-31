@@ -24,6 +24,7 @@ import {
 } from "./fields.js"
 import { brokenLink, footnoteSource } from "./links.js"
 import { placeholder, settingsFile, settingsKeys, slug, wikilink } from "./okforest.js"
+import { typeSchema } from "./type-schema.js"
 
 /** Rules from the OKF v0.2 specification. */
 export const okfRules: readonly Rule[] = [
@@ -49,10 +50,12 @@ export const okfRules: readonly Rule[] = [
   legacy,
 ]
 
-/** OKForest conventions beyond the spec: slugs, placeholders, settings, diagrams. */
+/** OKForest conventions beyond the spec: slugs, placeholders, settings, type
+ * schemas, diagrams. */
 export const okforestRules: readonly Rule[] = [
   settingsFile,
   settingsKeys,
+  typeSchema,
   slug,
   placeholder,
   wikilink,

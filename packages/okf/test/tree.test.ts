@@ -97,6 +97,29 @@ describe("parseTree", () => {
     expect(tree({ "a.md": concept() }).settings).toBeUndefined()
   })
 
+  it("reads type schemas, locating their keys and where JSON breaks", () => {
+    const t = tree({
+      ".okforest/types/customer.schema.json": '{\n  "title": "Customer",\n  "type": "object"\n}\n',
+      ".okforest/types/broken.schema.json": '{\n  "title": "Broken",\n}\n',
+      ".okforest/types/untitled.schema.json": '{ "title": " " }',
+      ".okforest/types/README.md": "# Types\n",
+    })
+    expect(t.types.map((s) => s.path)).toEqual([
+      ".okforest/types/broken.schema.json",
+      ".okforest/types/customer.schema.json",
+      ".okforest/types/untitled.schema.json",
+    ])
+    const [broken, customer, untitled] = t.types
+    expect(customer).toMatchObject({ name: "Customer", data: { title: "Customer" } })
+    expect(customer?.locate(["type"])).toEqual({ line: 3, column: 3 })
+    expect(broken).toMatchObject({ data: undefined, error: { line: 3, column: 1 } })
+    expect(broken?.error?.message).toMatch(/^Not valid JSON: .+\.$/)
+    expect(broken?.error?.message).not.toMatch(/position/)
+    expect(untitled?.name).toBeUndefined()
+    // Under .okforest/, so never a concept.
+    expect(t.concepts).toEqual([])
+  })
+
   it("leaves okfVersion unset when the root index declares none", () => {
     expect(tree({ "index.md": "# Root\n" }).okfVersion).toBeUndefined()
     expect(tree({ "index.md": "---\nokf_version: 0.2\n---\n" }).okfVersion).toBe(0.2)
@@ -242,6 +265,22 @@ describe("outlineTree", () => {
       ["../notes.md", true, "notes"],
       ["/policy.md", false, undefined],
     ])
+  })
+
+  it("reads the type schemas whose text it's given, and only those", () => {
+    const customer = '{ "title": "Customer", "type": "object" }\n'
+    const outline = outlineTree(
+      [...Object.keys(files), ".okforest/types/customer.schema.json", ".okforest/types/notes.json"],
+      files[".okforest/settings.yaml"],
+      new Map([
+        [".okforest/types/customer.schema.json", customer],
+        [".okforest/types/notes.json", "{}"],
+      ]),
+    )
+    expect(outline.types.map((t) => [t.path, t.name, t.data])).toEqual([
+      [".okforest/types/customer.schema.json", "Customer", { title: "Customer", type: "object" }],
+    ])
+    expect(outlineTree(Object.keys(files)).types).toEqual([])
   })
 
   it("refuses to read a file that isn't one of the tree's markdown files", () => {

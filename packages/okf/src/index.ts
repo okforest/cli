@@ -9,7 +9,14 @@ export {
 } from "./inventory.js"
 export { visit } from "./markdown.js"
 export { globToRegExp } from "./paths.js"
-export { outlineTree, parseTree, SETTINGS_PATH } from "./tree.js"
+export {
+  isTypeSchemaPath,
+  outlineTree,
+  parseTree,
+  readTypeSchema,
+  SETTINGS_PATH,
+  TYPES_FOLDER,
+} from "./tree.js"
 export {
   deriveStatus,
   deriveTrustTier,

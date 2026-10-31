@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync } from "node:fs"
 import { join } from "node:path"
-import { outlineTree, parseTree, SETTINGS_PATH } from "@okforest/okf"
+import { isTypeSchemaPath, outlineTree, parseTree, SETTINGS_PATH } from "@okforest/okf"
 import { readTreeFiles } from "@okforest/okf/node"
 import { treeChecker, validate } from "../src/index.js"
 import { FIXTURES, NOW } from "./helpers.js"
@@ -22,9 +22,15 @@ describe("treeChecker", () => {
   it.each(trees)("finds what validate finds, a file at a time: %s", async (dir) => {
     const files = await readTreeFiles(join(FIXTURES, dir))
     const texts = new Map(files.map((file) => [file.path, file.text]))
+    const types = new Map(
+      files.flatMap((file) =>
+        file.text !== undefined && isTypeSchemaPath(file.path) ? [[file.path, file.text]] : [],
+      ),
+    )
     const outline = outlineTree(
       files.map((file) => file.path),
       texts.get(SETTINGS_PATH),
+      types,
     )
     const checker = treeChecker(outline, { now: NOW })
     // In reverse, as a stream may give them in any order.

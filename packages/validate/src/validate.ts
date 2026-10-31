@@ -19,6 +19,7 @@ export async function validate(
       markdown: files.map((file) => file.path),
       ignored: tree.ignored,
       ...(tree.settings ? { settings: tree.settings } : {}),
+      types: tree.types,
     },
     options,
   )

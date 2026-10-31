@@ -10,17 +10,29 @@ import {
 } from "./trust.js"
 import type {
   Concept,
+  Diagnostic,
   Link,
   ReservedFile,
   Tree,
   TreeFile,
   TreeOutline,
   TreeSettings,
+  TypeSchema,
 } from "./types.js"
 import { isRecord, parseYaml } from "./yaml.js"
 
 /** Where OKForest keeps a bundle's settings (an OKForest convention, not OKF). */
 export const SETTINGS_PATH = ".okforest/settings.yaml"
+
+/** Where OKForest keeps a bundle's type schemas, one `<type>.schema.json` a
+ * type (an OKForest convention, not OKF). */
+export const TYPES_FOLDER = ".okforest/types/"
+
+/** Whether a bundle path is a type schema: a `.schema.json` file in
+ * {@link TYPES_FOLDER}, the name editors check as a JSON Schema. */
+export function isTypeSchemaPath(path: string): boolean {
+  return path.startsWith(TYPES_FOLDER) && path.endsWith(".schema.json")
+}
 
 /** Folders never part of a tree: OKForest's own and version control's. */
 const SKIPPED_FOLDERS = new Set([".okforest", ".git"])
@@ -42,7 +54,11 @@ export function parseTree(input: Iterable<TreeFile>): Tree {
     const path = normalize(file.path.replaceAll("\\", "/"))
     if (path) texts.set(path, file.text)
   }
-  const outline = outlineTree(texts.keys(), texts.get(SETTINGS_PATH))
+  const typeTexts = new Map<string, string>()
+  for (const [path, text] of texts) {
+    if (text !== undefined && isTypeSchemaPath(path)) typeTexts.set(path, text)
+  }
+  const outline = outlineTree(texts.keys(), texts.get(SETTINGS_PATH), typeTexts)
   const concepts: Concept[] = []
   const reserved: ReservedFile[] = []
   for (const path of outline.markdown) {
@@ -69,6 +85,7 @@ export function parseTree(input: Iterable<TreeFile>): Tree {
     reserved,
     ignored: outline.ignored,
     ...(outline.settings ? { settings: outline.settings } : {}),
+    types: outline.types,
     ...(rootIndex?.frontmatter && "okf_version" in rootIndex.frontmatter
       ? { okfVersion: rootIndex.frontmatter.okf_version }
       : {}),
@@ -81,12 +98,17 @@ export function parseTree(input: Iterable<TreeFile>): Tree {
 }
 
 /**
- * Outline a tree from its file paths and the text of its settings file
- * (`.okforest/settings.yaml`, when it has one), without reading its markdown:
+ * Outline a tree from its file paths, the text of its settings file
+ * (`.okforest/settings.yaml`, when it has one), and the texts of its type
+ * schemas by path ({@link isTypeSchemaPath}), without reading its markdown:
  * a tree too large to hold parsed at once is then read one file at a time
  * with {@link TreeOutline.read}, each file as {@link parseTree} reads it.
  */
-export function outlineTree(paths: Iterable<string>, settingsText?: string): TreeOutline {
+export function outlineTree(
+  paths: Iterable<string>,
+  settingsText?: string,
+  typeTexts: ReadonlyMap<string, string> = new Map(),
+): TreeOutline {
   const unique = new Set<string>()
   for (const raw of paths) {
     const path = normalize(raw.replaceAll("\\", "/"))
@@ -116,11 +138,20 @@ export function outlineTree(paths: Iterable<string>, settingsText?: string): Tre
     markdown.filter((path) => !RESERVED.has(basename(path))).map((path) => path.slice(0, -3)),
   )
 
+  const typeTextOf = new Map(
+    [...typeTexts].map(([path, text]) => [normalize(path.replaceAll("\\", "/")), text]),
+  )
+  const types = files.flatMap((path) => {
+    const text = typeTextOf.get(path)
+    return text !== undefined && isTypeSchemaPath(path) ? [readTypeSchema(path, text)] : []
+  })
+
   return {
     files,
     markdown,
     ignored,
     ...(settings ? { settings } : {}),
+    types,
     read(path, text) {
       if (!inTree.has(path)) throw new Error(`${path} is not one of the tree's markdown files.`)
       const { rawLinks, ...rest } = readMarkdownFile(path, text)
@@ -266,4 +297,53 @@ export function readSettings(text: string | undefined): TreeSettings | undefined
     ...(description !== undefined ? { description } : {}),
     locate: parsed.locate,
   }
+}
+
+/** A type schema file, read leniently: what the `okforest/type-schema` rule
+ * reports (text that isn't JSON) leaves `data` undefined. Keys are located
+ * by reading the text as YAML, which JSON is. */
+export function readTypeSchema(path: string, text: string): TypeSchema {
+  const source = text.replace(/^﻿/, "")
+  const { locate } = parseYaml(source.replace(/\r\n?/g, "\n"), 1)
+  let data: unknown
+  let error: Diagnostic | undefined
+  try {
+    data = JSON.parse(source)
+  } catch (cause) {
+    error = jsonError(source, cause)
+  }
+  const title = isRecord(data) ? data.title : undefined
+  const name = typeof title === "string" && title.trim() !== "" ? title : undefined
+  return {
+    path,
+    text,
+    data,
+    ...(error ? { error } : {}),
+    ...(name !== undefined ? { name } : {}),
+    locate,
+  }
+}
+
+/** Where `JSON.parse` stopped, from its message: V8 gives a line and column,
+ * or an offset. */
+function jsonError(source: string, cause: unknown): Diagnostic {
+  const message = cause instanceof Error ? cause.message : String(cause)
+  // "Expected ',' after property value in JSON at position 42 (line 3 column 5)"
+  const reason = message
+    .replace(/\s*\(line \d+ column \d+\)$/, "")
+    .replace(/\s+in JSON at position \d+$/, "")
+    .replace(/\.?$/, ".")
+  const lineColumn = /\(line (\d+) column (\d+)\)/.exec(message)
+  const offset = /at position (\d+)/.exec(message)
+  const at = lineColumn
+    ? { line: Number(lineColumn[1]), column: Number(lineColumn[2]) }
+    : offset
+      ? positionAt(source, Number(offset[1]))
+      : { line: 1, column: 1 }
+  return { message: `Not valid JSON: ${reason}`, ...at }
+}
+
+function positionAt(source: string, offset: number): { line: number; column: number } {
+  const before = source.slice(0, offset).split("\n")
+  return { line: before.length, column: (before.at(-1)?.length ?? 0) + 1 }
 }

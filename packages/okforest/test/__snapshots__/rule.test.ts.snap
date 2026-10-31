@@ -75,6 +75,7 @@ OKForest conventions
   okforest/settings           error    \`.okforest/settings.yaml\` (spelled \`.yaml\`) holds well-formed settings: a \`name\` of up to 100 characters, a \`description\` of up to 4,000, and \`ignore\` globs.
   okforest/settings-keys      warning  \`.okforest/settings.yaml\` uses only the settings OKForest knows; others, such as a misspelled key, are ignored.
   okforest/slug               warning  File and directory names of concepts are slugs: lowercase letters, digits, and hyphens.
+  okforest/type-schema        error    Concepts match their type's JSON Schema in \`.okforest/types/\`, and each schema there is a usable JSON Schema for one type.
   okforest/wikilink           warning  Concepts link with standard markdown links, not \`[[wikilinks]]\` (OKF §6.1).
 
 Run \`okforest rule <rule>\` for why a rule exists and how to fix it.
