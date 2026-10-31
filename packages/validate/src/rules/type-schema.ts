@@ -1,5 +1,5 @@
 import { type OutputUnit, type SchemaDraft, Validator } from "@cfworker/json-schema"
-import { isRecord, type KeyPath, type TypeSchema } from "@okforest/okf"
+import { isRecord, type KeyPath } from "@okforest/okf"
 import type { CheckContext, Rule } from "../types.js"
 import { describeType, show } from "../util.js"
 
@@ -45,8 +45,11 @@ const FORMATS: Readonly<Record<string, string>> = {
 
 /** A schema the validator can use, for the type named by its title. */
 interface Usable {
-  schema: TypeSchema & { name: string }
+  path: string
+  data: Record<string, unknown>
   validator: Validator
+  /** The fields it names in `properties`: OKF's among them are checked. */
+  named: ReadonlySet<string>
 }
 
 /** A type's schema in `.okforest/types/` says what its concepts' frontmatter
@@ -60,12 +63,25 @@ export const typeSchema: Rule = {
     if (file.kind !== "concept" || typeof file.type !== "string" || !file.frontmatter) return
     const usable = (await schemasOf(context)).get(file.type)
     if (!usable) return
-    const named = isRecord(usable.schema.data) ? usable.schema.data.properties : undefined
-    const own = isRecord(named) ? named : {}
     const instance = Object.fromEntries(
-      Object.entries(file.frontmatter).filter(([key]) => !OKF_KEYS.includes(key) || key in own),
+      Object.entries(file.frontmatter).filter(
+        ([key]) => !OKF_KEYS.includes(key) || usable.named.has(key),
+      ),
     )
-    for (const unit of leaves(usable.validator.validate(instance).errors)) {
+    let units: OutputUnit[]
+    try {
+      units = usable.validator.validate(instance).errors
+    } catch (cause) {
+      // A schema can fail only on some values: a `pattern` that isn't a
+      // regular expression is compiled when a string meets it.
+      context.report({
+        file: file.path,
+        ...(file.locate(["type"]) ?? { line: 1, column: 1 }),
+        message: `${usable.path} can't check this concept: ${cause instanceof Error ? cause.message.split("\n")[0] : cause}`,
+      })
+      return
+    }
+    for (const unit of leaves(units)) {
       const path = keyPath(unit.instanceLocation)
       // An unknown field is reported where it's written; a missing one, at
       // the mapping that lacks it (the concept's `type` for the top level).
@@ -75,7 +91,7 @@ export const typeSchema: Rule = {
       context.report({
         file: file.path,
         ...where,
-        message: explain(unit, path, valueAt(file.frontmatter, path), usable.schema.name),
+        message: explain(unit, path, valueAt(file.frontmatter, path), file.type, usable.data),
       })
     }
   },
@@ -144,17 +160,12 @@ function schemasOf(context: CheckContext): Promise<Map<string, Usable>> {
       }
       const declared = typeof data.$schema === "string" ? data.$schema : ""
       const draft = DRAFTS.find(([pattern]) => pattern.test(declared))?.[1] ?? "2020-12"
-      const validator = new Validator(data, draft, false)
-      try {
-        validator.validate({})
-      } catch (cause) {
-        problem(
-          [],
-          `This schema can't be used: ${cause instanceof Error ? cause.message.split("\n")[0] : cause}`,
-        )
-        continue
-      }
-      usable.set(schema.name, { schema: { ...schema, name: schema.name }, validator })
+      usable.set(schema.name, {
+        path: schema.path,
+        data,
+        validator: new Validator(data, draft, false),
+        named: new Set(isRecord(data.properties) ? Object.keys(data.properties) : []),
+      })
     }
     return usable
   })
@@ -171,27 +182,47 @@ function refsIn(value: unknown, path: KeyPath = []): { ref: string; path: KeyPat
   )
 }
 
-/** Whether a `$ref` leads somewhere in the schema: a JSON Pointer (`#/...`)
- * to a value, or an `$anchor` (`#name`) the schema declares. */
+/** Whether a `$ref` leads somewhere in the schema. */
 function resolves(schema: Record<string, unknown>, ref: string): boolean {
-  if (ref === "#") return true
-  if (!ref.startsWith("#")) return false
-  if (!ref.startsWith("#/")) {
-    const anchor = ref.slice(1)
-    const declares = (value: unknown): boolean =>
-      Array.isArray(value)
-        ? value.some(declares)
-        : isRecord(value) && (value.$anchor === anchor || Object.values(value).some(declares))
-    return declares(schema)
+  return follow(schema, ref) !== NOWHERE
+}
+
+const NOWHERE = Symbol("nowhere")
+
+/** What a `$ref` leads to in the schema: a JSON Pointer (`#/...`), or an
+ * `$anchor` it declares (`#name`); {@link NOWHERE} for anything else. */
+function follow(schema: Record<string, unknown>, ref: string): unknown {
+  if (!ref.startsWith("#")) return NOWHERE
+  if (ref === "#" || ref.startsWith("#/")) return pointTo(schema, ref)
+  const anchored = (value: unknown): unknown => {
+    if (Array.isArray(value))
+      return value.map(anchored).find((found) => found !== NOWHERE) ?? NOWHERE
+    if (!isRecord(value)) return NOWHERE
+    if (value.$anchor === ref.slice(1)) return value
+    return (
+      Object.values(value)
+        .map(anchored)
+        .find((found) => found !== NOWHERE) ?? NOWHERE
+    )
   }
+  return anchored(schema)
+}
+
+/** The value a JSON Pointer names in the schema, following `$ref`s on the
+ * way, as the validator's `keywordLocation` does
+ * (`#/properties/owner/$ref/format`); or {@link NOWHERE}. */
+function pointTo(schema: Record<string, unknown>, pointer: string): unknown {
   let value: unknown = schema
-  for (const raw of ref.slice(2).split("/")) {
+  for (const raw of pointer.replace(/^#\/?/, "").split("/")) {
+    if (raw === "") continue
     const key = decodeURIComponent(raw).replaceAll("~1", "/").replaceAll("~0", "~")
-    if (Array.isArray(value) && /^\d+$/.test(key)) value = value[Number(key)]
+    if (Array.isArray(value) && /^\d+$/.test(key) && Number(key) < value.length)
+      value = value[Number(key)]
     else if (isRecord(value) && key in value) value = value[key]
-    else return false
+    else return NOWHERE
+    if (key === "$ref" && typeof value === "string") value = follow(schema, value)
   }
-  return true
+  return value
 }
 
 /** Keywords the validator reports above the failures under them. */
@@ -231,34 +262,36 @@ function leaves(units: readonly OutputUnit[]): OutputUnit[] {
 }
 
 /** A message a person can act on, for the common failures; the validator's
- * own words for the rest. */
-function explain(unit: OutputUnit, path: KeyPath, value: unknown, type: string): string {
+ * own words for the rest. What the schema asked for is read from the schema,
+ * where the failure points (`keywordLocation`). */
+function explain(
+  unit: OutputUnit,
+  path: KeyPath,
+  value: unknown,
+  type: string,
+  schema: Record<string, unknown>,
+): string {
   const field = path.length > 0 ? `\`${label(path)}\`` : "The frontmatter"
+  const wanted = pointTo(schema, unit.keywordLocation)
   switch (unit.keyword) {
-    case "required": {
-      const missing = propertyOf(unit.error)
-      return `Missing \`${label([...path, missing])}\`, which the ${type} type requires.`
-    }
+    case "required":
+      return `Missing \`${label([...path, propertyOf(unit.error)])}\`, which the ${type} type requires.`
     case "additionalProperties":
       return `\`${label([...path, propertyOf(unit.error)])}\` isn't a field of the ${type} type.`
     case "false":
       return `${field} isn't allowed in the ${type} type.`
-    case "enum": {
-      const options = /any of (\[.*\])\.$/.exec(unit.error)?.[1]
-      const list = options ? (JSON.parse(options) as unknown[]).map(show).join(", ") : "its values"
-      return `${field} must be one of ${list} (got ${show(value)}).`
-    }
+    case "enum":
+      return `${field} must be one of ${[wanted].flat().map(show).join(", ")} (got ${show(value)}).`
     case "const":
-      return `${field} doesn't have the value the ${type} type requires (got ${show(value)}).`
-    case "type": {
-      const expected =
-        /Expected (.+)\.$/.exec(unit.error)?.[1]?.replaceAll('"', "") ?? "another type"
-      return `${field} must be ${article(expected)} (got ${describeType(value)}).`
-    }
+      return `${field} must be ${show(wanted)} (got ${show(value)}).`
+    case "type":
+      return `${field} must be ${[wanted].flat().map(kind).join(" or ")} (got ${describeType(value)}).`
     case "format": {
-      const format = /format "(.+)"/.exec(unit.error)?.[1] ?? ""
+      const format = String(wanted)
       return `${field} must be ${FORMATS[format] ?? `in the \`${format}\` format`} (got ${show(value)}).`
     }
+    case "pattern":
+      return `${field} must match the pattern ${show(wanted)} (got ${show(value)}).`
     case "anyOf":
     case "oneOf":
       return `${field} doesn't match any of the forms the ${type} type allows (got ${show(value)}).`
@@ -267,16 +300,10 @@ function explain(unit: OutputUnit, path: KeyPath, value: unknown, type: string):
   }
 }
 
-/** `a string`, `an integer`, or a choice: `a string or a number`. */
-function article(types: string): string {
-  return types
-    .split(/,\s*/)
-    .map((t) =>
-      t === "null"
-        ? "null"
-        : `${/^[aeiou]/.test(t) ? "an" : "a"} ${t === "object" ? "mapping" : t === "array" ? "list" : t}`,
-    )
-    .join(" or ")
+/** A JSON Schema type as frontmatter readers say it: `a string`, `a list`. */
+function kind(type: unknown): string {
+  const name = type === "object" ? "mapping" : type === "array" ? "list" : String(type)
+  return name === "null" ? "null" : `${/^[aeiou]/.test(name) ? "an" : "a"} ${name}`
 }
 
 /** The property a `required` or `additionalProperties` message names. */

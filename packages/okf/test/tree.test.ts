@@ -118,6 +118,12 @@ describe("parseTree", () => {
     expect(untitled?.name).toBeUndefined()
     // Under .okforest/, so never a concept.
     expect(t.concepts).toEqual([])
+    // An empty file breaks with no position: its start.
+    expect(tree({ ".okforest/types/empty.schema.json": "" }).types[0]?.error).toMatchObject({
+      message: expect.stringMatching(/^Not valid JSON: .+\.$/),
+      line: 1,
+      column: 1,
+    })
   })
 
   it("leaves okfVersion unset when the root index declares none", () => {

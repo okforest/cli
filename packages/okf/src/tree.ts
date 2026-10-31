@@ -324,22 +324,14 @@ export function readTypeSchema(path: string, text: string): TypeSchema {
   }
 }
 
-/** Where `JSON.parse` stopped, from its message: V8 gives a line and column,
- * or an offset. */
+/** Where `JSON.parse` stopped, from the offset in its message ("Expected ','
+ * after property value in JSON at position 42"); the start when it gives
+ * none ("Unexpected end of JSON input"). */
 function jsonError(source: string, cause: unknown): Diagnostic {
   const message = cause instanceof Error ? cause.message : String(cause)
-  // "Expected ',' after property value in JSON at position 42 (line 3 column 5)"
-  const reason = message
-    .replace(/\s*\(line \d+ column \d+\)$/, "")
-    .replace(/\s+in JSON at position \d+$/, "")
-    .replace(/\.?$/, ".")
-  const lineColumn = /\(line (\d+) column (\d+)\)/.exec(message)
+  const reason = message.replace(/\s+in JSON at position \d+.*$/, "").replace(/\.?$/, ".")
   const offset = /at position (\d+)/.exec(message)
-  const at = lineColumn
-    ? { line: Number(lineColumn[1]), column: Number(lineColumn[2]) }
-    : offset
-      ? positionAt(source, Number(offset[1]))
-      : { line: 1, column: 1 }
+  const at = offset ? positionAt(source, Number(offset[1])) : { line: 1, column: 1 }
   return { message: `Not valid JSON: ${reason}`, ...at }
 }
 
