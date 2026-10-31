@@ -119,6 +119,7 @@ it in more detail.
 | ---------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `okforest/settings`          | error    | `.okforest/settings.yaml` (spelled `.yaml`) holds well-formed settings: a `name` of up to 100 characters, a `description` of up to 4,000, and `ignore` globs. |
 | `okforest/settings-keys`     | warning  | `.okforest/settings.yaml` uses only the settings OKForest knows; others, such as a misspelled key, are ignored.                                               |
+| `okforest/type-schema`       | error    | Concepts match their type's JSON Schema in `.okforest/types/`, and each schema there is a usable JSON Schema for one type.                                    |
 | `okforest/slug`              | warning  | File and directory names of concepts are slugs: lowercase letters, digits, and hyphens.                                                                       |
 | `okforest/placeholder`       | warning  | Bodies contain no unrendered template placeholders (`{{name}}`, `<concept>`, `[INSERT ...]`) or example link paths (`path/to/...`).                           |
 | `okforest/wikilink`          | warning  | Concepts link with standard markdown links, not `[[wikilinks]]` (OKF §6.1).                                                                                   |
@@ -155,6 +156,35 @@ others) read; `okforest init` writes it:
 The schema ships in `@okforest/validate` too
 (`@okforest/validate/settings.schema.json`), and a test keeps it in step with
 the `okforest/settings` and `okforest/settings-keys` rules.
+
+## Type schemas
+
+A type can have a [JSON Schema](https://json-schema.org/) for its concepts'
+frontmatter in `.okforest/types/`, one `<type>.schema.json` file a type, and
+every concept of that type must match it (the `okforest/type-schema` rule).
+The schema's `title` is the type, as concepts write it in `type`:
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Customer",
+  "description": "An organization that buys from us.",
+  "type": "object",
+  "properties": {
+    "relationship": { "enum": ["prospect", "active", "former"] },
+    "account_owner": { "type": "string", "format": "email" },
+    "since": { "type": "string", "format": "date" }
+  },
+  "required": ["relationship"]
+}
+```
+
+A schema lists only its type's own fields: OKF's (`title`, `tags`,
+`verified`, ...) are checked by the `okf/*` rules, and left out of what a
+schema checks unless it names them in `properties`, to narrow `tags`, say.
+So `"additionalProperties": false` rejects fields the type doesn't have,
+without rejecting OKF's. Editors check a `.schema.json` file against JSON
+Schema itself as you write it.
 
 ## Development
 

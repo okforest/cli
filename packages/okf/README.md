@@ -35,14 +35,15 @@ const tree = parseTree([
 ```
 
 A tree too large to hold parsed at once can be read one file at a time.
-`outlineTree` works out the tree from its paths alone (and the settings
-file's text); `read` then parses one of its markdown files, with its links
-resolved against the whole tree, as `parseTree` would:
+`outlineTree` works out the tree from its paths alone (and the texts of the
+settings file and the type schemas); `read` then parses one of its markdown
+files, with its links resolved against the whole tree, as `parseTree` would:
 
 ```ts
 import { outlineTree } from "@okforest/okf"
 
-const outline = outlineTree(paths, settingsText) // .okforest/settings.yaml, if any
+// .okforest/settings.yaml, if any, and .okforest/types/*.schema.json by path
+const outline = outlineTree(paths, settingsText, typeTexts)
 for (const path of outline.markdown) {
   const file = outline.read(path, await textOf(path)) // a Concept or ReservedFile
   // ...use it, and let it go

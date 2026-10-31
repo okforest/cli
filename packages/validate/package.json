@@ -46,6 +46,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@cfworker/json-schema": "catalog:",
     "@okforest/okf": "workspace:*"
   },
   "peerDependencies": {

@@ -1,13 +1,13 @@
 import { readdir, readFile } from "node:fs/promises"
 import { join } from "node:path"
-import { ignoreMatcher, parseTree, readSettings, SETTINGS_PATH } from "./tree.js"
+import { ignoreMatcher, isTypeSchemaPath, parseTree, readSettings, SETTINGS_PATH } from "./tree.js"
 import type { Tree, TreeFile } from "./types.js"
 
 /**
  * Read a tree from disk and build its model with {@link parseTree}. Reads the
- * text of `.okforest/settings.yaml` and of markdown files its `ignore:` globs
- * don't leave out; other files are listed by path only, so links to them can
- * be checked. `.git/` is not walked, and symbolic links are not followed.
+ * text of `.okforest/settings.yaml`, of its type schemas, and of markdown
+ * files its `ignore:` globs don't leave out; other files are listed by path
+ * only, so links to them can be checked. `.git/` is not walked, and symbolic links are not followed.
  */
 export async function readTree(root: string): Promise<Tree> {
   return parseTree(await readTreeFiles(root))
@@ -36,6 +36,7 @@ export async function readTreeFiles(root: string): Promise<TreeFile[]> {
   const files: TreeFile[] = []
   for (const path of paths) {
     if (path === SETTINGS_PATH) files.push({ path, text: settingsText as string })
+    else if (isTypeSchemaPath(path)) files.push({ path, text: await read(path) })
     else if (path.endsWith(".md") && !isIgnored(path)) files.push({ path, text: await read(path) })
     else files.push({ path })
   }

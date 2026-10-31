@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BigQuery Table",
+  "description": "A table in BigQuery, at its console address.",
+  "type": "object",
+  "properties": {
+    "resource": { "type": "string", "format": "uri" },
+    "tags": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+  },
+  "required": ["resource"],
+  "additionalProperties": false
+}

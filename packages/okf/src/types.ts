@@ -162,10 +162,24 @@ export interface TreeSettings {
   locate(path: KeyPath): Position | undefined
 }
 
+/** A JSON Schema for the frontmatter of one type's concepts, at
+ * `.okforest/types/<type>.schema.json` (an OKForest convention, not OKF). */
+export interface TypeSchema {
+  path: string
+  text: string
+  /** The parsed JSON; `undefined` if it isn't valid JSON. */
+  data: unknown
+  error?: Diagnostic
+  /** The type it's for: its `title`, when that is non-blank text. */
+  name?: string
+  /** Where a key of the schema is written, if present. */
+  locate(path: KeyPath): Position | undefined
+}
+
 /**
  * A tree without its documents: every path in it, the markdown files that are
- * part of it, and its settings, worked out from paths alone (and the settings
- * file's text). A tree too large to hold parsed at once is read one file at a
+ * part of it, its settings and its type schemas, worked out from paths alone
+ * (and the text of those files). A tree too large to hold parsed at once is read one file at a
  * time with {@link TreeOutline.read}; {@link Tree} is the same, read whole.
  */
 export interface TreeOutline {
@@ -177,6 +191,8 @@ export interface TreeOutline {
   /** Markdown files left out by the settings' `ignore:` globs. */
   ignored: string[]
   settings?: TreeSettings
+  /** Its type schemas whose text was given, sorted by path. */
+  types: TypeSchema[]
   /** Read one of {@link markdown}, with its links resolved against the whole
    * tree, as {@link Tree} holds it. Throws for any other path. */
   read(path: string, text: string): Concept | ReservedFile
@@ -193,6 +209,8 @@ export interface Tree {
   /** Markdown files left out by the settings' `ignore:` globs. */
   ignored: string[]
   settings?: TreeSettings
+  /** Its type schemas, sorted by path. */
+  types: TypeSchema[]
   /** The bundle-root `index.md` `okf_version` value, as written. */
   okfVersion?: unknown
   /** Every link in every markdown file, in path and position order. */

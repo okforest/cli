@@ -15,6 +15,8 @@ describe("readTree", () => {
     await write("tables/orders.md", "---\ntype: Table\n---\n[x](../attesters/check.py)\n")
     await write("attesters/check.py", "print('ok')\n")
     await write(".okforest/settings.yaml", "name: Sales\nignore: [node_modules/]\n")
+    await write(".okforest/types/table.schema.json", '{ "title": "Table" }\n')
+    await write(".okforest/types/notes.txt", "Not a schema.\n")
     await write(".git/HEAD", "ref: refs/heads/main\n")
     await write(".github/pull_request_template.md", "# PR\n")
     await write("node_modules/pkg/README.md", "# pkg\n")
@@ -22,11 +24,13 @@ describe("readTree", () => {
   })
   afterAll(() => rm(root, { recursive: true, force: true }))
 
-  it("reads settings and markdown text, lists other and ignored files, and skips .git", async () => {
+  it("reads settings, type schemas, and markdown text, lists other and ignored files, and skips .git", async () => {
     const files = await readTreeFiles(root)
     expect(files.map((f) => [f.path, f.text !== undefined])).toEqual([
       [".github/pull_request_template.md", true],
       [".okforest/settings.yaml", true],
+      [".okforest/types/notes.txt", false],
+      [".okforest/types/table.schema.json", true],
       ["attesters/check.py", false],
       ["index.md", true],
       ["node_modules/pkg/README.md", false],
@@ -45,6 +49,7 @@ describe("readTree", () => {
     expect(tree.okfVersion).toBe("0.2")
     expect(tree.settings).toMatchObject({ name: "Sales", ignore: ["node_modules/"] })
     expect(tree.ignored).toEqual(["node_modules/pkg/README.md"])
+    expect(tree.types.map((t) => t.name)).toEqual(["Table"])
     expect(tree.concepts.map((c) => c.id)).toEqual([
       ".github/pull_request_template",
       "tables/orders",
