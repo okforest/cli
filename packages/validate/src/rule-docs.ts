@@ -166,6 +166,47 @@ Churn is the customers who cancel in a month, divided by the customers at its st
     },
   },
 
+  "okf/index-scope": {
+    why: `An \`index.md\` enumerates its own directory's contents ([§8](${SPEC}#8-index-files)), so a person or agent reading \`sales/index.md\` expects what's in \`sales/\`. An entry may point into a subdirectory, as a root index often lists a few key pages deeper down, but not outside the directory: a page elsewhere belongs in its own directory's index, and a "see also" belongs in a concept, as a link. An entry left outside is often what moving a page leaves behind.`,
+    example: {
+      file: "sales/index.md",
+      fails: `# Sales
+
+* [Playbook](playbook.md) - How we sell.
+* [Plans](../pricing/plans.md) - What we charge.
+`,
+      findings: [
+        "4:3 Index entries list this directory's contents (OKF §8): `../pricing/plans.md` is outside it. Link to it from a concept instead.",
+      ],
+      fixed: `# Sales
+
+* [Playbook](playbook.md) - How we sell.
+`,
+      context: {
+        "index.md": rootIndex(
+          "* [Sales](sales/index.md) - What the sales team knows.\n* [Pricing](pricing/index.md) - What we charge.",
+        ),
+        "pricing/index.md": "# Pricing\n\n* [Plans](plans.md) - What we charge.\n",
+        "sales/playbook.md": `---
+type: Playbook
+title: Sales playbook
+description: How we sell.
+---
+
+How we sell, step by step. Quote prices from [Plans](../pricing/plans.md).
+`,
+        "pricing/plans.md": `---
+type: Policy
+title: Plans
+description: What we charge.
+---
+
+What we charge, plan by plan.
+`,
+      },
+    },
+  },
+
   "okf/verified": {
     why: `\`verified\` records who confirmed a concept against its sources, and when, so readers can tell checked knowledge from unchecked ([§5.2](${SPEC}#52-trust-generated-and-verified)). Each verification is a mapping with \`by\`, an actor such as \`human:jane@acme.example\`, and \`at\`, an ISO 8601 datetime; several verifications are a list of them. A malformed \`verified\` can't be trusted, so it is an error.`,
     example: {

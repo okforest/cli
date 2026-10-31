@@ -109,6 +109,40 @@ export const indexEntries: Rule = {
   },
 }
 
+/** OKF §8: an index enumerates its own directory's contents, so each entry
+ * points within it (into a subdirectory is fine); one elsewhere belongs in a
+ * concept, as a link. */
+export const indexScope: Rule = {
+  id: "okf/index-scope",
+  severity: "warning",
+  description:
+    "index.md lists its own directory's contents (OKF §8): each entry points within the directory.",
+  checkFile(index, { report }) {
+    if (index.kind !== "index") return
+    const inside = (path: string) =>
+      index.directory === "" || path === index.directory || path.startsWith(`${index.directory}/`)
+    // Each entry's leading link, by where it starts.
+    const leads = new Set(
+      topLevelItems(index).flatMap((item) => {
+        const first = item.children[0]
+        const lead = first?.type === "paragraph" ? first.children[0] : undefined
+        const start = lead?.position?.start
+        return start ? [`${start.line}:${start.column}`] : []
+      }),
+    )
+    for (const link of index.links) {
+      if (link.kind !== "internal" || !leads.has(`${link.line}:${link.column}`)) continue
+      if (!link.outside && link.resolved !== undefined && inside(link.resolved)) continue
+      report({
+        file: index.path,
+        line: link.line,
+        column: link.column,
+        message: `Index entries list this directory's contents (OKF §8): \`${link.target}\` is outside it. Link to it from a concept instead.`,
+      })
+    }
+  },
+}
+
 function topLevelItems(index: ReservedFile): ListItem[] {
   return index.ast.children
     .filter((node): node is List => node.type === "list")
