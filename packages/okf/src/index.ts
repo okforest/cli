@@ -1,4 +1,5 @@
 export { normalizeText } from "./document.js"
+export { OKF_FIELDS } from "./fields.js"
 export {
   buildInventory,
   type Count,

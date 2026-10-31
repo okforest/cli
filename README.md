@@ -53,6 +53,12 @@ example; with no rule, it lists them all. A coding agent that runs `okforest
 validate` can run it to learn how to fix what it found; `--format json` gives
 the same as data.
 
+**`okforest types init [path] [--type <type>]... [--dry-run]`** drafts a
+[type schema](#type-schemas) for each type in use that has none, from what its
+concepts hold: each field beyond OKF's, typed by its values, with a format,
+allowed values, or `required` where every concept agrees, so they all match
+it. It never overwrites a file; `--dry-run` prints the drafts instead.
+
 ### Diagram checks
 
 D2 and Mermaid syntax checks (`d2` and `mermaid` code blocks) use
@@ -184,7 +190,8 @@ A schema lists only its type's own fields: OKF's (`title`, `tags`,
 schema checks unless it names them in `properties`, to narrow `tags`, say.
 So `"additionalProperties": false` rejects fields the type doesn't have,
 without rejecting OKF's. Editors check a `.schema.json` file against JSON
-Schema itself as you write it.
+Schema itself as you write it. `okforest types init` drafts a schema for each
+type from its concepts, to start from.
 
 ## Development
 
