@@ -91,6 +91,12 @@ exports[`rule fixtures > okf/index-frontmatter 1`] = `
 ]
 `;
 
+exports[`rule fixtures > okf/index-scope 1`] = `
+[
+  "sales/index.md:4:3 warning okf/index-scope Index entries list this directory's contents (OKF §8): \`../pricing/plans.md\` is outside it. Link to it from a concept instead.",
+]
+`;
+
 exports[`rule fixtures > okf/legacy-v01 1`] = `
 [
   "legacy.md:5:1 info okf/legacy-v01 \`timestamp\` is OKF v0.1: record the last change as \`generated: { by, at }\` instead.",

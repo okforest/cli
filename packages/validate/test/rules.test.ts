@@ -42,6 +42,40 @@ describe("okf/frontmatter and okf/type", () => {
   })
 })
 
+describe("okf/index-scope", () => {
+  it("accepts entries within the directory, deeper ones, absolute ones, and other sites", async () => {
+    expect(
+      await only("okf/index-scope", {
+        "sales/index.md":
+          "# Sales\n\n* [Playbook](playbook.md) - How we sell.\n* [Deals](/sales/deals/big.md) - Ours.\n* [Itself](./) - This.\n* [Site](https://acme.example) - Ours.\n* [Ref][r] - Ref.\n\n[r]: playbook.md\n",
+        "sales/playbook.md": concept(),
+        "sales/deals/big.md": concept(),
+      }),
+    ).toEqual([])
+    // A root index lists the whole bundle.
+    expect(
+      await only("okf/index-scope", {
+        "index.md": "# All\n\n* [Big](sales/deals/big.md) - Ours.\n",
+        "sales/deals/big.md": concept(),
+      }),
+    ).toEqual([])
+  })
+
+  it("flags an entry outside the directory, or above the bundle, but not links later in an entry", async () => {
+    expect(
+      await only("okf/index-scope", {
+        "sales/index.md":
+          "# Sales\n\n* [Plans](/pricing/plans.md) - See also [ours](../pricing/plans.md).\n",
+        "index.md": "# All\n\n* [Up](../elsewhere.md) - Outside.\n",
+        "pricing/plans.md": concept(),
+      }),
+    ).toEqual([
+      "index.md:3:3 warning okf/index-scope Index entries list this directory's contents (OKF §8): `../elsewhere.md` is outside it. Link to it from a concept instead.",
+      "sales/index.md:3:3 warning okf/index-scope Index entries list this directory's contents (OKF §8): `/pricing/plans.md` is outside it. Link to it from a concept instead.",
+    ])
+  })
+})
+
 describe("okf/index-entries", () => {
   it("accepts reference-style entry links", async () => {
     expect(
