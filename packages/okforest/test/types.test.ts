@@ -110,6 +110,8 @@ describe("okforest types init", () => {
     await customers()
     await write(".okforest/types/customer.schema.json", '{ "title": "Client" }\n')
     await write(".okforest/types/other.schema.json", '{ "title": "Metric" }\n')
+    // A schema with no title is no type's.
+    await write(".okforest/types/untitled.schema.json", "{}\n")
     const result = await types("init", ".")
     expect(result.stdout).toBe(
       "Drafted 0 type schemas in ..\n" +
@@ -119,6 +121,23 @@ describe("okforest types init", () => {
     expect(await readFile(join(work, ".okforest/types/customer.schema.json"), "utf8")).toBe(
       '{ "title": "Client" }\n',
     )
+  })
+
+  it("names files after their type, in any script", async () => {
+    await write("index.md", '---\nokf_version: "0.2"\n---\n# Types\n')
+    await write("a.md", "---\ntype: 顧客\n---\n")
+    await write("b.md", "---\ntype: +\n---\n")
+    // Untyped: drafted for no type.
+    await write("c.md", "---\ntitle: No type\n---\n")
+    const result = await types("init", ".", "--dry-run")
+    expect(result.stdout).toContain("  .okforest/types/顧客.schema.json\n")
+    expect(result.stdout).toContain("  .okforest/types/type.schema.json\n")
+    expect(result.stdout).toMatch(/^Would draft 2 type schemas/)
+  })
+
+  it("says so when there's nothing to draft", async () => {
+    await write("index.md", '---\nokf_version: "0.2"\n---\n# Nothing yet\n')
+    expect((await types("init", ".")).stdout).toBe("Drafted 0 type schemas in ..\n")
   })
 
   it("rejects a type no concept has", async () => {

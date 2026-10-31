@@ -118,12 +118,13 @@ async function typesInit(args: readonly string[], io: Io): Promise<number> {
   return EXIT.ok
 }
 
-/** `BigQuery Table` → `bigquery-table`. */
+/** `BigQuery Table` → `bigquery-table`, `顧客` → `顧客`; `type` when no
+ * letter or digit is left. */
 function slug(type: string): string {
   return (
     type
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/[^\p{L}\p{N}]+/gu, "-")
       .replace(/^-+|-+$/g, "") || "type"
   )
 }
