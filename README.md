@@ -93,7 +93,6 @@ what it recommends, plus OKForest conventions. Each rule's page on the site
 ([www.okforest.ai/docs/rules](https://www.okforest.ai/docs/rules/)) explains
 it in more detail.
 
-
 **OKF v0.2 specification**
 
 | Rule                       | Severity | Checks                                                                                                                                                                                   |
