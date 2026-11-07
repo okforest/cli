@@ -542,7 +542,7 @@ ${CHURN_BODY}
   },
 
   "okforest/settings": {
-    why: `\`.okforest/settings.yaml\` holds a tree's settings for OKForest: a \`name\` and \`description\`, which OKForest shows for the tree, and \`ignore\` globs for markdown files that aren't concepts. The file and every setting in it are optional, but what's there must be well formed. Each setting, and the glob syntax, are in [Settings](${SITE}/docs/settings/).`,
+    why: `\`.okforest/settings.yaml\` holds a tree's settings for OKForest: a \`name\` and \`description\`, which OKForest shows for the tree, \`ignore\` globs for markdown files that aren't concepts, and \`diagrams\`, how OKForest draws the tree's diagrams. The file and every setting in it are optional, but what's there must be well formed. Each setting, and the glob syntax, are in [Settings](${SITE}/docs/settings/).`,
     example: {
       file: ".okforest/settings.yaml",
       fails: `name: 42
@@ -557,7 +557,7 @@ description: What Acme's teams know about customers, billing, and retention.
   },
 
   "okforest/settings-keys": {
-    why: `OKForest ignores settings it doesn't know, so a misspelled one is lost without a word. This warning catches it, and suggests the setting you probably meant. The settings are \`name\`, \`description\`, and \`ignore\` ([Settings](${SITE}/docs/settings/)).`,
+    why: `OKForest ignores settings it doesn't know, so a misspelled one is lost without a word. This warning catches it, and suggests the setting you probably meant. The settings are \`name\`, \`description\`, \`ignore\`, and \`diagrams\`, whose \`mermaid\` section holds a \`renderer\` ([Settings](${SITE}/docs/settings/)).`,
     example: {
       file: ".okforest/settings.yaml",
       fails: `nmae: Acme knowledge

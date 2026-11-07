@@ -32,6 +32,28 @@
         "pattern": "\\S"
       },
       "examples": [["README.md", "drafts/"]]
+    },
+    "diagrams": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "How OKForest draws the bundle's diagrams, a section per diagram language.",
+      "markdownDescription": "How OKForest draws the bundle's diagrams, a section per diagram language. [Docs](https://www.okforest.ai/docs/settings/#diagrams)",
+      "properties": {
+        "mermaid": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Mermaid diagrams (mermaid code blocks).",
+          "markdownDescription": "Mermaid diagrams (`mermaid` code blocks). [Docs](https://www.okforest.ai/docs/settings/#diagrams)",
+          "properties": {
+            "renderer": {
+              "enum": ["mermaid", "pele"],
+              "description": "What draws them: mermaid (the default), Mermaid itself in the reader's browser, or pele, Pele (https://pele.run), a Mermaid renderer of its own, on OKForest's server. Pele lays diagrams out its own way and lacks some of Mermaid's features; Mermaid draws any diagram Pele can't.",
+              "markdownDescription": "What draws them: `mermaid` (the default), Mermaid itself in the reader's browser, or `pele`, [Pele](https://pele.run), a Mermaid renderer of its own, on OKForest's server. Pele lays diagrams out its own way and lacks some of Mermaid's features; Mermaid draws any diagram Pele can't. [Docs](https://www.okforest.ai/docs/settings/#diagrams)",
+              "examples": ["pele"]
+            }
+          }
+        }
+      }
     }
   }
 }

@@ -159,8 +159,25 @@ export interface TreeSettings {
   name?: string
   /** What the bundle covers (`description:`), when it is non-blank text. */
   description?: string
+  /** How OKForest draws the bundle's diagrams (`diagrams:`): the settings
+   * that are well formed, when there are any. */
+  diagrams?: DiagramSettings
   locate(path: KeyPath): Position | undefined
 }
+
+/** `diagrams:` in `.okforest/settings.yaml`: a section per diagram
+ * language. */
+export interface DiagramSettings {
+  mermaid?: {
+    /** What draws ```mermaid blocks: Mermaid itself, or Pele
+     * (https://pele.run), a Mermaid renderer of its own. OKForest uses
+     * Mermaid when unset. */
+    renderer?: MermaidRenderer
+  }
+}
+
+/** A `diagrams.mermaid.renderer` (MERMAID_RENDERERS). */
+export type MermaidRenderer = "mermaid" | "pele"
 
 /** A JSON Schema for the frontmatter of one type's concepts, at
  * `.okforest/types/<type>.schema.json` (an OKForest convention, not OKF). */

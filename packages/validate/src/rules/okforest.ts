@@ -1,4 +1,11 @@
-import { editDistance, type KeyPath, SETTINGS_PATH, visit } from "@okforest/okf"
+import {
+  editDistance,
+  isRecord,
+  type KeyPath,
+  MERMAID_RENDERERS,
+  SETTINGS_PATH,
+  visit,
+} from "@okforest/okf"
 import type { Report, Rule } from "../types.js"
 import { describeType, show, slugify } from "../util.js"
 
@@ -146,7 +153,7 @@ export const settingsFile: Rule = {
   id: "okforest/settings",
   severity: "error",
   description:
-    "`.okforest/settings.yaml` (spelled `.yaml`) holds well-formed settings: a `name` of up to 100 characters, a `description` of up to 4,000, and `ignore` globs.",
+    "`.okforest/settings.yaml` (spelled `.yaml`) holds well-formed settings: a `name` of up to 100 characters, a `description` of up to 4,000, `ignore` globs, and what draws Mermaid diagrams (`diagrams.mermaid.renderer`: `mermaid` or `pele`).",
   checkTree({ outline, report }) {
     if (outline.files.includes(MISSPELLED_SETTINGS_PATH)) {
       report({
@@ -193,16 +200,58 @@ export const settingsFile: Rule = {
         })
       }
     }
+    if (data.diagrams !== undefined) {
+      const { diagrams } = data
+      if (!isRecord(diagrams)) {
+        problem(
+          ["diagrams"],
+          "`diagrams` must be a mapping of diagram languages, such as `mermaid`.",
+        )
+      } else if (diagrams.mermaid !== undefined) {
+        const { mermaid } = diagrams
+        if (!isRecord(mermaid)) {
+          problem(
+            ["diagrams", "mermaid"],
+            "`diagrams.mermaid` must be a mapping of settings, such as `renderer: pele`.",
+          )
+        } else if (
+          mermaid.renderer !== undefined &&
+          !MERMAID_RENDERERS.includes(mermaid.renderer as (typeof MERMAID_RENDERERS)[number])
+        ) {
+          const got =
+            typeof mermaid.renderer === "string"
+              ? `\`${mermaid.renderer}\``
+              : describeType(mermaid.renderer)
+          problem(
+            ["diagrams", "mermaid", "renderer"],
+            `\`diagrams.mermaid.renderer\` must be ${MERMAID_RENDERERS.map((r) => `\`${r}\``).join(" or ")} (got ${got}).`,
+          )
+        }
+      }
+    }
   },
+}
+
+/** The settings OKForest knows in a section of `.okforest/settings.yaml`:
+ * each key, with the settings within it when it's a section itself. */
+interface KnownSettings {
+  readonly [key: string]: KnownSettings | null
+}
+
+const KNOWN_SETTINGS: KnownSettings = {
+  name: null,
+  description: null,
+  ignore: null,
+  diagrams: { mermaid: { renderer: null } },
 }
 
 /** The settings `.okforest/settings.yaml` may hold (docs: /docs/settings/;
  * kept in step with `schemas/settings.schema.json` by a test). */
-export const SETTINGS_KEYS: readonly string[] = ["name", "description", "ignore"]
+export const SETTINGS_KEYS: readonly string[] = Object.keys(KNOWN_SETTINGS)
 
 /** Settings OKForest doesn't know are ignored, so a misspelled key loses its
- * setting without a word; this says so. A warning: a newer OKForest may know
- * keys an older one doesn't. */
+ * setting without a word; this says so, in sections (`diagrams.mermaid`)
+ * too. A warning: a newer OKForest may know keys an older one doesn't. */
 export const settingsKeys: Rule = {
   id: "okforest/settings-keys",
   severity: "warning",
@@ -211,16 +260,31 @@ export const settingsKeys: Rule = {
   checkTree({ outline, report }) {
     const settings = outline.settings
     if (!settings?.data) return
-    for (const key of Object.keys(settings.data)) {
-      if (SETTINGS_KEYS.includes(key)) continue
-      const near = SETTINGS_KEYS.find((known) => editDistance(key, known, 2) <= 2)
-      report({
-        file: settings.path,
-        ...(settings.locate([key]) ?? { line: 1, column: 1 }),
-        message: near
-          ? `Unknown setting \`${key}\`: did you mean \`${near}\`? Unknown settings are ignored.`
-          : `Unknown setting \`${key}\`, ignored. The settings are ${SETTINGS_KEYS.map((k) => `\`${k}\``).join(", ")}.`,
-      })
+    const check = (data: Record<string, unknown>, known: KnownSettings, at: string[]) => {
+      const keys = Object.keys(known)
+      for (const key of Object.keys(data)) {
+        const path = [...at, key]
+        if (Object.hasOwn(known, key)) {
+          const section = known[key]
+          const value = data[key]
+          // A section that isn't a mapping is okforest/settings' to report.
+          if (section && isRecord(value)) check(value, section, path)
+          continue
+        }
+        const name = path.join(".")
+        const near = keys.find((k) => editDistance(key, k, 2) <= 2)
+        const listed = keys.map((k) => `\`${k}\``).join(", ")
+        report({
+          file: settings.path,
+          ...(settings.locate(path) ?? { line: 1, column: 1 }),
+          message: near
+            ? `Unknown setting \`${name}\`: did you mean \`${near}\`? Unknown settings are ignored.`
+            : at.length === 0
+              ? `Unknown setting \`${name}\`, ignored. The settings are ${listed}.`
+              : `Unknown setting \`${name}\`, ignored. The settings in \`${at.join(".")}\` are ${listed}.`,
+        })
+      }
     }
+    check(settings.data, KNOWN_SETTINGS, [])
   },
 }

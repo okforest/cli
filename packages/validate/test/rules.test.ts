@@ -283,6 +283,23 @@ describe("okforest/settings", () => {
     ])
   })
 
+  it("checks what draws Mermaid diagrams", async () => {
+    expect(await settings("diagrams:\n  mermaid:\n    renderer: pele\n")).toEqual([])
+    expect(await settings("diagrams: {}\n")).toEqual([])
+    expect(await settings("diagrams:\n  mermaid:\n    renderer: graphviz\n")).toEqual([
+      ".okforest/settings.yaml:3:5 error okforest/settings `diagrams.mermaid.renderer` must be `mermaid` or `pele` (got `graphviz`).",
+    ])
+    expect(await settings("diagrams:\n  mermaid:\n    renderer: 3\n")).toEqual([
+      ".okforest/settings.yaml:3:5 error okforest/settings `diagrams.mermaid.renderer` must be `mermaid` or `pele` (got a number).",
+    ])
+    expect(await settings("diagrams:\n  mermaid: pele\n")).toEqual([
+      ".okforest/settings.yaml:2:3 error okforest/settings `diagrams.mermaid` must be a mapping of settings, such as `renderer: pele`.",
+    ])
+    expect(await settings("diagrams: pele\n")).toEqual([
+      ".okforest/settings.yaml:1:1 error okforest/settings `diagrams` must be a mapping of diagram languages, such as `mermaid`.",
+    ])
+  })
+
   it("reports a .yml settings file, which is never read", async () => {
     expect(
       await only("okforest/settings", { ".okforest/settings.yml": "name: x\n", "a.md": concept() }),
@@ -297,12 +314,24 @@ describe("okforest/settings-keys", () => {
 
   it("is quiet for known settings", async () => {
     expect(await keys("name: n\ndescription: d\nignore: []\n")).toEqual([])
+    expect(await keys("diagrams:\n  mermaid:\n    renderer: pele\n")).toEqual([])
+  })
+
+  it("checks the settings within sections", async () => {
+    expect(
+      await keys("diagrams:\n  mermaid:\n    rendrer: pele\n  d2:\n    layout: elk\n"),
+    ).toEqual([
+      ".okforest/settings.yaml:3:5 warning okforest/settings-keys Unknown setting `diagrams.mermaid.rendrer`: did you mean `renderer`? Unknown settings are ignored.",
+      ".okforest/settings.yaml:4:3 warning okforest/settings-keys Unknown setting `diagrams.d2`, ignored. The settings in `diagrams` are `mermaid`.",
+    ])
+    // A section that isn't a mapping is okforest/settings' to report.
+    expect(await keys("diagrams: pele\n")).toEqual([])
   })
 
   it("names a likely misspelling, and lists the settings otherwise", async () => {
     expect(await keys("nmae: Sales\ncolor: green\n")).toEqual([
       ".okforest/settings.yaml:1:1 warning okforest/settings-keys Unknown setting `nmae`: did you mean `name`? Unknown settings are ignored.",
-      ".okforest/settings.yaml:2:1 warning okforest/settings-keys Unknown setting `color`, ignored. The settings are `name`, `description`, `ignore`.",
+      ".okforest/settings.yaml:2:1 warning okforest/settings-keys Unknown setting `color`, ignored. The settings are `name`, `description`, `ignore`, `diagrams`.",
     ])
   })
 })
