@@ -1,4 +1,4 @@
-import { isMap, isScalar, isSeq, LineCounter, parseDocument } from "yaml"
+import { isAlias, isMap, isScalar, isSeq, LineCounter, parseDocument } from "yaml"
 import type { Diagnostic, KeyPath, Position } from "./types.js"
 
 export interface ParsedYaml {
@@ -31,15 +31,20 @@ export function parseYaml(source: string, firstLine: number): ParsedYaml {
     return { line: line + firstLine - 1, column: col }
   }
 
+  // A key is found where it's written: through an alias (`diagrams: *shared`)
+  // to its anchor, and by the text JavaScript reads it as (`2:` is `"2"`).
   const locate = (path: KeyPath): Position | undefined => {
     let node: unknown = doc.contents
     let offset: number | undefined
     for (const segment of path) {
+      if (isAlias(node)) node = node.resolve(doc)
       if (typeof segment === "number" && isSeq(node)) {
         node = node.items[segment]
         offset = (node as { range?: [number, number, number] } | undefined)?.range?.[0]
       } else if (isMap(node)) {
-        const pair = node.items.find((p) => isScalar(p.key) && p.key.value === segment)
+        const pair = node.items.find(
+          (p) => isScalar(p.key) && String(p.key.value) === String(segment),
+        )
         if (!pair) return undefined
         offset = (pair.key as { range?: [number, number, number] }).range?.[0]
         node = pair.value

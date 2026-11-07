@@ -15,3 +15,7 @@ Mermaid renderer of its own, instead of Mermaid. `@okforest/okf` reads it into
 renderer it doesn't know, and `okforest/settings-keys` now checks the keys
 within sections too (`diagrams.mermaid.rendrer`: did you mean `renderer`?).
 The settings JSON Schema has `diagrams` as well.
+
+Findings now point where a key is written when it's reached through a YAML
+alias (`diagrams: *shared` points into its anchor) or read as a number
+(`2026:`), rather than at the file's first line.

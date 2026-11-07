@@ -298,6 +298,14 @@ describe("okforest/settings", () => {
     expect(await settings("diagrams: pele\n")).toEqual([
       ".okforest/settings.yaml:1:1 error okforest/settings `diagrams` must be a mapping of diagram languages, such as `mermaid`.",
     ])
+    // Reported where it's written: at the anchor an alias points to.
+    expect(
+      await settings(
+        "x-shared: &diagrams\n  mermaid:\n    renderer: graphviz\ndiagrams: *diagrams\n",
+      ),
+    ).toEqual([
+      ".okforest/settings.yaml:3:5 error okforest/settings `diagrams.mermaid.renderer` must be `mermaid` or `pele` (got `graphviz`).",
+    ])
   })
 
   it("reports a .yml settings file, which is never read", async () => {
@@ -326,6 +334,30 @@ describe("okforest/settings-keys", () => {
     ])
     // A section that isn't a mapping is okforest/settings' to report.
     expect(await keys("diagrams: pele\n")).toEqual([])
+  })
+
+  it("reports a setting where it's written", async () => {
+    expect(
+      await keys("x-shared: &mermaid\n  rendrer: pele\ndiagrams:\n  mermaid: *mermaid\n"),
+    ).toEqual([
+      ".okforest/settings.yaml:1:1 warning okforest/settings-keys Unknown setting `x-shared`, ignored. The settings are `name`, `description`, `ignore`, `diagrams`.",
+      ".okforest/settings.yaml:2:3 warning okforest/settings-keys Unknown setting `diagrams.mermaid.rendrer`: did you mean `renderer`? Unknown settings are ignored.",
+    ])
+    expect(await keys("name: n\n2026: launch\n")).toEqual([
+      ".okforest/settings.yaml:2:1 warning okforest/settings-keys Unknown setting `2026`, ignored. The settings are `name`, `description`, `ignore`, `diagrams`.",
+    ])
+  })
+
+  it("reports a key that isn't text at the file's start", async () => {
+    // YAML warns that it reads the key `[a, b]` as text.
+    const warning = vi.spyOn(process, "emitWarning").mockImplementation(() => {})
+    try {
+      expect(await keys("name: n\n? [a, b]\n: x\n")).toEqual([
+        ".okforest/settings.yaml:1:1 warning okforest/settings-keys Unknown setting `[ a, b ]`, ignored. The settings are `name`, `description`, `ignore`, `diagrams`.",
+      ])
+    } finally {
+      warning.mockRestore()
+    }
   })
 
   it("names a likely misspelling, and lists the settings otherwise", async () => {
