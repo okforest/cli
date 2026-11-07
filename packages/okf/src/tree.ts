@@ -11,7 +11,9 @@ import {
 import type {
   Concept,
   Diagnostic,
+  DiagramSettings,
   Link,
+  MermaidRenderer,
   ReservedFile,
   Tree,
   TreeFile,
@@ -23,6 +25,10 @@ import { isRecord, parseYaml } from "./yaml.js"
 
 /** Where OKForest keeps a bundle's settings (an OKForest convention, not OKF). */
 export const SETTINGS_PATH = ".okforest/settings.yaml"
+
+/** What may draw a bundle's ```mermaid blocks (`diagrams.mermaid.renderer`
+ * in its settings). */
+export const MERMAID_RENDERERS: readonly MermaidRenderer[] = ["mermaid", "pele"]
 
 /** Where OKForest keeps a bundle's type schemas, one `<type>.schema.json` a
  * type (an OKForest convention, not OKF). */
@@ -267,8 +273,8 @@ export function ignoreMatcher(globs: readonly string[]): (path: string) => boole
 }
 
 /** `.okforest/settings.yaml`, read leniently: what the `okforest/settings`
- * rule reports as malformed is left out of `ignore`, `name`, and
- * `description`. */
+ * rule reports as malformed is left out of `ignore`, `name`,
+ * `description`, and `diagrams`. */
 export function readSettings(text: string | undefined): TreeSettings | undefined {
   if (text === undefined) return undefined
   const parsed = parseYaml(text.replace(/^\uFEFF/, "").replace(/\r\n?/g, "\n"), 1)
@@ -282,6 +288,7 @@ export function readSettings(text: string | undefined): TreeSettings | undefined
   }
   const name = nonBlank("name")
   const description = nonBlank("description")
+  const diagrams = readDiagrams(data?.diagrams)
   const error =
     parsed.error ??
     (data === undefined
@@ -295,8 +302,19 @@ export function readSettings(text: string | undefined): TreeSettings | undefined
     ignore,
     ...(name !== undefined ? { name } : {}),
     ...(description !== undefined ? { description } : {}),
+    ...(diagrams ? { diagrams } : {}),
     locate: parsed.locate,
   }
+}
+
+/** `diagrams:`, keeping only what's well formed; undefined when that's
+ * nothing. */
+function readDiagrams(value: unknown): DiagramSettings | undefined {
+  const mermaid = isRecord(value) ? value.mermaid : undefined
+  const renderer = isRecord(mermaid) ? mermaid.renderer : undefined
+  return MERMAID_RENDERERS.includes(renderer as MermaidRenderer)
+    ? { mermaid: { renderer: renderer as MermaidRenderer } }
+    : undefined
 }
 
 /** A type schema file, read leniently: what the `okforest/type-schema` rule

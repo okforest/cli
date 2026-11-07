@@ -12,6 +12,7 @@ export { visit } from "./markdown.js"
 export { globToRegExp } from "./paths.js"
 export {
   isTypeSchemaPath,
+  MERMAID_RENDERERS,
   outlineTree,
   parseTree,
   readTypeSchema,

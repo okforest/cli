@@ -94,6 +94,24 @@ describe("frontmatter", () => {
     expect(file.locate(["sources", 5])).toBeUndefined()
   })
 
+  it("locates keys through aliases, and keys read as numbers", () => {
+    const file = read(
+      [
+        "---",
+        "type: Metric",
+        "shared: &owner",
+        "  team: sales",
+        "owner: *owner",
+        "2026: launch",
+        "---",
+      ].join("\n"),
+    )
+    expect(file.frontmatter?.owner).toEqual({ team: "sales" })
+    expect(file.locate(["owner", "team"])).toEqual({ line: 4, column: 3 })
+    expect(file.locate(["owner", "missing"])).toBeUndefined()
+    expect(file.locate(["2026"])).toEqual({ line: 6, column: 1 })
+  })
+
   it("locates nothing when there is no frontmatter", () => {
     expect(read("# Just a body\n").locate(["type"])).toBeUndefined()
   })

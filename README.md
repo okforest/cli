@@ -122,17 +122,17 @@ it in more detail.
 
 **OKForest conventions**
 
-| Rule                         | Severity | Checks                                                                                                                                                        |
-| ---------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `okforest/settings`          | error    | `.okforest/settings.yaml` (spelled `.yaml`) holds well-formed settings: a `name` of up to 100 characters, a `description` of up to 4,000, and `ignore` globs. |
-| `okforest/settings-keys`     | warning  | `.okforest/settings.yaml` uses only the settings OKForest knows; others, such as a misspelled key, are ignored.                                               |
-| `okforest/type-schema`       | error    | Concepts match their type's JSON Schema in `.okforest/types/`, and each schema there is a usable JSON Schema for one type.                                    |
-| `okforest/slug`              | warning  | File and directory names of concepts are slugs: lowercase letters, digits, and hyphens.                                                                       |
-| `okforest/placeholder`       | warning  | Bodies contain no unrendered template placeholders (`{{name}}`, `<concept>`, `[INSERT ...]`) or example link paths (`path/to/...`).                           |
-| `okforest/wikilink`          | warning  | Concepts link with standard markdown links, not `[[wikilinks]]` (OKF §6.1).                                                                                   |
-| `okforest/d2-syntax`         | error    | `d2` code blocks are valid D2 (diagrams as code).                                                                                                             |
-| `okforest/mermaid-syntax`    | error    | `mermaid` code blocks are valid Mermaid (diagrams as code).                                                                                                   |
-| `okforest/diagram-unchecked` | info     | Reports diagram blocks whose syntax could not be checked (tool not installed or unsupported here).                                                            |
+| Rule                         | Severity | Checks                                                                                                                                                                                                                                        |
+| ---------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `okforest/settings`          | error    | `.okforest/settings.yaml` (spelled `.yaml`) holds well-formed settings: a `name` of up to 100 characters, a `description` of up to 4,000, `ignore` globs, and what draws Mermaid diagrams (`diagrams.mermaid.renderer`: `mermaid` or `pele`). |
+| `okforest/settings-keys`     | warning  | `.okforest/settings.yaml` uses only the settings OKForest knows; others, such as a misspelled key, are ignored.                                                                                                                               |
+| `okforest/type-schema`       | error    | Concepts match their type's JSON Schema in `.okforest/types/`, and each schema there is a usable JSON Schema for one type.                                                                                                                    |
+| `okforest/slug`              | warning  | File and directory names of concepts are slugs: lowercase letters, digits, and hyphens.                                                                                                                                                       |
+| `okforest/placeholder`       | warning  | Bodies contain no unrendered template placeholders (`{{name}}`, `<concept>`, `[INSERT ...]`) or example link paths (`path/to/...`).                                                                                                           |
+| `okforest/wikilink`          | warning  | Concepts link with standard markdown links, not `[[wikilinks]]` (OKF §6.1).                                                                                                                                                                   |
+| `okforest/d2-syntax`         | error    | `d2` code blocks are valid D2 (diagrams as code).                                                                                                                                                                                             |
+| `okforest/mermaid-syntax`    | error    | `mermaid` code blocks are valid Mermaid (diagrams as code).                                                                                                                                                                                   |
+| `okforest/diagram-unchecked` | info     | Reports diagram blocks whose syntax could not be checked (tool not installed or unsupported here).                                                                                                                                            |
 
 ## What counts as a concept
 

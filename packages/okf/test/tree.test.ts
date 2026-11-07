@@ -97,6 +97,25 @@ describe("parseTree", () => {
     expect(tree({ "a.md": concept() }).settings).toBeUndefined()
   })
 
+  it("reads what draws the bundle's Mermaid diagrams, when it's one OKForest knows", () => {
+    const diagrams = (yaml: string) => tree({ ".okforest/settings.yaml": yaml }).settings?.diagrams
+    expect(diagrams("diagrams:\n  mermaid:\n    renderer: pele\n")).toEqual({
+      mermaid: { renderer: "pele" },
+    })
+    expect(diagrams("diagrams:\n  mermaid:\n    renderer: mermaid\n")).toEqual({
+      mermaid: { renderer: "mermaid" },
+    })
+    for (const yaml of [
+      "name: Sales\n",
+      "diagrams: pele\n",
+      "diagrams:\n  mermaid: pele\n",
+      "diagrams:\n  mermaid:\n    renderer: graphviz\n",
+      "diagrams:\n  mermaid:\n    renderer: [pele]\n",
+    ]) {
+      expect(diagrams(yaml), yaml).toBeUndefined()
+    }
+  })
+
   it("reads type schemas, locating their keys and where JSON breaks", () => {
     const t = tree({
       ".okforest/types/customer.schema.json": '{\n  "title": "Customer",\n  "type": "object"\n}\n',

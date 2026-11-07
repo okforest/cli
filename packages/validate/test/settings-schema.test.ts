@@ -37,6 +37,15 @@ const CASES: [name: string, yaml: string][] = [
   ["misspelled key", "nmae: Sales\n"],
   ["unknown key", "color: green\n"],
   ["not a mapping", "- name\n"],
+  ["Pele draws Mermaid", "diagrams:\n  mermaid:\n    renderer: pele\n"],
+  ["Mermaid draws Mermaid", "diagrams:\n  mermaid:\n    renderer: mermaid\n"],
+  ["empty diagram sections", "diagrams:\n  mermaid: {}\n"],
+  ["unknown renderer", "diagrams:\n  mermaid:\n    renderer: graphviz\n"],
+  ["renderer that isn't text", "diagrams:\n  mermaid:\n    renderer: [pele]\n"],
+  ["misspelled renderer", "diagrams:\n  mermaid:\n    rendrer: pele\n"],
+  ["unknown diagram language", "diagrams:\n  d2:\n    layout: elk\n"],
+  ["diagrams that aren't a mapping", "diagrams: pele\n"],
+  ["empty diagrams", "diagrams:\n"],
 ]
 
 describe("settings.schema.json", () => {

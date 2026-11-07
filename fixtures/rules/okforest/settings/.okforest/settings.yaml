@@ -1,3 +1,6 @@
 name: 7
 description: ""
 ignore: FOLLOWUPS.md
+diagrams:
+  mermaid:
+    renderer: graphviz

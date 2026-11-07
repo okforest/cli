@@ -1,3 +1,6 @@
 name: Sales knowledge
 nmae: Sales
 sensitivity: internal
+diagrams:
+  mermaid:
+    rendrer: pele

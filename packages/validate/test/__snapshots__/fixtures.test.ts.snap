@@ -201,13 +201,15 @@ exports[`rule fixtures > okforest/settings 1`] = `
   ".okforest/settings.yaml:1:1 error okforest/settings \`name\` must be text (got a number).",
   ".okforest/settings.yaml:2:1 error okforest/settings \`description\` is blank: write it, or remove the setting.",
   ".okforest/settings.yaml:3:1 error okforest/settings \`ignore\` must be a list of globs relative to the bundle root.",
+  ".okforest/settings.yaml:6:5 error okforest/settings \`diagrams.mermaid.renderer\` must be \`mermaid\` or \`pele\` (got \`graphviz\`).",
 ]
 `;
 
 exports[`rule fixtures > okforest/settings-keys 1`] = `
 [
   ".okforest/settings.yaml:2:1 warning okforest/settings-keys Unknown setting \`nmae\`: did you mean \`name\`? Unknown settings are ignored.",
-  ".okforest/settings.yaml:3:1 warning okforest/settings-keys Unknown setting \`sensitivity\`, ignored. The settings are \`name\`, \`description\`, \`ignore\`.",
+  ".okforest/settings.yaml:3:1 warning okforest/settings-keys Unknown setting \`sensitivity\`, ignored. The settings are \`name\`, \`description\`, \`ignore\`, \`diagrams\`.",
+  ".okforest/settings.yaml:6:5 warning okforest/settings-keys Unknown setting \`diagrams.mermaid.rendrer\`: did you mean \`renderer\`? Unknown settings are ignored.",
 ]
 `;
 
