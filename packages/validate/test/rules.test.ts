@@ -398,6 +398,18 @@ describe("okforest/similar-type", () => {
     ).toEqual([])
   })
 
+  it("catches two letters swapped", async () => {
+    expect(
+      await only("okforest/similar-type", {
+        "a.md": typed("Metric"),
+        "b.md": typed("Metric"),
+        "c.md": typed("Metirc"),
+      }),
+    ).toEqual([
+      "c.md:2:1 warning okforest/similar-type Type `Metirc` (1 concept) looks like `Metric` (2 concepts): did you mean `Metric`?",
+    ])
+  })
+
   it("says nothing when no type is clearly the one meant", async () => {
     expect(
       await only("okforest/similar-type", { "a.md": typed("Metric"), "b.md": typed("Metrc") }),

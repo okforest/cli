@@ -14,5 +14,6 @@ suggests the type most likely meant: the one with a schema in
 `.okforest/types/`, then the one more concepts use, then the one written as
 OKF's examples write types. `okforest/similar-tag` does the same for tags,
 preferring lowercase with hyphens. Both use the near-duplicates
-`okforest inventory` lists, which no longer pair values whose numbers differ
+`okforest inventory` lists, which now count two letters swapped as one edit
+(`Metirc` and `Metric`), and no longer pair values whose numbers differ
 (`q1-goals` and `q2-goals`).
