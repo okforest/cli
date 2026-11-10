@@ -57,6 +57,20 @@ ${entries}
 
 const CHURN_ENTRY = "* [Monthly churn](churn.md) - The share of customers who cancel in a month."
 
+/** A second concept, for rules that compare concepts, with extra
+ * frontmatter lines. */
+const retention = (type = "Metric", extra = "") => `---
+type: ${type}
+title: Net revenue retention
+description: Revenue kept from last year's customers, with expansion.
+${extra}---
+
+Net revenue retention is this year's revenue from last year's customers, divided by theirs last year.
+`
+
+const BOTH_ENTRIES = `${CHURN_ENTRY}
+* [Net revenue retention](retention.md) - Revenue kept from last year's customers, with expansion.`
+
 /** The rules documented so far, by ID. */
 export const ruleDocs: Readonly<Record<string, RuleDocs>> = {
   "okf/type": {
@@ -593,6 +607,45 @@ description: What Acme's teams know about customers, billing, and retention.
   "required": ["unit", "owner"]
 }
 `,
+      },
+    },
+  },
+
+  "okforest/similar-type": {
+    why: `OKF matches types exactly, so \`metric\` and \`Metric\` are two types ([§4.1](${SPEC}#41-frontmatter)): a concept written the other way is missed when people and assistants filter by type, and its type's schema in \`.okforest/types/\` never checks it. OKF lets every team name its own types, so a type OKForest hasn't seen is fine; this warns only about one that nearly matches another the tree uses: the same letters in another case or with other punctuation (\`Product_Summary\`, \`Product Summary\`), a plural (\`Metrics\`), or a small spelling difference (\`Metirc\`). It suggests the one most likely meant: the one with a schema, then the one more concepts use, then the one written as OKF's examples write types, capitalized words with spaces ([Naming conventions](${SITE}/docs/types/#naming-conventions)). \`okforest inventory\` lists the same near-duplicates.`,
+    example: {
+      file: "retention.md",
+      fails: retention("metric"),
+      findings: [
+        "2:1 Type `metric` (1 concept) looks like `Metric` (1 concept and a schema): did you mean `Metric`?",
+      ],
+      fixed: retention(),
+      context: {
+        "index.md": rootIndex(BOTH_ENTRIES),
+        "churn.md": churn(),
+        ".okforest/types/metric.schema.json": `{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Metric",
+  "description": "A number the business tracks.",
+  "type": "object"
+}
+`,
+      },
+    },
+  },
+
+  "okforest/similar-tag": {
+    why: `Tags group concepts across the tree ([§4.1](${SPEC}#41-frontmatter)), so a tag written two ways (\`Churn\` and \`churn\`, \`income statement\` and \`income-statement\`, \`metric\` and \`metrics\`) splits its concepts in two, and a search for one misses the other. This warns about a tag that nearly matches one the tree uses more, or, as often, one written as OKF's examples write tags, in lowercase with hyphens ([Naming conventions](${SITE}/docs/types/#naming-conventions)). To keep a type's tags to an agreed list, name them in its schema ([A type's tags](${SITE}/docs/types/#a-types-tags)).`,
+    example: {
+      file: "churn.md",
+      fails: churn("tags: [revenue, Churn]\n"),
+      findings: [
+        "5:17 Tag `Churn` (1 concept) looks like `churn` (1 concept): did you mean `churn`?",
+      ],
+      fixed: churn("tags: [revenue, churn]\n"),
+      context: {
+        "index.md": rootIndex(BOTH_ENTRIES),
+        "retention.md": retention("Metric", "tags: [revenue, churn]\n"),
       },
     },
   },

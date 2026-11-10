@@ -94,7 +94,8 @@ function sorted(map: Map<string, number>): Count[] {
  * - case and punctuation: `SaaS Application`, `saas-application`;
  * - singular and plural: `Policy`, `Policies`;
  * - spelling: an edit distance of 1 (values of 5+ characters) or 2 (10+),
- *   unless one value contains the other.
+ *   unless one value contains the other, or their digits differ
+ *   (`q1-goals`, `q2-goals`).
  */
 export function findNearDuplicates(
   counts: readonly Count[],
@@ -124,8 +125,9 @@ export function findNearDuplicates(
       if (a === b) union(i, j, "case-or-punctuation")
       else if (singular[i] === singular[j]) union(i, j, "plural")
       // A word added to the other (`active-users`, `inactive-users`) changes the
-      // meaning rather than misspelling it, so containment is never a typo.
-      else if (!a.includes(b) && !b.includes(a)) {
+      // meaning rather than misspelling it, so containment is never a typo;
+      // nor is another number (`fy2025`, `fy2026`).
+      else if (!a.includes(b) && !b.includes(a) && digits(a) === digits(b)) {
         const shortest = Math.min(a.length, b.length)
         const allowed = shortest >= 10 ? 2 : shortest >= 5 ? 1 : 0
         if (allowed > 0 && editDistance(a, b, allowed) <= allowed) union(i, j, "spelling")
@@ -147,6 +149,8 @@ export function findNearDuplicates(
       reasons: order.filter((r) => reasons.get(root)?.has(r)),
     }))
 }
+
+const digits = (value: string) => value.replace(/\D/g, "")
 
 function singularize(word: string): string {
   if (word.endsWith("ies") && word.length > 4) return `${word.slice(0, -3)}y`

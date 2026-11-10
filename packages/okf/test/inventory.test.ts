@@ -112,6 +112,10 @@ describe("findNearDuplicates", () => {
     expect(groups("abc", "abcdefghijkl")).toEqual([])
   })
 
+  it("never treats another number as a misspelling", () => {
+    expect(groups("q1-goals", "q2-goals", "fy2025-plan", "fy2026-plan")).toEqual([])
+  })
+
   it("never treats containment as a misspelling", () => {
     expect(groups("active-users", "inactive-users")).toEqual([])
   })

@@ -367,3 +367,64 @@ describe("okforest/settings-keys", () => {
     ])
   })
 })
+
+describe("okforest/similar-type", () => {
+  const typed = (type: string) =>
+    `---\ntype: ${type}\ntitle: Example\ndescription: An example.\n---\n`
+  const schema = (title: string) => JSON.stringify({ title, type: "object" })
+
+  it("points at the type with a schema, however many concepts use the other", async () => {
+    expect(
+      await only("okforest/similar-type", {
+        "a.md": typed("metric"),
+        "b.md": typed("metric"),
+        "c.md": typed("Metric"),
+        ".okforest/types/metric.schema.json": schema("Metric"),
+      }),
+    ).toEqual([
+      "a.md:2:1 warning okforest/similar-type Type `metric` (2 concepts) looks like `Metric` (1 concept and a schema): did you mean `Metric`?",
+      "b.md:2:1 warning okforest/similar-type Type `metric` (2 concepts) looks like `Metric` (1 concept and a schema): did you mean `Metric`?",
+    ])
+  })
+
+  it("never reports a type that has a schema", async () => {
+    expect(
+      await only("okforest/similar-type", {
+        "a.md": typed("Policy"),
+        "b.md": typed("Policies"),
+        ".okforest/types/policy.schema.json": schema("Policy"),
+        ".okforest/types/policies.schema.json": schema("Policies"),
+      }),
+    ).toEqual([])
+  })
+
+  it("says nothing when no type is clearly the one meant", async () => {
+    expect(
+      await only("okforest/similar-type", { "a.md": typed("Metric"), "b.md": typed("Metrc") }),
+    ).toEqual([])
+  })
+
+  it("leaves types that differ by a number alone", async () => {
+    expect(
+      await only("okforest/similar-type", {
+        "a.md": typed("Plan 2025"),
+        "b.md": typed("Plan 2025"),
+        "c.md": typed("Plan 2026"),
+      }),
+    ).toEqual([])
+  })
+})
+
+describe("okforest/similar-tag", () => {
+  it("reports a tag at each concept that uses it, once", async () => {
+    expect(
+      await only("okforest/similar-tag", {
+        "a.md": concept("tags: [finance]"),
+        "b.md": concept("tags: [finance]"),
+        "c.md": concept("tags: [Finance, Finance]"),
+      }),
+    ).toEqual([
+      "c.md:5:8 warning okforest/similar-tag Tag `Finance` (1 concept) looks like `finance` (2 concepts): did you mean `finance`?",
+    ])
+  })
+})

@@ -213,6 +213,24 @@ exports[`rule fixtures > okforest/settings-keys 1`] = `
 ]
 `;
 
+exports[`rule fixtures > okforest/similar-tag 1`] = `
+[
+  "arr.md:5:8 warning okforest/similar-tag Tag \`Finance\` (1 concept) looks like \`finance\` (2 concepts): did you mean \`finance\`?",
+  "arr.md:5:17 warning okforest/similar-tag Tag \`incomes-statement\` (1 concept) looks like \`income-statement\` (2 concepts): did you mean \`income-statement\`?",
+  "nps.md:5:18 warning okforest/similar-tag Tag \`Customers\` (1 concept) looks like \`customer\` (1 concept): did you mean \`customer\`?",
+  "retention.md:5:17 warning okforest/similar-tag Tag \`income statement\` (1 concept) looks like \`income-statement\` (2 concepts): did you mean \`income-statement\`?",
+]
+`;
+
+exports[`rule fixtures > okforest/similar-type 1`] = `
+[
+  "acme.md:2:1 warning okforest/similar-type Type \`customer-profile\` (1 concept) looks like \`Customer Profile\` (a schema): did you mean \`Customer Profile\`?",
+  "arr.md:2:1 warning okforest/similar-type Type \`metric\` (1 concept) looks like \`Metric\` (2 concepts): did you mean \`Metric\`?",
+  "mrr.md:2:1 warning okforest/similar-type Type \`Metrc\` (1 concept) looks like \`Metric\` (2 concepts): did you mean \`Metric\`?",
+  "nps.md:2:1 warning okforest/similar-type Type \`Metrics\` (1 concept) looks like \`Metric\` (2 concepts): did you mean \`Metric\`?",
+]
+`;
+
 exports[`rule fixtures > okforest/slug 1`] = `
 [
   "Bad_Name.md:-:- warning okforest/slug File name \`Bad_Name\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`bad-name\`).",
