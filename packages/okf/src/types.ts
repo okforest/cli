@@ -193,9 +193,29 @@ export interface TypeSchema {
   locate(path: KeyPath): Position | undefined
 }
 
+/** A type's starter page, at `.okforest/types/<type>.template.md` (an
+ * OKForest convention, not OKF): what a new concept of the type starts as,
+ * front matter and body, in the template's own order. Never a concept. */
+export interface TypeTemplate {
+  path: string
+  /** The file's text with any byte-order mark removed and CRLF normalized to LF. */
+  text: string
+  /** Its front matter, as a concept's is read; `undefined` when there is no
+   * block or it isn't a mapping. */
+  frontmatter: Record<string, unknown> | undefined
+  /** Whether it starts with a `---` front matter block (parseable or not). */
+  hasFrontmatter: boolean
+  /** Why its front matter could not be read, if it couldn't. */
+  frontmatterError?: Diagnostic
+  /** The type it's for: its `type`, when that is non-blank text. */
+  name?: string
+  /** Where a key of its front matter is written, if present. */
+  locate(path: KeyPath): Position | undefined
+}
+
 /**
  * A tree without its documents: every path in it, the markdown files that are
- * part of it, its settings and its type schemas, worked out from paths alone
+ * part of it, its settings, type schemas, and type templates, worked out from paths alone
  * (and the text of those files). A tree too large to hold parsed at once is read one file at a
  * time with {@link TreeOutline.read}; {@link Tree} is the same, read whole.
  */
@@ -210,6 +230,8 @@ export interface TreeOutline {
   settings?: TreeSettings
   /** Its type schemas whose text was given, sorted by path. */
   types: TypeSchema[]
+  /** Its type templates whose text was given, sorted by path. */
+  templates: TypeTemplate[]
   /** Read one of {@link markdown}, with its links resolved against the whole
    * tree, as {@link Tree} holds it. Throws for any other path. */
   read(path: string, text: string): Concept | ReservedFile
@@ -228,6 +250,8 @@ export interface Tree {
   settings?: TreeSettings
   /** Its type schemas, sorted by path. */
   types: TypeSchema[]
+  /** Its type templates, sorted by path. */
+  templates: TypeTemplate[]
   /** The bundle-root `index.md` `okf_version` value, as written. */
   okfVersion?: unknown
   /** Every link in every markdown file, in path and position order. */

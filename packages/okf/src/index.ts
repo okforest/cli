@@ -10,12 +10,16 @@ export {
 } from "./inventory.js"
 export { visit } from "./markdown.js"
 export { globToRegExp } from "./paths.js"
+export { type PageStart, startPage } from "./template.js"
 export {
+  isTypeFilePath,
   isTypeSchemaPath,
+  isTypeTemplatePath,
   MERMAID_RENDERERS,
   outlineTree,
   parseTree,
   readTypeSchema,
+  readTypeTemplate,
   SETTINGS_PATH,
   TYPES_FOLDER,
 } from "./tree.js"

@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync } from "node:fs"
 import { join } from "node:path"
-import { isTypeSchemaPath, outlineTree, parseTree, SETTINGS_PATH } from "@okforest/okf"
+import { isTypeFilePath, outlineTree, parseTree, SETTINGS_PATH } from "@okforest/okf"
 import { readTreeFiles } from "@okforest/okf/node"
 import { treeChecker, validate } from "../src/index.js"
 import { FIXTURES, NOW } from "./helpers.js"
@@ -24,7 +24,7 @@ describe("treeChecker", () => {
     const texts = new Map(files.map((file) => [file.path, file.text]))
     const types = new Map(
       files.flatMap((file) =>
-        file.text !== undefined && isTypeSchemaPath(file.path) ? [[file.path, file.text]] : [],
+        file.text !== undefined && isTypeFilePath(file.path) ? [[file.path, file.text]] : [],
       ),
     )
     const outline = outlineTree(
