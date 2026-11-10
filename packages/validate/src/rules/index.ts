@@ -25,6 +25,7 @@ import {
 } from "./fields.js"
 import { brokenLink, footnoteSource } from "./links.js"
 import { placeholder, settingsFile, settingsKeys, slug, wikilink } from "./okforest.js"
+import { similarTag, similarType } from "./similar.js"
 import { typeSchema } from "./type-schema.js"
 
 /** Rules from the OKF v0.2 specification. */
@@ -53,11 +54,13 @@ export const okfRules: readonly Rule[] = [
 ]
 
 /** OKForest conventions beyond the spec: slugs, placeholders, settings, type
- * schemas, diagrams. */
+ * schemas, near-duplicate types and tags, diagrams. */
 export const okforestRules: readonly Rule[] = [
   settingsFile,
   settingsKeys,
   typeSchema,
+  similarType,
+  similarTag,
   slug,
   placeholder,
   wikilink,

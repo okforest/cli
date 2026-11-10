@@ -94,7 +94,8 @@ function sorted(map: Map<string, number>): Count[] {
  * - case and punctuation: `SaaS Application`, `saas-application`;
  * - singular and plural: `Policy`, `Policies`;
  * - spelling: an edit distance of 1 (values of 5+ characters) or 2 (10+),
- *   unless one value contains the other.
+ *   two letters swapped counting as one (`Metirc`), unless one value
+ *   contains the other, or their digits differ (`q1-goals`, `q2-goals`).
  */
 export function findNearDuplicates(
   counts: readonly Count[],
@@ -124,8 +125,9 @@ export function findNearDuplicates(
       if (a === b) union(i, j, "case-or-punctuation")
       else if (singular[i] === singular[j]) union(i, j, "plural")
       // A word added to the other (`active-users`, `inactive-users`) changes the
-      // meaning rather than misspelling it, so containment is never a typo.
-      else if (!a.includes(b) && !b.includes(a)) {
+      // meaning rather than misspelling it, so containment is never a typo;
+      // nor is another number (`fy2025`, `fy2026`).
+      else if (!a.includes(b) && !b.includes(a) && digits(a) === digits(b)) {
         const shortest = Math.min(a.length, b.length)
         const allowed = shortest >= 10 ? 2 : shortest >= 5 ? 1 : 0
         if (allowed > 0 && editDistance(a, b, allowed) <= allowed) union(i, j, "spelling")
@@ -148,6 +150,8 @@ export function findNearDuplicates(
     }))
 }
 
+const digits = (value: string) => value.replace(/\D/g, "")
+
 function singularize(word: string): string {
   if (word.endsWith("ies") && word.length > 4) return `${word.slice(0, -3)}y`
   if (/(?:ses|xes|zes|ches|shes)$/.test(word)) return word.slice(0, -2)
@@ -155,24 +159,35 @@ function singularize(word: string): string {
   return word
 }
 
-/** Levenshtein distance, stopping early once it exceeds `limit`. */
+/**
+ * Edit distance: insertions, deletions, substitutions, and swaps of two
+ * neighbouring characters (`Metirc`, `Metric`), each one edit (optimal
+ * string alignment). Stops early once it exceeds `limit`: a row's smallest
+ * value is at most one more than the row before's, so once a row passes the
+ * limit, no later row, swaps included, comes back under it.
+ */
 export function editDistance(a: string, b: string, limit: number): number {
   if (Math.abs(a.length - b.length) > limit) return limit + 1
+  let before: number[] = []
   let previous = Array.from({ length: b.length + 1 }, (_, j) => j)
   for (let i = 1; i <= a.length; i++) {
     const current = [i]
     let rowMin = i
     for (let j = 1; j <= b.length; j++) {
       const cost = a[i - 1] === b[j - 1] ? 0 : 1
-      const value = Math.min(
+      let value = Math.min(
         (previous[j] as number) + 1,
         (current[j - 1] as number) + 1,
         (previous[j - 1] as number) + cost,
       )
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
+        value = Math.min(value, (before[j - 2] as number) + 1)
+      }
       current.push(value)
       rowMin = Math.min(rowMin, value)
     }
     if (rowMin > limit) return limit + 1
+    before = previous
     previous = current
   }
   return previous[b.length] as number

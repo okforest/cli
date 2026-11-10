@@ -1,4 +1,4 @@
-import { buildInventory, findNearDuplicates, parseTree } from "../src/index.js"
+import { buildInventory, editDistance, findNearDuplicates, parseTree } from "../src/index.js"
 
 const concept = (path: string, fm: string) => ({ path, text: `---\n${fm}\n---\n` })
 
@@ -112,6 +112,17 @@ describe("findNearDuplicates", () => {
     expect(groups("abc", "abcdefghijkl")).toEqual([])
   })
 
+  it("counts two letters swapped as one edit", () => {
+    expect(groups("Metric", "Metirc")).toEqual([[["Metric", "Metirc"], ["spelling"]]])
+    expect(groups("receive", "recieve")).toEqual([[["receive", "recieve"], ["spelling"]]])
+    // A swap and another edit is two: too many for a short value.
+    expect(groups("Metric", "Mteirc")).toEqual([])
+  })
+
+  it("never treats another number as a misspelling", () => {
+    expect(groups("q1-goals", "q2-goals", "fy2025-plan", "fy2026-plan")).toEqual([])
+  })
+
   it("never treats containment as a misspelling", () => {
     expect(groups("active-users", "inactive-users")).toEqual([])
   })
@@ -127,5 +138,27 @@ describe("findNearDuplicates", () => {
 
   it("ignores values with no letters or digits", () => {
     expect(groups("--", "__")).toEqual([])
+  })
+})
+
+describe("editDistance", () => {
+  it("counts insertions, deletions, substitutions, and swaps as one edit each", () => {
+    expect(editDistance("metric", "metric", 2)).toBe(0)
+    expect(editDistance("metric", "metrc", 2)).toBe(1)
+    expect(editDistance("metric", "metrik", 2)).toBe(1)
+    expect(editDistance("metric", "metirc", 2)).toBe(1)
+    expect(editDistance("ab", "ba", 2)).toBe(1)
+    expect(editDistance("abcdef", "badcfe", 5)).toBe(3)
+  })
+
+  it("swaps only neighbours, and never edits a swapped pair again", () => {
+    expect(editDistance("ca", "abc", 5)).toBe(3)
+    expect(editDistance("abc", "cab", 5)).toBe(2)
+  })
+
+  it("stops past the limit, swaps or not", () => {
+    expect(editDistance("metric", "mteirc", 1)).toBe(2)
+    expect(editDistance("abcdef", "badcfe", 2)).toBe(3)
+    expect(editDistance("a", "abcd", 1)).toBe(2)
   })
 })
