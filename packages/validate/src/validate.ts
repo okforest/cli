@@ -20,6 +20,7 @@ export async function validate(
       ignored: tree.ignored,
       ...(tree.settings ? { settings: tree.settings } : {}),
       types: tree.types,
+      templates: tree.templates,
     },
     options,
   )

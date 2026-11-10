@@ -1,5 +1,6 @@
 import { initCommand } from "./commands/init.js"
 import { inventoryCommand } from "./commands/inventory.js"
+import { newCommand } from "./commands/new.js"
 import { ruleCommand } from "./commands/rule.js"
 import { typesCommand } from "./commands/types.js"
 import { validateCommand } from "./commands/validate.js"
@@ -11,6 +12,7 @@ Usage
   okforest validate [path] [--format text|json]
   okforest inventory [path] [--format text|json]
   okforest init [path] --template company [--name <name>]
+  okforest new <type> <file> [--title <title>] [--description <text>]
   okforest rule [rule] [--format text|json]
   okforest types init [path] [--type <type>]... [--dry-run]
 
@@ -20,6 +22,8 @@ Commands
   inventory   List every type, tag, and frontmatter key in use, with counts
               and likely near-duplicates.
   init        Create a new tree from a starter template (templates: company).
+  new         Create a concept of a type, from the type's template
+              (.okforest/types/<type>.template.md) when it has one.
   rule        Explain a rule: why it exists, an example, and the fix.
               Without a rule, list every rule.
   types       Work with the tree's type schemas (.okforest/types/):
@@ -40,6 +44,7 @@ const COMMANDS = {
   validate: validateCommand,
   inventory: inventoryCommand,
   init: initCommand,
+  new: newCommand,
   rule: ruleCommand,
   types: typesCommand,
 } as const

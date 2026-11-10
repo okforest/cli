@@ -256,6 +256,16 @@ exports[`rule fixtures > okforest/type-schema 1`] = `
 ]
 `;
 
+exports[`rule fixtures > okforest/type-template 1`] = `
+[
+  ".okforest/types/bare.template.md:1:1 error okforest/type-template A type template starts with front matter between \`---\` lines, naming the type it's for (\`type: Metric\`).",
+  ".okforest/types/broken.template.md:3:17 error okforest/type-template Invalid YAML: Flow sequence in block collection must be sufficiently indented and end with a ]",
+  ".okforest/types/listed.template.md:2:1 error okforest/type-template A type template needs a \`type\`: the type it's for, as concepts write it.",
+  ".okforest/types/second-metric.template.md:2:1 error okforest/type-template .okforest/types/metric.template.md is already the template for \`Metric\`; a type has one template.",
+  ".okforest/types/untyped.template.md:1:1 error okforest/type-template A type template needs a \`type\`: the type it's for, as concepts write it.",
+]
+`;
+
 exports[`rule fixtures > okforest/wikilink 1`] = `
 [
   "wikilinks.md:7:5 warning okforest/wikilink \`[[Other Concept]]\` is a wikilink, not an OKF link: write \`[Other Concept](other-concept.md)\` with the concept's path.",

@@ -53,6 +53,12 @@ example; with no rule, it lists them all. A coding agent that runs `okforest
 validate` can run it to learn how to fix what it found; `--format json` gives
 the same as data.
 
+**`okforest new <type> <file> [--title <title>] [--description <text>] [--root <path>]`**
+creates a concept of a type at a path in the tree, from the type's
+[template](#type-templates) when it has one (otherwise with just its `type`,
+`title`, and `description`), lists it in its folder's `index.md` when there is
+one, and shows what's left to fill in on it.
+
 **`okforest types init [path] [--type <type>]... [--dry-run]`** drafts a
 [type schema](#type-schemas) for each type in use that has none, from what its
 concepts hold: each field beyond OKF's, typed by its values, with a format,
@@ -126,6 +132,7 @@ it in more detail.
 | `okforest/settings`          | error    | `.okforest/settings.yaml` (spelled `.yaml`) holds well-formed settings: a `name` of up to 100 characters, a `description` of up to 4,000, `ignore` globs, and what draws Mermaid diagrams (`diagrams.mermaid.renderer`: `mermaid` or `pele`). |
 | `okforest/settings-keys`     | warning  | `.okforest/settings.yaml` uses only the settings OKForest knows; others, such as a misspelled key, are ignored.                                                                                                                               |
 | `okforest/type-schema`       | error    | Concepts match their type's JSON Schema in `.okforest/types/`, and each schema there is a usable JSON Schema for one type.                                                                                                                    |
+| `okforest/type-template`     | error    | Each type template in `.okforest/types/` starts with front matter naming its `type`, and a type has one template.                                                                                                                             |
 | `okforest/similar-type`      | warning  | A concept's `type` isn't a near-duplicate (case, punctuation, plural, or spelling) of a type more concepts use, or one with a schema.                                                                                                         |
 | `okforest/similar-tag`       | warning  | A concept's tags aren't near-duplicates (case, punctuation, plural, or spelling) of tags more concepts use.                                                                                                                                   |
 | `okforest/slug`              | warning  | File and directory names of concepts are slugs: lowercase letters, digits, and hyphens.                                                                                                                                                       |
@@ -194,6 +201,43 @@ So `"additionalProperties": false` rejects fields the type doesn't have,
 without rejecting OKF's. Editors check a `.schema.json` file against JSON
 Schema itself as you write it. `okforest types init` drafts a schema for each
 type from its concepts, to start from.
+
+## Type templates
+
+A type can also have a template beside its schema, `<type>.template.md`: the
+page a new concept of that type starts as, like GitHub's issue templates.
+`okforest new` (and OKForest's new-page form) copies it as written, its front
+matter in its own order and its body, with the new page's `title` and
+`description` put in place. Guidance for authors goes in HTML comments, which
+readers don't see:
+
+```markdown
+---
+
+type: Metric
+title:
+status: draft
+owner:
+tags: [metric]
+---
+
+<!-- One sentence: what is counted, and over what period. -->
+
+# Definition
+
+<!-- The exact calculation, including what's left out. -->
+```
+
+The template's own `type` says which type it's for. It needn't satisfy the
+type's schema: an empty `owner:` is how it says "fill this in", and the new
+page is checked like any concept, so `okforest new` shows what's left. A
+template is never a concept (nothing under `.okforest/` is); the
+`okforest/type-template` rule checks that each one names its type, and that a
+type has one.
+
+```sh
+npx okforest new Metric metrics/churn.md --title "Monthly churn"
+```
 
 ## Development
 

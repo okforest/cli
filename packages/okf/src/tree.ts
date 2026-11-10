@@ -20,6 +20,7 @@ import type {
   TreeOutline,
   TreeSettings,
   TypeSchema,
+  TypeTemplate,
 } from "./types.js"
 import { isRecord, parseYaml } from "./yaml.js"
 
@@ -38,6 +39,18 @@ export const TYPES_FOLDER = ".okforest/types/"
  * {@link TYPES_FOLDER}, the name editors check as a JSON Schema. */
 export function isTypeSchemaPath(path: string): boolean {
   return path.startsWith(TYPES_FOLDER) && path.endsWith(".schema.json")
+}
+
+/** Whether a bundle path is a type template: a `.template.md` file in
+ * {@link TYPES_FOLDER}, the page a new concept of its type starts as. */
+export function isTypeTemplatePath(path: string): boolean {
+  return path.startsWith(TYPES_FOLDER) && path.endsWith(".template.md")
+}
+
+/** Whether a bundle path is a type schema or template, whose text
+ * {@link outlineTree} needs. */
+export function isTypeFilePath(path: string): boolean {
+  return isTypeSchemaPath(path) || isTypeTemplatePath(path)
 }
 
 /** Folders never part of a tree: OKForest's own and version control's. */
@@ -62,7 +75,7 @@ export function parseTree(input: Iterable<TreeFile>): Tree {
   }
   const typeTexts = new Map<string, string>()
   for (const [path, text] of texts) {
-    if (text !== undefined && isTypeSchemaPath(path)) typeTexts.set(path, text)
+    if (text !== undefined && isTypeFilePath(path)) typeTexts.set(path, text)
   }
   const outline = outlineTree(texts.keys(), texts.get(SETTINGS_PATH), typeTexts)
   const concepts: Concept[] = []
@@ -92,6 +105,7 @@ export function parseTree(input: Iterable<TreeFile>): Tree {
     ignored: outline.ignored,
     ...(outline.settings ? { settings: outline.settings } : {}),
     types: outline.types,
+    templates: outline.templates,
     ...(rootIndex?.frontmatter && "okf_version" in rootIndex.frontmatter
       ? { okfVersion: rootIndex.frontmatter.okf_version }
       : {}),
@@ -106,7 +120,7 @@ export function parseTree(input: Iterable<TreeFile>): Tree {
 /**
  * Outline a tree from its file paths, the text of its settings file
  * (`.okforest/settings.yaml`, when it has one), and the texts of its type
- * schemas by path ({@link isTypeSchemaPath}), without reading its markdown:
+ * schemas and templates by path ({@link isTypeFilePath}), without reading its markdown:
  * a tree too large to hold parsed at once is then read one file at a time
  * with {@link TreeOutline.read}, each file as {@link parseTree} reads it.
  */
@@ -151,6 +165,10 @@ export function outlineTree(
     const text = typeTextOf.get(path)
     return text !== undefined && isTypeSchemaPath(path) ? [readTypeSchema(path, text)] : []
   })
+  const templates = files.flatMap((path) => {
+    const text = typeTextOf.get(path)
+    return text !== undefined && isTypeTemplatePath(path) ? [readTypeTemplate(path, text)] : []
+  })
 
   return {
     files,
@@ -158,6 +176,7 @@ export function outlineTree(
     ignored,
     ...(settings ? { settings } : {}),
     types,
+    templates,
     read(path, text) {
       if (!inTree.has(path)) throw new Error(`${path} is not one of the tree's markdown files.`)
       const { rawLinks, ...rest } = readMarkdownFile(path, text)
@@ -339,6 +358,21 @@ export function readTypeSchema(path: string, text: string): TypeSchema {
     ...(error ? { error } : {}),
     ...(name !== undefined ? { name } : {}),
     locate,
+  }
+}
+
+/** A type template, its front matter read as a concept's is. */
+export function readTypeTemplate(path: string, text: string): TypeTemplate {
+  const file = readMarkdownFile(path, text)
+  const type = file.frontmatter?.type
+  return {
+    path,
+    text: file.text,
+    frontmatter: file.frontmatter,
+    hasFrontmatter: file.hasFrontmatter,
+    ...(file.frontmatterError ? { frontmatterError: file.frontmatterError } : {}),
+    ...(typeof type === "string" && type.trim() !== "" ? { name: type } : {}),
+    locate: file.locate,
   }
 }
 

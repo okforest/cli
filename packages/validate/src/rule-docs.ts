@@ -611,6 +611,34 @@ description: What Acme's teams know about customers, billing, and retention.
     },
   },
 
+  "okforest/type-template": {
+    why: `A type can have a template beside its schema, in \`.okforest/types/\` (\`metric.template.md\`): the page a new concept of that type starts as, like GitHub's issue templates. \`okforest new\` and OKForest's new-page form copy it as written, its front matter in its own order and its body, with the new page's \`title\` and \`description\`; guidance for authors goes in HTML comments. A template needn't satisfy its type's schema: an empty field is how it says "fill this in", and the new page is checked like any concept. The template's own \`type\` says which type it's for, so it must have front matter naming one; a second template for the same type is reported, and the first by path is used. A template is never a concept: nothing under \`.okforest/\` is ([Templates](${SITE}/docs/types/#templates)).`,
+    example: {
+      file: ".okforest/types/metric.template.md",
+      fails: `---
+status: draft
+owner:
+---
+
+<!-- What is counted, and over what period. -->
+
+# Definition
+`,
+      findings: ["1:1 A type template needs a `type`: the type it's for, as concepts write it."],
+      fixed: `---
+type: Metric
+status: draft
+owner:
+---
+
+<!-- What is counted, and over what period. -->
+
+# Definition
+`,
+      context: { "index.md": rootIndex(CHURN_ENTRY), "churn.md": churn() },
+    },
+  },
+
   "okforest/similar-type": {
     why: `OKF matches types exactly, so \`metric\` and \`Metric\` are two types ([§4.1](${SPEC}#41-frontmatter)): a concept written the other way is missed when people and assistants filter by type, and its type's schema in \`.okforest/types/\` never checks it. OKF lets every team name its own types, so a type OKForest hasn't seen is fine; this warns only about one that nearly matches another the tree uses: the same letters in another case or with other punctuation (\`Product_Summary\`, \`Product Summary\`), a plural (\`Metrics\`), or a small spelling difference (\`Metirc\`). It suggests the one most likely meant: the one with a schema, then the one more concepts use, then the one written as OKF's examples write types, capitalized words with spaces ([Naming conventions](${SITE}/docs/types/#naming-conventions)). \`okforest inventory\` lists the same near-duplicates.`,
     example: {

@@ -79,6 +79,7 @@ OKForest conventions
   okforest/similar-type       warning  A concept's \`type\` isn't a near-duplicate (case, punctuation, plural, or spelling) of a type more concepts use, or one with a schema.
   okforest/slug               warning  File and directory names of concepts are slugs: lowercase letters, digits, and hyphens.
   okforest/type-schema        error    Concepts match their type's JSON Schema in \`.okforest/types/\`, and each schema there is a usable JSON Schema for one type.
+  okforest/type-template      error    Each type template in \`.okforest/types/\` starts with front matter naming its \`type\`, and a type has one template.
   okforest/wikilink           warning  Concepts link with standard markdown links, not \`[[wikilinks]]\` (OKF §6.1).
 
 Run \`okforest rule <rule>\` for why a rule exists and how to fix it.
