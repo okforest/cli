@@ -72,12 +72,14 @@ function reportSimilar(
         schema: schemas.has(c.value),
         conventional: CONVENTIONAL[field].test(c.value),
       }))
-      .sort((a, b) => rank(a, b) || (a.value < b.value ? -1 : a.value > b.value ? 1 : 0))
+      // A group's values are distinct, so code-point order settles any tie.
+      .sort((a, b) => rank(a, b) || (a.value < b.value ? -1 : 1))
     const best = candidates[0] as Candidate
     for (const candidate of candidates.slice(1)) {
       if (candidate.schema || rank(best, candidate) === 0) continue
       const message = `${label} \`${candidate.value}\` (${concepts(candidate.count)}) looks like \`${best.value}\` (${evidence(best)}): did you mean \`${best.value}\`?`
-      for (const use of uses.get(candidate.value) ?? []) context.report({ ...use, message })
+      // Only a schema's type can have no uses, and it's never reported.
+      for (const use of uses.get(candidate.value) as Use[]) context.report({ ...use, message })
     }
   }
 }
