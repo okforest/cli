@@ -42,9 +42,11 @@ near-duplicates (`e-commerce` and `ecommerce`, `Policy` and `Policies`).
 
 **`okforest init [path] --template company`** creates a new tree: a root
 `index.md` declaring `okf_version: "0.2"`, `log.md`, `.okforest/settings.yaml`
-with the bundle's `name` (`--name`, defaulting to the folder's name), draft
-starter concepts, and a GitHub workflow that validates every pull request with
-the OKForest Validate action.
+with the bundle's `name` (`--name`, defaulting to the folder's name), a
+[type schema](#type-schemas) for each of its types, draft starter concepts,
+and a GitHub workflow that validates every pull request with the OKForest
+Validate action. To start from your own template instead, see
+[Your own template](https://www.okforest.ai/docs/cli/#your-own-template).
 
 **`okforest rule [rule] [--format text|json]`** explains a rule: why it exists,
 an example that breaks it, what `okforest validate` reports for it, and the

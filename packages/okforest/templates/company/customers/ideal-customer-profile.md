@@ -4,6 +4,10 @@ title: Ideal customer profile
 description: The customers the company serves best, and how to recognize them.
 tags: [customers, sales]
 status: draft
+# industries: [logistics, retail]
+# company_size: 50 to 500 employees
+# regions: [North America]
+# buyer: Head of Operations
 generated: { by: okforest/{{version}}, at: {{now}} }
 ---
 

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Organization",
+  "description": "A company or other organization: what it does, and where and when it began. Named after schema.org's Organization.",
+  "type": "object",
+  "properties": {
+    "website": {
+      "type": "string",
+      "format": "uri",
+      "description": "Its website's address."
+    },
+    "founded": {
+      "type": "integer",
+      "description": "The year it was founded."
+    },
+    "headquarters": {
+      "type": "string",
+      "description": "Where it's based: a city and country."
+    }
+  }
+}

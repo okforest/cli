@@ -15,7 +15,7 @@ describe("okforest init", () => {
   it("creates a company tree that validates with no findings", async () => {
     const result = await init("acme-okf", "--template", "company")
     expect(result.code).toBe(0)
-    expect(result.stdout).toMatch(/^Created a company tree in acme-okf \(9 files\)\./)
+    expect(result.stdout).toMatch(/^Created a company tree in acme-okf \(11 files\)\./)
     expect(result.stdout).toContain("company/overview.md, customers/ideal-customer-profile.md")
     expect(await run(["validate", "acme-okf"], { cwd: work })).toMatchObject({
       code: 0,
@@ -25,6 +25,13 @@ describe("okforest init", () => {
     const settings = await readFile(join(work, "acme-okf", ".okforest", "settings.yaml"), "utf8")
     expect(settings).toContain('name: "Acme knowledge"\n')
     expect(settings).toContain("ignore:\n  - README.md\n")
+    const schema = JSON.parse(
+      await readFile(
+        join(work, "acme-okf", ".okforest", "types", "customer-profile.schema.json"),
+        "utf8",
+      ),
+    )
+    expect(schema.title).toBe("Customer Profile")
     const overview = await readFile(join(work, "acme-okf", "company", "overview.md"), "utf8")
     expect(overview).toMatch(
       /generated: \{ by: okforest\/[\d.]+, at: \d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ \}/,
