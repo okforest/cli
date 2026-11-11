@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Customer Profile",
+  "description": "A kind of customer the company serves well, and how to recognize one.",
+  "type": "object",
+  "properties": {
+    "industries": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "The industries they work in."
+    },
+    "company_size": {
+      "type": "string",
+      "description": "How big they are, like 50 to 500 employees."
+    },
+    "regions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Where they are."
+    },
+    "buyer": {
+      "type": "string",
+      "description": "The role of the person who buys, like Head of Operations."
+    }
+  }
+}

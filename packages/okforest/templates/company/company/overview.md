@@ -4,6 +4,9 @@ title: Company overview
 description: What the company does, why it exists, and who it serves.
 tags: [company]
 status: draft
+# website: https://www.acme.example
+# founded: 2019
+# headquarters: Austin, United States
 generated: { by: okforest/{{version}}, at: {{now}} }
 ---
 
