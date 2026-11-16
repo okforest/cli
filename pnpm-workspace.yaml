@@ -6,7 +6,7 @@ packages:
 # time. `catalogMode: strict` (below) keeps it that way.
 catalog:
   # Exact, not caret, per https://biomejs.dev/internals/versioning/.
-  "@biomejs/biome": 2.6.6
+  "@biomejs/biome": 2.6.7
   "@cfworker/json-schema": ^4.1.6
   "@changesets/cli": ^3.0.3
   # Optional peers of @okforest/validate (diagram syntax checks); dev-only here.
@@ -20,7 +20,7 @@ catalog:
   mermaid: ^12.3.0
   micromark-extension-gfm-footnote: ^2.1.0
   tsdown: ^0.23.7
-  turbo: ^2.11.10
+  turbo: ^2.11.11
   typescript: ^7.0.2
   vitest: ^5.1.0
   yaml: ^2.9.1
