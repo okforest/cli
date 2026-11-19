@@ -76,6 +76,40 @@ describe("okf/index-scope", () => {
   })
 })
 
+describe("okf/index-frontmatter", () => {
+  const root = (frontmatter: string) => `---\n${frontmatter}---\n\n# Bundle\n`
+  const META =
+    "title: Acme retail\ndescription: Sales and margin.\nlicense: CC-BY-4.0\nx-acme-owner: team:fpa\n"
+
+  it("lets an OKF 0.3 root index.md describe the bundle, with extension keys", async () => {
+    for (const version of ['"0.3"', "0.3", '"0.4"', '"1.0"']) {
+      const index = root(`okf_version: ${version}\n${META}`)
+      expect(await only("okf/index-frontmatter", { "index.md": index })).toEqual([])
+    }
+  })
+
+  it("keeps OKF 0.2's rule for a root index.md that declares 0.2, or no version", async () => {
+    for (const version of ['okf_version: "0.2"\n', "okf_version: 0.2\n", ""]) {
+      const index = root(`${version}title: Acme retail\n`)
+      expect(await only("okf/index-frontmatter", { "index.md": index })).toEqual([
+        expect.stringMatching(
+          /^index\.md:\d+:1 error okf\/index-frontmatter Under OKF 0\.2, .* remove `title`, or declare `okf_version: "0\.3"`\.$/,
+        ),
+      ])
+    }
+  })
+
+  it("keeps a folder's index.md free of frontmatter under OKF 0.3 too", async () => {
+    const files = {
+      "index.md": root('okf_version: "0.3"\n'),
+      "sales/index.md": root("title: Sales\n"),
+    }
+    expect(await only("okf/index-frontmatter", files)).toEqual([
+      "sales/index.md:1:1 error okf/index-frontmatter Only the bundle-root index.md may have frontmatter; remove this block.",
+    ])
+  })
+})
+
 describe("okf/index-entries", () => {
   it("accepts reference-style entry links", async () => {
     expect(

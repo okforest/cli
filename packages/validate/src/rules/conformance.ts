@@ -50,12 +50,15 @@ export const type: Rule = {
   },
 }
 
-/** OKF §8, §12: `index.md` has no frontmatter, except `okf_version` at the root. */
+/** OKF §8, §12: `index.md` has no frontmatter, except at the root: there,
+ * `okf_version`, and from OKF 0.3 (§8.1) the bundle's own metadata. A root
+ * index.md that declares 0.2, or no version (§12.1), keeps 0.2's rule, so a
+ * tree moves to 0.3 when it declares it. */
 export const indexFrontmatter: Rule = {
   id: "okf/index-frontmatter",
   severity: "error",
   description:
-    "index.md files carry no frontmatter, except an `okf_version` key in the bundle-root index.md (OKF §8, §12).",
+    "index.md files carry no frontmatter, except the bundle-root index.md: `okf_version`, and from OKF 0.3 the bundle's `title`, `description`, `license`, and extension keys (OKF §8, §12).",
   checkFile(index, { report }) {
     if (index.kind !== "index" || !index.frontmatter) return
     if (index.directory !== "") {
@@ -67,14 +70,26 @@ export const indexFrontmatter: Rule = {
       })
       return
     }
+    if (declaresAtLeast(index.frontmatter.okf_version, 0, 3)) return
     for (const key of Object.keys(index.frontmatter).filter((k) => k !== "okf_version")) {
       report({
         file: index.path,
         ...at(index, [key]),
-        message: `The root index.md frontmatter may only declare \`okf_version\`; remove \`${key}\`.`,
+        message: `Under OKF 0.2, the root index.md frontmatter may only declare \`okf_version\`; remove \`${key}\`, or declare \`okf_version: "0.3"\`.`,
       })
     }
   },
+}
+
+/** Whether an `okf_version` value names this version or a later one. A
+ * number counts as written (`okf_version: 0.3`, unquoted). */
+function declaresAtLeast(value: unknown, major: number, minor: number): boolean {
+  const match = /^(\d+)\.(\d+)$/.exec(
+    typeof value === "number" ? String(value) : String(value ?? ""),
+  )
+  if (!match) return false
+  const [declaredMajor, declaredMinor] = [Number(match[1]), Number(match[2])]
+  return declaredMajor > major || (declaredMajor === major && declaredMinor >= minor)
 }
 
 /** OKF §8: index entries are list items that start with a link. An index

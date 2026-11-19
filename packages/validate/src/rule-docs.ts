@@ -31,6 +31,7 @@ export interface RuleExample {
 }
 
 const SPEC = "https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md"
+const SPEC_0_3 = "https://github.com/open-knowledge-format/open-knowledge-format/blob/main/SPEC.md"
 const SITE = "https://www.okforest.ai"
 
 const CHURN_BODY =
@@ -265,7 +266,7 @@ ${CHURN_BODY}
   },
 
   "okf/index-frontmatter": {
-    why: `An \`index.md\` is a list of what its directory holds, not a concept, so it carries no frontmatter ([§8](${SPEC}#8-index-files)). The one exception is the bundle-root \`index.md\`, which may declare the OKF version the bundle targets, and nothing else ([§12](${SPEC}#12-versioning)).`,
+    why: `An \`index.md\` is a list of what its directory holds, not a concept, so it carries no frontmatter ([§8](${SPEC}#8-index-files)). The exception is the bundle-root \`index.md\`, which declares the OKF version the bundle targets ([§12](${SPEC}#12-versioning)). Under OKF 0.2 that's all it may hold. From [OKF 0.3](${SPEC_0_3}#81-bundle-metadata), it may also give the bundle's \`title\`, a \`description\` of what it covers, its \`license\`, and extension keys. A root \`index.md\` that declares 0.2, or no version, keeps 0.2's rule, so a tree moves to 0.3 when it says so.`,
     example: {
       file: "index.md",
       fails: `---
@@ -278,7 +279,7 @@ title: Metrics
 ${CHURN_ENTRY}
 `,
       findings: [
-        "3:1 The root index.md frontmatter may only declare `okf_version`; remove `title`.",
+        '3:1 Under OKF 0.2, the root index.md frontmatter may only declare `okf_version`; remove `title`, or declare `okf_version: "0.3"`.',
       ],
       fixed: rootIndex(CHURN_ENTRY),
       context: { "churn.md": churn() },
