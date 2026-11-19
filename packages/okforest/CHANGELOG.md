@@ -1,5 +1,50 @@
 # okforest
 
+## 0.16.0
+
+### Minor Changes
+
+- 538d3e7: - **`okforest/slug` accepts underscores** (lowercase letters, digits, hyphens, and underscores, starting with a letter or digit), so a concept named after something with underscores, such as a table (`n_day_active_users`), can keep its name. Its suggested fix keeps a name's own underscores (`Daily_Users` → `daily_users`).
+  - The READMEs, package descriptions, and `--help` link OKF's new home, [open-knowledge-format/open-knowledge-format](https://github.com/open-knowledge-format/open-knowledge-format), and say a tree is checked by the version it declares (0.2 or 0.3). The README's rule table lists every rule, and how a `.md` file counts as a concept under each version. The `README.md` and `AGENTS.md` that `okforest init` writes link the new spec too.
+  - A new tree declares OKF 0.3; `npx okforest@0.15.0 init` makes one on 0.2.
+- 1158c11: `@okforest/okf` reads trees as OKF 0.3 does (#53), as the [new spec](https://github.com/open-knowledge-format/open-knowledge-format/blob/main/SPEC.md) tells consumers to read every version:
+  
+  - **Trust tiers count only current verifications** (§5.3): an event counts when its `at` is on or after `generated.at`, the last change to the content, so a page rewritten after a person's review isn't human-reviewed until someone confirms it again. An event without a readable `at` doesn't count (§5.2). The earlier events are kept as `Concept.verifiedBefore`. `deriveTrustTier(verified, generatedAt)` and the new `currentVerifications` do the same.
+  - **A status OKF doesn't define isn't `stable`** (§5.4): `Concept.status` is `unrecognized`, and `statusValue` has it as written; absent is still `stable`. `buildInventory`'s `statuses` counts them (`okforest inventory` shows them when there are any).
+  - **`superseded_by`** is read (`Concept.supersededBy`), as a path field.
+  - **A `stale_after` that isn't a timestamp is never fresh** (§5.5): `isStale()` is true, rather than false.
+  - **Timestamps** are RFC 3339 date-times with an offset, or dates, which are the start of that day in UTC (§5): `parseTimestamp`.
+  - **Path fields** (§6.2: `resource`, `sources[].resource`, `superseded_by`, `computation`, `executor.resource`, `attester.resource`) resolve as links do, into `Concept.paths`, and those that reach a concept are edges of the bundle graph, so `backlinks` includes them (§6.4). A bundle on 0.2, or no version, may still write them from the bundle root (§12.1): `outlineTree` takes the root `index.md`'s `okf_version` to know.
+  - **Files and folders whose names start with `.`** aren't part of a tree (§3.2), as `.okforest/` and `.git/` weren't: `.github/` and the like are left out too.
+  - **Absent and single values** (§11.2): null and blank values are absent, one `sources` entry is a list of one, and one tag is never split at commas.
+  - **Bundle metadata** (§8.1): `Tree.metadata` has the root `index.md`'s `title`, `description`, and `license` (`readBundleMetadata`).
+  - **The OKF version**: `parseOkfVersion`, `okfVersionAtLeast`, and `LATEST_OKF_VERSION` (`"0.3"`).
+- af18a42: The rules check each tree by the OKF version its root `index.md` declares (#53): `okf_version: "0.3"` gets OKF 0.3's rules, and `"0.2"`, or no version, keeps 0.2's, so a tree moves when it says so.
+  
+  - **New `okf/not-a-concept`** (warning, 0.3): a `.md` file without frontmatter or a `type` isn't a concept (§3.2), so consumers skip it; nothing else checks it as one, and a `README.md` no longer needs `ignore:`. Under 0.2, `okf/frontmatter` and `okf/type` still report these as errors.
+  - **New `okf/extension-key`** (warning, 0.3): a frontmatter key OKF doesn't define is named `x-<producer>-<name>`, such as `x-acme-owner` (§4.1), so a later version can't define it differently. A type's own fields are extension keys too.
+  - **New `okf/log-frontmatter`** (error, 0.3): `log.md` has no frontmatter (§9).
+  - **New `okforest/okf-version-current`** (warning): a tree on an older version is told that 0.3 is current, to move when it's ready; one that declares a newer version than this validator knows is told to update okforest or okforest/validate-action.
+  - **`okf/datetime`** accepts a date, the start of that day in UTC (§5), for every version, as OKF 0.3 says.
+  - **`okf/status`** is a warning, not an error: a status OKF doesn't define isn't `stable`, which OKF 0.3 says to keep and warn about. Under 0.3 it also checks `superseded_by` (a path, with `status: deprecated`).
+  - **`okf/actor`** accepts any `<scheme>:<id>`, such as `team:fpa`, and checks a source's `author` too (§7).
+  - **`okf/attested-computation`**: under 0.3, each parameter needs a `type` (§10.2).
+  - **`okf/okf-version`** asks for `"0.3"`, and no longer says other versions are checked best-effort.
+  - `okforest/slug` leaves files that aren't concepts alone, under 0.3.
+  - `okforest init` writes `okf_version: "0.3"`.
+  - The rule docs link the new spec (open-knowledge-format/open-knowledge-format) and their examples use OKF 0.3.
+  
+  For tools checking a tree a file at a time: pass the root `index.md`'s version to `outlineTree` (`{ okfVersion }`), which `declaredOkfVersion(text)` reads, so the right version's rules apply. `TreeOutline.okfVersion` carries it to the rules.
+
+### Patch Changes
+
+- Updated dependencies [538d3e7]
+- Updated dependencies [1158c11]
+- Updated dependencies [db418e4]
+- Updated dependencies [af18a42]
+  - @okforest/validate@0.16.0
+  - @okforest/okf@0.16.0
+
 ## 0.15.0
 
 ### Minor Changes
