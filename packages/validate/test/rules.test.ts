@@ -416,9 +416,24 @@ describe("okforest/slug", () => {
     )
   })
 
+  it("accepts underscores, as a table's name has them, and suggests keeping them", async () => {
+    const files: Record<string, string> = { "index.md": '---\nokf_version: "0.3"\n---\n' }
+    for (const name of ["n_day_active_users", "events_", "monthly-churn", "q3_2026-plan", "2026"]) {
+      files[`tables/${name}.md`] = concept()
+    }
+    files["crypto_bitcoin/blocks.md"] = concept()
+    expect(await only("okforest/slug", files)).toEqual([])
+    expect(
+      await only("okforest/slug", { "Daily_Users.md": concept(), "_draft.md": concept() }),
+    ).toEqual([
+      "Daily_Users.md:-:- warning okforest/slug File name `Daily_Users` is not a slug: use lowercase letters, digits, hyphens, and underscores (e.g. `daily_users`).",
+      "_draft.md:-:- warning okforest/slug File name `_draft` is not a slug: use lowercase letters, digits, hyphens, and underscores (e.g. `draft`).",
+    ])
+  })
+
   it("does not suggest the same name back", async () => {
     expect(await only("okforest/slug", { "-.md": concept() })).toEqual([
-      "-.md:-:- warning okforest/slug File name `-` is not a slug: use lowercase letters, digits, and hyphens.",
+      "-.md:-:- warning okforest/slug File name `-` is not a slug: use lowercase letters, digits, hyphens, and underscores.",
     ])
   })
 })

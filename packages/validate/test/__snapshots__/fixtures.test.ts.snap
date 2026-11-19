@@ -260,8 +260,8 @@ exports[`rule fixtures > okforest/similar-type 1`] = `
 
 exports[`rule fixtures > okforest/slug 1`] = `
 [
-  "Bad_Name.md:-:- warning okforest/slug File name \`Bad_Name\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`bad-name\`).",
-  "My Dir/:-:- warning okforest/slug Directory name \`My Dir\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`my-dir\`).",
+  "Bad_Name.md:-:- warning okforest/slug File name \`Bad_Name\` is not a slug: use lowercase letters, digits, hyphens, and underscores (e.g. \`bad_name\`).",
+  "My Dir/:-:- warning okforest/slug Directory name \`My Dir\` is not a slug: use lowercase letters, digits, hyphens, and underscores (e.g. \`my-dir\`).",
 ]
 `;
 

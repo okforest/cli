@@ -32,7 +32,7 @@ describe("okforest init", () => {
     expect(await read("okf/log.md")).toMatch(/^# Log\n\n## \d{4}-\d\d-\d\d\n/)
     expect(await read("okf/.okforest/settings.yaml")).toContain('name: "Acme knowledge"\n')
     expect(await read("README.md")).toMatch(/^# Acme knowledge\n/)
-    expect(await read("AGENTS.md")).toContain("Acme knowledge: an [OKF v0.2]")
+    expect(await read("AGENTS.md")).toContain("Acme knowledge: an [OKF 0.3]")
     expect(await read(".gitignore")).toBe(".DS_Store\nnode_modules/\n")
     expect(await read(".github/dependabot.yaml")).toContain('package-ecosystem: "github-actions"')
     const ci = await read(".github/workflows/ci.yaml")

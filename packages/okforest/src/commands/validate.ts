@@ -11,8 +11,9 @@ import { loadTree } from "../tree.js"
 
 const HELP = `Usage: okforest validate [path] [--format text|json]
 
-Check the OKF v0.2 tree at path (default: the current directory) against the
-OKF specification and OKForest conventions. Exits 1 when there are errors;
+Check the OKF tree at path (default: the current directory) against the
+OKF specification, by the version its root index.md declares (0.2, or 0.3),
+and OKForest conventions. Exits 1 when there are errors;
 warnings and info are reported but never fail.
 
 Options

@@ -1,0 +1,12 @@
+OKF 0.3 sample bundles
+
+The acme_retail, crypto_bitcoin, ga4, and stackoverflow directories are
+copied unmodified from the Open Knowledge Format repository:
+https://github.com/open-knowledge-format/open-knowledge-format/tree/main/bundles
+
+Licensed under the Apache License, Version 2.0 (see LICENSE.md in this
+directory). The exact upstream commit is recorded in SOURCE.json; refresh
+with `pnpm fixtures:refresh`.
+
+They are used here only as test fixtures. Their inclusion does not imply that
+the Open Knowledge Format project endorses OKForest.

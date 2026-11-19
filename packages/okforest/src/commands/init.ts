@@ -9,7 +9,7 @@ export const COMPANY_TEMPLATE = "okforest/template-company-knowledge"
 
 const HELP = `Usage: okforest init [path] [--name <name>]
 
-Create a repository for an OKF v0.2 tree at path (default: the current
+Create a repository for an OKF 0.3 tree at path (default: the current
 directory, which must be empty apart from .git): an empty bundle in ${BUNDLE}/
 (its index.md, log.md, and .okforest/settings.yaml), with a README.md, an
 AGENTS.md for AI agents, a .gitignore, and GitHub workflows that scan for

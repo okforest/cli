@@ -1,11 +1,11 @@
 # @okforest/okf
 
-Read an [Open Knowledge Format (OKF)](https://github.com/GoogleCloudPlatform/open-knowledge-format)
-v0.2 tree into a model: concepts (path, concept ID, frontmatter, body as
+Read an [Open Knowledge Format (OKF)](https://github.com/open-knowledge-format/open-knowledge-format)
+tree, 0.2 or 0.3, into a model: concepts (path, concept ID, frontmatter, body as
 [mdast](https://github.com/syntax-tree/mdast)), reserved `index.md` and
 `log.md` files, links in both absolute and relative forms, backlinks, and the
-v0.2 fields with their derived values: trust tier, lifecycle status, and
-staleness. Also builds the metadata inventory: every type, tag, and
+OKF fields with their derived values: trust tier, lifecycle status, and
+staleness, read as OKF 0.3 says to read every version. Also builds the metadata inventory: every type, tag, and
 frontmatter key in use, with near-duplicates.
 
 No SDKs or frameworks: the core is pure and runs in Node, browsers, and

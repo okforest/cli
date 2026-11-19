@@ -24,7 +24,7 @@ export function starterFiles(name: string, date: string): Record<string, string>
 <!-- Started by \`okforest init\`. Make it yours: add how your team works with
 this repository, and remove anything that doesn't apply. -->
 
-${name}: an [OKF v0.2](https://github.com/GoogleCloudPlatform/open-knowledge-format)
+${name}: an [OKF 0.3](https://github.com/open-knowledge-format/open-knowledge-format)
 bundle in \`okf/\`, managed with [OKForest](https://www.okforest.ai). People
 read it to learn; AI assistants use it to answer questions. Write for both.
 
@@ -85,8 +85,8 @@ from the repository root.
 `,
     "README.md": `# ${name}
 
-${name}: an [Open Knowledge Format (OKF)](https://github.com/GoogleCloudPlatform/open-knowledge-format)
-v0.2 bundle in [\`okf/\`](okf/index.md), one markdown file per concept, with
+${name}: an [Open Knowledge Format (OKF)](https://github.com/open-knowledge-format/open-knowledge-format)
+0.3 bundle in [\`okf/\`](okf/index.md), one markdown file per concept, with
 YAML frontmatter. Start at [\`okf/index.md\`](okf/index.md).
 
 ## Getting started

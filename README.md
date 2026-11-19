@@ -6,8 +6,8 @@
 [![CI](https://github.com/okforest/cli/actions/workflows/ci.yaml/badge.svg)](https://github.com/okforest/cli/actions/workflows/ci.yaml)
 [![Coverage](https://codecov.io/gh/okforest/cli/graph/badge.svg)](https://codecov.io/gh/okforest/cli)
 
-Validate, inventory, and scaffold [Open Knowledge Format (OKF)](https://github.com/GoogleCloudPlatform/open-knowledge-format)
-v0.2 trees. Deterministic: no model calls, no network, the same results on
+Validate, inventory, and scaffold [Open Knowledge Format (OKF)](https://github.com/open-knowledge-format/open-knowledge-format)
+trees, 0.2 and 0.3. Deterministic: no model calls, no network, the same results on
 every machine, and the same code that runs inside [OKForest](https://www.okforest.ai).
 
 ```sh
@@ -27,7 +27,8 @@ run `okforest` directly, `npm install --global okforest`, or in a repository
 ## Commands
 
 **`okforest validate [path] [--format text|json]`** checks a tree against the
-OKF v0.2 specification and OKForest conventions. It exits 1 when there are
+OKF specification, by the version its root `index.md` declares, and OKForest
+conventions. It exits 1 when there are
 errors; warnings and info never fail, so a conformant bundle with, say,
 broken links still passes (the spec says never to reject a bundle for those).
 `--format json` writes a versioned document for CI and tools. Each finding
@@ -42,7 +43,7 @@ near-duplicates (`e-commerce` and `ecommerce`, `Policy` and `Policies`).
 
 **`okforest init [path] [--name <name>]`** creates a repository for a tree,
 laid out as the company template is: an empty bundle in `okf/` (a root
-`index.md` declaring `okf_version: "0.2"`, `log.md`, and
+`index.md` declaring `okf_version: "0.3"`, `log.md`, and
 `.okforest/settings.yaml` with the bundle's `name`, `--name`, defaulting to
 the folder's name), a `README.md` with a setup checklist, an `AGENTS.md` for
 AI agents, a `.gitignore`, Dependabot for the workflow's actions, and a CI
@@ -54,6 +55,9 @@ concepts, start from the template repository
 instead (**Use this template**, or `npx giget
 gh:okforest/template-company-knowledge acme-knowledge`); for your own, see
 [Your own template](https://www.okforest.ai/docs/cli/#your-own-template).
+
+A new tree declares OKF 0.3. For one on OKF 0.2, use the last version that
+made them: `npx okforest@0.15.0 init`.
 
 **`okforest rule [rule] [--format text|json]`** explains a rule: why it exists,
 an example that breaks it, what `okforest validate` reports for it, and the
@@ -103,61 +107,70 @@ steps:
 
 ## Rules
 
-Errors are what the OKF v0.2 specification requires; warnings and info are
-what it recommends, plus OKForest conventions. Each rule's page on the site
+Each tree is checked by the OKF version its root `index.md` declares:
+`okf_version: "0.3"` gets OKF 0.3's rules, and `"0.2"`, or no version, keeps
+0.2's, so a tree moves to a new version when it says so. Errors are what that
+version of the OKF specification requires; warnings and info are what it
+recommends, plus OKForest conventions. Each rule's page on the site
 ([www.okforest.ai/docs/rules](https://www.okforest.ai/docs/rules/)) explains
 it in more detail.
 
-**OKF v0.2 specification**
+**OKF specification**
 
-| Rule                       | Severity | Checks                                                                                                                                                                                   |
-| -------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `okf/frontmatter`          | error    | Every concept starts with a parseable YAML frontmatter block (OKF §4, §11).                                                                                                              |
-| `okf/type`                 | error    | Every concept's frontmatter has a non-empty string `type` (OKF §4.1, §11).                                                                                                               |
-| `okf/index-frontmatter`    | error    | index.md files carry no frontmatter, except an `okf_version` key in the bundle-root index.md (OKF §8, §12).                                                                              |
-| `okf/index-entries`        | warning  | index.md lists its directory as `* [Title](path) - description` entries under headings (OKF §8).                                                                                         |
-| `okf/index-scope`          | warning  | index.md lists its own directory's contents (OKF §8): each entry points within the directory.                                                                                            |
-| `okf/log-date`             | error    | log.md groups entries under second-level headings in ISO 8601 `YYYY-MM-DD` form (OKF §9).                                                                                                |
-| `okf/log-order`            | warning  | log.md lists its dates newest first, each once (OKF §9).                                                                                                                                 |
-| `okf/okf-version`          | info     | The bundle-root index.md declares `okf_version: "0.2"` (OKF §12).                                                                                                                        |
-| `okf/generated`            | error    | `generated` is a mapping with a required `by` actor (OKF §5.2).                                                                                                                          |
-| `okf/verified`             | error    | `verified` is a `{ by, at }` mapping or a list of them (OKF §5.2).                                                                                                                       |
-| `okf/sources`              | error    | `sources` is a list of mappings, each with a `resource`, unique `id`s, and well-formed credibility signals (OKF §5.1).                                                                   |
-| `okf/status`               | error    | `status` is one of `draft`, `stable`, or `deprecated` (OKF §5.4).                                                                                                                        |
-| `okf/datetime`             | error    | Timestamps are ISO 8601 datetimes with an explicit UTC offset, e.g. `2026-06-30T14:00:00Z` (OKF §5).                                                                                     |
-| `okf/attested-computation` | error    | An Attested Computation has a `runtime`, well-formed `parameters`, `executor`, and `attester`, and a computation (a `computation` path or a code block under `# Computation`) (OKF §10). |
-| `okf/title`                | warning  | Concepts have a `title` (recommended, OKF §4.1).                                                                                                                                         |
-| `okf/description`          | warning  | Concepts have a one-sentence `description` (recommended, OKF §4.1).                                                                                                                      |
-| `okf/field-types`          | warning  | `title`, `description`, and `resource` are strings, and `tags` is a list of strings (OKF §4.1).                                                                                          |
-| `okf/actor`                | warning  | `generated.by` and `verified[].by` follow the actor convention: `<producer>/<version>`, `human:<id>`, or `process:<id>` (OKF §7).                                                        |
-| `okf/broken-link`          | warning  | Links within the tree point at files that exist (a warning: OKF says never reject a bundle for broken links, §6.1, §11).                                                                 |
-| `okf/footnote-source`      | warning  | In a concept that has `sources` with `id`s, every footnote label matches one of them (OKF §5.1 per-claim attribution).                                                                   |
-| `okf/legacy-v01`           | info     | Flags OKF v0.1 conventions superseded in v0.2: `timestamp` and a body `# Citations` list (OKF §13).                                                                                      |
+| Rule                       | Severity | Checks                                                                                                                                                                                         |
+| -------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `okf/frontmatter`          | error    | Frontmatter blocks parse as YAML, and under OKF 0.2 every concept starts with one (OKF §4, §11).                                                                                               |
+| `okf/type`                 | error    | Under OKF 0.2, every concept's frontmatter has a non-empty string `type` (OKF §4.1, §11).                                                                                                      |
+| `okf/not-a-concept`        | warning  | Under OKF 0.3, a `.md` file without frontmatter or a `type` isn't a concept: consumers skip it (OKF §3.2).                                                                                     |
+| `okf/index-frontmatter`    | error    | index.md files carry no frontmatter, except the bundle-root index.md: `okf_version`, and from OKF 0.3 the bundle's `title`, `description`, `license`, and extension keys (OKF §8, §12).        |
+| `okf/index-entries`        | warning  | index.md lists its directory as `* [Title](path) - description` entries under headings (OKF §8).                                                                                               |
+| `okf/index-scope`          | warning  | index.md lists its own directory's contents (OKF §8): each entry points within the directory.                                                                                                  |
+| `okf/log-date`             | error    | log.md groups entries under second-level headings in ISO 8601 `YYYY-MM-DD` form (OKF §9).                                                                                                      |
+| `okf/log-order`            | warning  | log.md lists its dates newest first, each once (OKF §9).                                                                                                                                       |
+| `okf/log-frontmatter`      | error    | Under OKF 0.3, log.md files carry no frontmatter (OKF §9).                                                                                                                                     |
+| `okf/okf-version`          | info     | The bundle-root index.md declares its OKF version, as a quoted string: `okf_version: "0.3"` (OKF §12).                                                                                         |
+| `okf/generated`            | error    | `generated` is a mapping with a required `by` actor (OKF §5.2).                                                                                                                                |
+| `okf/verified`             | error    | `verified` is a `{ by, at }` mapping or a list of them (OKF §5.2).                                                                                                                             |
+| `okf/sources`              | error    | `sources` is a list of mappings, each with a `resource`, unique `id`s, and well-formed credibility signals (OKF §5.1).                                                                         |
+| `okf/status`               | warning  | `status` is one of `draft`, `stable`, or `deprecated`, and `superseded_by` goes with `deprecated` (OKF §5.4).                                                                                  |
+| `okf/datetime`             | error    | Timestamps are ISO 8601 date-times with an explicit UTC offset, e.g. `2026-06-30T14:00:00Z`, or dates, e.g. `2026-06-30` (OKF §5).                                                             |
+| `okf/attested-computation` | error    | An Attested Computation has a `runtime`, well-formed `parameters`, `executor`, and `attester`, and a computation (a `computation` path or a code block under `# Computation`) (OKF §10).       |
+| `okf/title`                | warning  | Concepts have a `title` (recommended, OKF §4.1).                                                                                                                                               |
+| `okf/description`          | warning  | Concepts have a one-sentence `description` (recommended, OKF §4.1).                                                                                                                            |
+| `okf/field-types`          | warning  | `title`, `description`, and `resource` are strings, and `tags` is a list of strings (OKF §4.1).                                                                                                |
+| `okf/extension-key`        | warning  | Under OKF 0.3, frontmatter keys OKF doesn't define are named `x-<producer>-<name>`, such as `x-acme-owner` (OKF §4.1).                                                                         |
+| `okf/actor`                | warning  | `generated.by`, `verified[].by`, and `sources[].author` follow the actor convention: `<producer>/<version>`, or `<scheme>:<id>` such as `human:<id>`, `team:<id>`, or `process:<id>` (OKF §7). |
+| `okf/broken-link`          | warning  | Links within the tree point at files that exist (a warning: OKF says never reject a bundle for broken links, §6.1, §11).                                                                       |
+| `okf/footnote-source`      | warning  | In a concept that has `sources` with `id`s, every footnote label matches one of them (OKF §5.1 per-claim attribution).                                                                         |
+| `okf/legacy-v01`           | info     | Flags OKF v0.1 conventions superseded in v0.2: `timestamp` and a body `# Citations` list (OKF Appendix B).                                                                                     |
 
 **OKForest conventions**
 
-| Rule                         | Severity | Checks                                                                                                                                                                                                                                        |
-| ---------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `okforest/settings`          | error    | `.okforest/settings.yaml` (spelled `.yaml`) holds well-formed settings: a `name` of up to 100 characters, a `description` of up to 4,000, `ignore` globs, and what draws Mermaid diagrams (`diagrams.mermaid.renderer`: `mermaid` or `pele`). |
-| `okforest/settings-keys`     | warning  | `.okforest/settings.yaml` uses only the settings OKForest knows; others, such as a misspelled key, are ignored.                                                                                                                               |
-| `okforest/type-schema`       | error    | Concepts match their type's JSON Schema in `.okforest/types/`, and each schema there is a usable JSON Schema for one type.                                                                                                                    |
-| `okforest/type-template`     | error    | Each type template in `.okforest/types/` starts with front matter naming its `type`, and a type has one template.                                                                                                                             |
-| `okforest/similar-type`      | warning  | A concept's `type` isn't a near-duplicate (case, punctuation, plural, or spelling) of a type more concepts use, or one with a schema.                                                                                                         |
-| `okforest/similar-tag`       | warning  | A concept's tags aren't near-duplicates (case, punctuation, plural, or spelling) of tags more concepts use.                                                                                                                                   |
-| `okforest/slug`              | warning  | File and directory names of concepts are slugs: lowercase letters, digits, and hyphens.                                                                                                                                                       |
-| `okforest/placeholder`       | warning  | Bodies contain no unrendered template placeholders (`{{name}}`, `<concept>`, `[INSERT ...]`) or example link paths (`path/to/...`).                                                                                                           |
-| `okforest/wikilink`          | warning  | Concepts link with standard markdown links, not `[[wikilinks]]` (OKF §6.1).                                                                                                                                                                   |
-| `okforest/d2-syntax`         | error    | `d2` code blocks are valid D2 (diagrams as code).                                                                                                                                                                                             |
-| `okforest/mermaid-syntax`    | error    | `mermaid` code blocks are valid Mermaid (diagrams as code).                                                                                                                                                                                   |
-| `okforest/diagram-unchecked` | info     | Reports diagram blocks whose syntax could not be checked (tool not installed or unsupported here).                                                                                                                                            |
+| Rule                           | Severity | Checks                                                                                                                                                                                                                                        |
+| ------------------------------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `okforest/okf-version-current` | warning  | The tree declares the current OKF version, 0.3: one behind it should move when ready, and one ahead of this validator needs a newer one.                                                                                                      |
+| `okforest/settings`            | error    | `.okforest/settings.yaml` (spelled `.yaml`) holds well-formed settings: a `name` of up to 100 characters, a `description` of up to 4,000, `ignore` globs, and what draws Mermaid diagrams (`diagrams.mermaid.renderer`: `mermaid` or `pele`). |
+| `okforest/settings-keys`       | warning  | `.okforest/settings.yaml` uses only the settings OKForest knows; others, such as a misspelled key, are ignored.                                                                                                                               |
+| `okforest/type-schema`         | error    | Concepts match their type's JSON Schema in `.okforest/types/`, and each schema there is a usable JSON Schema for one type.                                                                                                                    |
+| `okforest/type-template`       | error    | Each type template in `.okforest/types/` starts with front matter naming its `type`, and a type has one template.                                                                                                                             |
+| `okforest/similar-type`        | warning  | A concept's `type` isn't a near-duplicate (case, punctuation, plural, or spelling) of a type more concepts use, or one with a schema.                                                                                                         |
+| `okforest/similar-tag`         | warning  | A concept's tags aren't near-duplicates (case, punctuation, plural, or spelling) of tags more concepts use.                                                                                                                                   |
+| `okforest/slug`                | warning  | File and directory names of concepts are slugs: lowercase letters, digits, hyphens, and underscores.                                                                                                                                          |
+| `okforest/placeholder`         | warning  | Bodies contain no unrendered template placeholders (`{{name}}`, `<concept>`, `[INSERT ...]`) or example link paths (`path/to/...`).                                                                                                           |
+| `okforest/wikilink`            | warning  | Concepts link with standard markdown links, not `[[wikilinks]]` (OKF §6.1).                                                                                                                                                                   |
+| `okforest/d2-syntax`           | error    | `d2` code blocks are valid D2 (diagrams as code).                                                                                                                                                                                             |
+| `okforest/mermaid-syntax`      | error    | `mermaid` code blocks are valid Mermaid (diagrams as code).                                                                                                                                                                                   |
+| `okforest/diagram-unchecked`   | info     | Reports diagram blocks whose syntax could not be checked (tool not installed or unsupported here).                                                                                                                                            |
 
 ## What counts as a concept
 
-Every `.md` file is a concept except `index.md` and `log.md` (reserved by OKF)
-and files under `.okforest/` and `.git/`, as the OKF specification says. That
-includes repository files such as `README.md` and files under `.github/`. Leave
-out the ones that are not concepts with `ignore:` globs in
-`.okforest/settings.yaml`:
+Under OKF 0.3, a `.md` file is a concept when its frontmatter has a `type`.
+One without, such as a `README.md`, isn't: it's skipped, with an
+`okf/not-a-concept` warning to say so. Under OKF 0.2, every `.md` file is a
+concept except `index.md` and `log.md` (reserved by OKF). Either way, files
+and folders whose names start with `.` (`.okforest/`, `.git/`, `.github/`)
+aren't part of the tree. Leave out other files that aren't concepts with
+`ignore:` globs in `.okforest/settings.yaml`:
 
 ```yaml
 ignore:

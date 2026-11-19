@@ -1,5 +1,8 @@
 #!/usr/bin/env node
-// Refresh fixtures/okf-samples/ from Google's OKF repository.
+// Refresh fixtures/okf-samples-0.3/ from the OKF repository,
+// open-knowledge-format/open-knowledge-format, whose sample bundles declare
+// OKF 0.3. fixtures/okf-samples/ keeps the OKF 0.2 samples, from Google's
+// repository, which is deprecated and no longer changes.
 //
 //   pnpm fixtures:refresh            # latest commit on main
 //   pnpm fixtures:refresh <ref>      # a branch, tag, or commit SHA
@@ -15,10 +18,10 @@ import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 
-const REPO = "GoogleCloudPlatform/open-knowledge-format"
+const REPO = "open-knowledge-format/open-knowledge-format"
 const BUNDLES = ["acme_retail", "crypto_bitcoin", "ga4", "stackoverflow"]
 const ref = process.argv[2] ?? "main"
-const dest = join(dirname(fileURLToPath(import.meta.url)), "..", "fixtures", "okf-samples")
+const dest = join(dirname(fileURLToPath(import.meta.url)), "..", "fixtures", "okf-samples-0.3")
 
 const headers = { Accept: "application/vnd.github+json", "User-Agent": "okforest-fixtures" }
 if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`
@@ -54,7 +57,7 @@ try {
     license: "Apache-2.0",
   }
   writeFileSync(join(dest, "SOURCE.json"), `${JSON.stringify(source, null, 2)}\n`)
-  console.log(`fixtures/okf-samples now at ${REPO}@${sha.slice(0, 7)} (${source.committed})`)
+  console.log(`fixtures/okf-samples-0.3 now at ${REPO}@${sha.slice(0, 7)} (${source.committed})`)
   console.log("Run `pnpm test`; accept intended snapshot changes with `pnpm test -- -u`.")
 } finally {
   rmSync(work, { recursive: true, force: true })
