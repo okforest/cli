@@ -417,14 +417,15 @@ function hasInlineComputation(concept: Concept): boolean {
   return found
 }
 
-/** OKF 0.3 §4.1: keys OKF doesn't define are the producer's own. Named
- * `x-<producer>-<name>`, none can collide with a key a later OKF version
- * defines, since OKF promises never to define one starting with `x-`. */
+/** OKF 0.3 §4.1: keys OKF doesn't define start with `x-`, which no later OKF
+ * version will define. The spec's `x-<producer>-<name>` isn't asked for: a
+ * bundle's own fields belong to its knowledge, not to a tool or company name
+ * that can change. */
 export const extensionKey: Rule = {
   id: "okf/extension-key",
   severity: "warning",
   description:
-    "Under OKF 0.3, frontmatter keys OKF doesn't define are named `x-<producer>-<name>`, such as `x-acme-owner` (OKF §4.1).",
+    "Under OKF 0.3, frontmatter keys OKF doesn't define start with `x-`, such as `x-owner` (OKF §4.1).",
   checkFile: eachConcept((concept, fm, context) => {
     if (!isOkf03(context)) return
     const problem = reporter(context.report, concept)
@@ -433,8 +434,8 @@ export const extensionKey: Rule = {
       if (OKF_FIELDS.includes(key) || key.startsWith("x-") || key === "timestamp") continue
       problem(
         [key],
-        `\`${key}\` isn't a key OKF defines: name your own keys \`x-<producer>-<name>\`, such as ` +
-          `\`x-acme-${slugify(key) || "key"}\`, so a later OKF version can't give \`${key}\` another meaning.`,
+        `\`${key}\` isn't a key OKF defines: start your own keys with \`x-\`, such as ` +
+          `\`x-${slugify(key) || "key"}\`, so a later OKF version can't give \`${key}\` another meaning.`,
       )
     }
   }),

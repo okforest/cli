@@ -53,6 +53,9 @@ from the repository root.
   tag, to reuse an existing one.
 - Every concept has a \`title\` and a one-sentence \`description\`. New or
   unreviewed pages are \`status: draft\`.
+- Fields OKF doesn't define start with \`x-\` (\`x-owner\`), so a later OKF
+  version can't give them another meaning. Add a new field to its type's
+  schema and template in the same change.
 - Link with standard markdown links, using absolute paths from the bundle
   root (\`okf/\`): \`[refunds](/policies/refunds.md)\`.
 - \`index.md\` and \`log.md\` are reserved names in every folder. Keep each

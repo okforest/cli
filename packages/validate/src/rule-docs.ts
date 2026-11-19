@@ -552,14 +552,14 @@ ${CHURN_BODY}
   },
 
   "okf/extension-key": {
-    why: `OKF lets a bundle add any frontmatter keys it likes ([§4.1](${SPEC}#41-frontmatter)), and consumers keep the ones they don't know. OKF 0.3 also promises never to define a key that starts with \`x-\`, and asks producers to name their own keys \`x-<producer>-<name>\`, such as \`x-acme-owner\`. A key named that way can't collide with one a later OKF version defines and gives another meaning, as \`superseded_by\` was added in 0.3. A type's own fields, in its [schema](${SITE}/docs/types/), are extension keys too. Under OKF 0.2, which didn't ask, nothing is reported.`,
+    why: `OKF lets a bundle add any frontmatter keys it likes ([§4.1](${SPEC}#41-frontmatter)), and consumers keep the ones they don't know. OKF 0.3 also promises never to define a key that starts with \`x-\`, so a key named that way, such as \`x-owner\`, can't collide with one a later OKF version defines and gives another meaning, as \`superseded_by\` was added in 0.3. The spec also suggests a producer's name after the \`x-\` (\`x-<producer>-<name>\`), which keeps apart the keys of tools that write to the same files. This rule doesn't ask for one: a bundle's own fields belong to its knowledge, not to a tool, and a company's name in every key would have to change with a rebrand or a merger. A type's own fields, in its [schema](${SITE}/docs/types/), are extension keys too. Under OKF 0.2, which didn't ask, nothing is reported.`,
     example: {
       file: "churn.md",
       fails: churn("owner: /people/roles/cfo\n"),
       findings: [
-        "5:1 `owner` isn't a key OKF defines: name your own keys `x-<producer>-<name>`, such as `x-acme-owner`, so a later OKF version can't give `owner` another meaning.",
+        "5:1 `owner` isn't a key OKF defines: start your own keys with `x-`, such as `x-owner`, so a later OKF version can't give `owner` another meaning.",
       ],
-      fixed: churn("x-acme-owner: /people/roles/cfo\n"),
+      fixed: churn("x-owner: /people/roles/cfo\n"),
       context: { "index.md": rootIndex(CHURN_ENTRY) },
     },
   },
@@ -659,15 +659,15 @@ description: What Acme's teams know about customers, billing, and retention.
   },
 
   "okforest/type-schema": {
-    why: `OKF lets each team name its types and add any fields it likes ([§4.1](${SPEC}#41-frontmatter)), so nothing in the format keeps a team's \`Metric\` concepts alike. A JSON Schema for the type, in \`.okforest/types/\` (\`metric.schema.json\`), says which fields they carry, what each may hold, and which they must have; every concept of that type must match it. The schema's \`title\` is the type, as concepts write it in \`type\`. OKF's own fields (\`title\`, \`tags\`, \`verified\`, ...) are left to the \`okf/*\` rules, so a schema lists only its type's fields, and can still name one, such as \`tags\`, to narrow it. Under OKF 0.3, a type's own fields are extension keys, named \`x-<producer>-<name>\` ([§4.1](${SPEC}#41-frontmatter)), as \`x-acme-unit\` is here. A schema that can't be used (not JSON, no \`title\`, a second schema for the same type, a \`$ref\` that leads nowhere) is reported on its file, and no concept is checked against it.`,
+    why: `OKF lets each team name its types and add any fields it likes ([§4.1](${SPEC}#41-frontmatter)), so nothing in the format keeps a team's \`Metric\` concepts alike. A JSON Schema for the type, in \`.okforest/types/\` (\`metric.schema.json\`), says which fields they carry, what each may hold, and which they must have; every concept of that type must match it. The schema's \`title\` is the type, as concepts write it in \`type\`. OKF's own fields (\`title\`, \`tags\`, \`verified\`, ...) are left to the \`okf/*\` rules, so a schema lists only its type's fields, and can still name one, such as \`tags\`, to narrow it. Under OKF 0.3, a type's own fields are extension keys, starting with \`x-\` ([§4.1](${SPEC}#41-frontmatter)), as \`x-unit\` does here. A schema that can't be used (not JSON, no \`title\`, a second schema for the same type, a \`$ref\` that leads nowhere) is reported on its file, and no concept is checked against it.`,
     example: {
       file: "churn.md",
-      fails: churn("x-acme-unit: percentage\n"),
+      fails: churn("x-unit: percentage\n"),
       findings: [
-        "2:1 Missing `x-acme-owner`, which the Metric type requires.",
-        "5:1 `x-acme-unit` must be one of `percent`, `count`, `usd` (got `percentage`).",
+        "2:1 Missing `x-owner`, which the Metric type requires.",
+        "5:1 `x-unit` must be one of `percent`, `count`, `usd` (got `percentage`).",
       ],
-      fixed: churn("x-acme-unit: percent\nx-acme-owner: data-team@acme.example\n"),
+      fixed: churn("x-unit: percent\nx-owner: data-team@acme.example\n"),
       context: {
         "index.md": rootIndex(CHURN_ENTRY),
         ".okforest/types/metric.schema.json": `{
@@ -676,10 +676,10 @@ description: What Acme's teams know about customers, billing, and retention.
   "description": "A number the business tracks.",
   "type": "object",
   "properties": {
-    "x-acme-unit": { "enum": ["percent", "count", "usd"] },
-    "x-acme-owner": { "type": "string", "format": "email" }
+    "x-unit": { "enum": ["percent", "count", "usd"] },
+    "x-owner": { "type": "string", "format": "email" }
   },
-  "required": ["x-acme-unit", "x-acme-owner"]
+  "required": ["x-unit", "x-owner"]
 }
 `,
       },
