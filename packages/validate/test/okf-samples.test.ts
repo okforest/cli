@@ -11,7 +11,8 @@ const samples = ["okf-samples", "okf-samples-0.3"].flatMap((dir) => {
   const source = JSON.parse(readFileSync(join(FIXTURES, dir, "SOURCE.json"), "utf8")) as {
     bundles: string[]
   }
-  return source.bundles.map((bundle) => join(dir, bundle))
+  // Named with "/" on every platform, so the snapshots' names match.
+  return source.bundles.map((bundle) => `${dir}/${bundle}`)
 })
 
 describe("OKF sample bundles", () => {
