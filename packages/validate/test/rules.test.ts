@@ -92,6 +92,11 @@ describe("OKF 0.3's own rules", () => {
       ),
     ])
     expect(await only("okf/extension-key", at("0.2", page))).toEqual([])
+    // A key with no letters or digits to keep still gets a usable suggestion.
+    const symbols = { "a.md": concept('"€€": 1') }
+    expect(await only("okf/extension-key", at("0.3", symbols))).toEqual([
+      expect.stringMatching(/`€€` isn't a key OKF defines.*such as `x-key`/),
+    ])
   })
 
   it("keeps log.md free of frontmatter under 0.3 only", async () => {
