@@ -1,5 +1,37 @@
 # @okforest/validate
 
+## 0.16.0
+
+### Minor Changes
+
+- 538d3e7: - **`okforest/slug` accepts underscores** (lowercase letters, digits, hyphens, and underscores, starting with a letter or digit), so a concept named after something with underscores, such as a table (`n_day_active_users`), can keep its name. Its suggested fix keeps a name's own underscores (`Daily_Users` → `daily_users`).
+  - The READMEs, package descriptions, and `--help` link OKF's new home, [open-knowledge-format/open-knowledge-format](https://github.com/open-knowledge-format/open-knowledge-format), and say a tree is checked by the version it declares (0.2 or 0.3). The README's rule table lists every rule, and how a `.md` file counts as a concept under each version. The `README.md` and `AGENTS.md` that `okforest init` writes link the new spec too.
+  - A new tree declares OKF 0.3; `npx okforest@0.15.0 init` makes one on 0.2.
+- af18a42: The rules check each tree by the OKF version its root `index.md` declares (#53): `okf_version: "0.3"` gets OKF 0.3's rules, and `"0.2"`, or no version, keeps 0.2's, so a tree moves when it says so.
+  
+  - **New `okf/not-a-concept`** (warning, 0.3): a `.md` file without frontmatter or a `type` isn't a concept (§3.2), so consumers skip it; nothing else checks it as one, and a `README.md` no longer needs `ignore:`. Under 0.2, `okf/frontmatter` and `okf/type` still report these as errors.
+  - **New `okf/extension-key`** (warning, 0.3): a frontmatter key OKF doesn't define is named `x-<producer>-<name>`, such as `x-acme-owner` (§4.1), so a later version can't define it differently. A type's own fields are extension keys too.
+  - **New `okf/log-frontmatter`** (error, 0.3): `log.md` has no frontmatter (§9).
+  - **New `okforest/okf-version-current`** (warning): a tree on an older version is told that 0.3 is current, to move when it's ready; one that declares a newer version than this validator knows is told to update okforest or okforest/validate-action.
+  - **`okf/datetime`** accepts a date, the start of that day in UTC (§5), for every version, as OKF 0.3 says.
+  - **`okf/status`** is a warning, not an error: a status OKF doesn't define isn't `stable`, which OKF 0.3 says to keep and warn about. Under 0.3 it also checks `superseded_by` (a path, with `status: deprecated`).
+  - **`okf/actor`** accepts any `<scheme>:<id>`, such as `team:fpa`, and checks a source's `author` too (§7).
+  - **`okf/attested-computation`**: under 0.3, each parameter needs a `type` (§10.2).
+  - **`okf/okf-version`** asks for `"0.3"`, and no longer says other versions are checked best-effort.
+  - `okforest/slug` leaves files that aren't concepts alone, under 0.3.
+  - `okforest init` writes `okf_version: "0.3"`.
+  - The rule docs link the new spec (open-knowledge-format/open-knowledge-format) and their examples use OKF 0.3.
+  
+  For tools checking a tree a file at a time: pass the root `index.md`'s version to `outlineTree` (`{ okfVersion }`), which `declaredOkfVersion(text)` reads, so the right version's rules apply. `TreeOutline.okfVersion` carries it to the rules.
+
+### Patch Changes
+
+- db418e4: `okf/index-frontmatter` follows the OKF version a tree declares. A bundle-root `index.md` that declares `okf_version: "0.3"` (or later) may also give the bundle's `title`, `description`, and `license`, and extension keys ([OKF 0.3 §8.1](https://github.com/open-knowledge-format/open-knowledge-format/blob/main/SPEC.md#81-bundle-metadata)), so OKF 0.3 bundles no longer fail with "may only declare `okf_version`". One that declares 0.2, or no version, keeps 0.2's rule, and the message now says to declare 0.3 to use them. The first step of OKF 0.3 support (#53).
+- Updated dependencies [538d3e7]
+- Updated dependencies [1158c11]
+- Updated dependencies [af18a42]
+  - @okforest/okf@0.16.0
+
 ## 0.15.0
 
 ### Minor Changes

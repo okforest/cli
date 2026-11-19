@@ -1,6 +1,6 @@
 {
   "name": "okforest",
-  "version": "0.15.0",
+  "version": "0.16.0",
   "description": "The OKForest CLI: validate Open Knowledge Format (OKF) trees, 0.2 and 0.3, inventory their metadata, and scaffold new trees and pages.",
   "keywords": [
     "okf",
