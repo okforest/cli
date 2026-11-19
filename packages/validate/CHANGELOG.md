@@ -1,5 +1,12 @@
 # @okforest/validate
 
+## 0.14.1
+
+### Patch Changes
+
+- 2256774: Report Mermaid diagrams whose parser needs a browser (such as flowcharts) as not checked (`okforest/diagram-unchecked`) when the validator is bundled, as in the GitHub Action, instead of as a Mermaid syntax error ("purify_default.addHook is not a function"). The check now recognizes DOMPurify by its method names, which a bundler doesn't rename.
+- @okforest/okf@0.14.1
+
 ## 0.14.0
 
 ### Patch Changes
