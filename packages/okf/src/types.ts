@@ -16,10 +16,10 @@ export interface Diagnostic {
 /** A path into a YAML mapping: keys, or indexes into sequences. */
 export type KeyPath = readonly (string | number)[]
 
-/** OKF v0.2 trust tier, derived from `verified` (spec §5.3). */
+/** Trust tier, derived from a concept's current `verified` events (spec §5.3). */
 export type TrustTier = "unverified" | "machine-confirmed" | "human-reviewed"
 
-/** OKF v0.2 lifecycle status (spec §5.4). */
+/** A lifecycle status OKF defines (spec §5.4). */
 export type Status = "draft" | "stable" | "deprecated"
 
 /** A file handed to {@link parseTree}: a bundle-relative POSIX path and, for
@@ -56,6 +56,10 @@ export interface Link {
   outside?: boolean
   /** For internal links to a concept: its concept ID. */
   concept?: string
+  /** For a path field (spec §6.2) rather than a link in the body: the
+   * frontmatter key it's written in, such as `superseded_by` or
+   * `sources[0].resource`. */
+  field?: string
 }
 
 /** A markdown footnote reference (`[^label]`), the join key into `sources` ids. */
@@ -111,10 +115,19 @@ export interface Source {
   lastModified?: string
 }
 
-/** A verification event (spec §5.2). */
+/** A verification event (spec §5.2). Only an event with a timestamp `at`
+ * counts toward the trust tier. */
 export interface Verification {
   by: string
   at?: string
+}
+
+/** A bundle's own metadata, from its root `index.md` (spec §8.1, OKF 0.3). */
+export interface BundleMetadata {
+  title?: string
+  description?: string
+  /** An SPDX expression, or a path to a license file in the bundle. */
+  license?: string
 }
 
 /** A concept document: any non-reserved `.md` file. */
@@ -127,15 +140,34 @@ export interface Concept extends MarkdownFile {
   description?: string
   resource?: string
   tags: string[]
-  /** Lifecycle status; `stable` when absent or not a recognized value. */
-  status: Status
+  /** Lifecycle status (spec §5.4): `stable` when absent; `unrecognized`
+   * for a value OKF doesn't define, which isn't `stable` ({@link statusValue}
+   * has it as written). */
+  status: Status | "unrecognized"
+  /** The `status` as written, when it's one OKF doesn't define. */
+  statusValue?: string
+  /** The concept that replaces this one, as written (spec §5.4); it means
+   * something only with `status: deprecated`. {@link paths} resolves it. */
+  supersededBy?: string
   generated?: { by?: string; at?: string }
   /** Verification events, with a bare mapping treated as a one-element list. */
   verified: Verification[]
+  /** The events from before the content last changed (`generated.at`):
+   * history, which no longer counts toward the trust tier (spec §5.3). */
+  verifiedBefore: Verification[]
+  /** From the current verification events only (spec §5.3). */
   trustTier: TrustTier
+  /** `stale_after` as written, when it isn't absent. */
   staleAfter?: string
   sources: Source[]
-  /** Whether `now >= stale_after` (spec §5.5). False when there is no valid `stale_after`. */
+  /** Its path fields (spec §6.2): `resource`, `sources[].resource`,
+   * `superseded_by`, `computation`, `executor.resource`, and
+   * `attester.resource`, resolved as links are, each with its `field`. Those
+   * that resolve to a concept are edges of the bundle graph (§6.4), as body
+   * links are. */
+  paths: Link[]
+  /** Whether `now >= stale_after` (spec §5.5). False when it's absent; true
+   * when it isn't a timestamp, which can't say the content is still current. */
   isStale(now?: Date): boolean
 }
 
@@ -254,10 +286,14 @@ export interface Tree {
   templates: TypeTemplate[]
   /** The bundle-root `index.md` `okf_version` value, as written. */
   okfVersion?: unknown
+  /** The bundle's metadata from its root `index.md` (spec §8.1), when it
+   * gives any. */
+  metadata?: BundleMetadata
   /** Every link in every markdown file, in path and position order. */
   links: Link[]
   /** Look up a concept by its concept ID. */
   concept(id: string): Concept | undefined
-  /** Links from concepts (not from `index.md` or `log.md`) to the given concept. */
+  /** Links and path fields from concepts (not from `index.md` or `log.md`)
+   * to the given concept: its incoming edges in the bundle graph (spec §6.4). */
   backlinks(id: string): Link[]
 }

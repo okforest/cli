@@ -50,10 +50,7 @@ describe("readTree", () => {
     expect(tree.settings).toMatchObject({ name: "Sales", ignore: ["node_modules/"] })
     expect(tree.ignored).toEqual(["node_modules/pkg/README.md"])
     expect(tree.types.map((t) => t.name)).toEqual(["Table"])
-    expect(tree.concepts.map((c) => c.id)).toEqual([
-      ".github/pull_request_template",
-      "tables/orders",
-    ])
+    expect(tree.concepts.map((c) => c.id)).toEqual(["tables/orders"])
     expect(tree.concept("tables/orders")?.links[0]).toMatchObject({ exists: true })
   })
 

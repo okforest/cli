@@ -34,7 +34,7 @@ describe("buildInventory", () => {
   })
 
   it("counts statuses, trust tiers, and stale concepts", () => {
-    expect(inventory.statuses).toEqual({ draft: 1, stable: 3, deprecated: 0 })
+    expect(inventory.statuses).toEqual({ draft: 1, stable: 3, deprecated: 0, unrecognized: 0 })
     expect(inventory.trustTiers).toEqual({
       unverified: 2,
       "machine-confirmed": 1,

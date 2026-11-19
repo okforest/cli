@@ -14,6 +14,14 @@ describe("okforest inventory", () => {
     expect(result.stdout).toContain("(none found)")
   })
 
+  it("counts statuses OKF doesn't define, when there are any", async () => {
+    const result = await run(["inventory", "rules/okf/status"])
+    expect(result.stdout).toMatch(
+      /Status: \d+ stable, \d+ draft, \d+ deprecated, [1-9]\d* unrecognized · /,
+    )
+    expect((await run(["inventory", "valid"])).stdout).not.toContain("unrecognized")
+  })
+
   it("writes JSON", async () => {
     const result = await run(["inventory", "okf-samples/acme_retail", "--format", "json"])
     expect(JSON.parse(result.stdout)).toMatchObject({

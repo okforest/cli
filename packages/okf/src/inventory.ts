@@ -25,7 +25,8 @@ export interface Inventory {
   tags: Count[]
   /** Top-level frontmatter keys. */
   keys: Count[]
-  statuses: Record<Status, number>
+  /** Concepts by status; `unrecognized` counts values OKF doesn't define. */
+  statuses: Record<Status | "unrecognized", number>
   trustTiers: Record<TrustTier, number>
   /** Concepts past their `stale_after` instant. */
   stale: number
@@ -38,7 +39,12 @@ export function buildInventory(tree: Tree, options: { now?: Date } = {}): Invent
   const types = new Map<string, number>()
   const tags = new Map<string, number>()
   const keys = new Map<string, number>()
-  const statuses: Record<Status, number> = { draft: 0, stable: 0, deprecated: 0 }
+  const statuses: Record<Status | "unrecognized", number> = {
+    draft: 0,
+    stable: 0,
+    deprecated: 0,
+    unrecognized: 0,
+  }
   const trustTiers: Record<TrustTier, number> = {
     unverified: 0,
     "machine-confirmed": 0,

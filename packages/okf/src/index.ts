@@ -18,18 +18,28 @@ export {
   MERMAID_RENDERERS,
   outlineTree,
   parseTree,
+  readBundleMetadata,
   readTypeSchema,
   readTypeTemplate,
   SETTINGS_PATH,
   TYPES_FOLDER,
 } from "./tree.js"
 export {
+  currentVerifications,
   deriveStatus,
   deriveTrustTier,
+  isAbsent,
   isStaleAt,
   isStatus,
   normalizeSources,
   normalizeVerified,
+  parseTimestamp,
 } from "./trust.js"
 export type * from "./types.js"
+export {
+  LATEST_OKF_VERSION,
+  type OkfVersion,
+  okfVersionAtLeast,
+  parseOkfVersion,
+} from "./version.js"
 export { isRecord } from "./yaml.js"

@@ -8,6 +8,88 @@ const tree = (files: Record<string, string | undefined>) =>
 const concept = (body = "", fm = "type: Note") => `---\n${fm}\n---\n${body}\n`
 
 describe("parseTree", () => {
+  it("resolves path fields as links are, and counts them as graph edges (OKF §6.2, §6.4)", () => {
+    const fm = [
+      "type: Metric",
+      "status: deprecated",
+      "superseded_by: margin.md",
+      "resource: https://bi.acme.example/revenue",
+      "computation: /computations/revenue.sql",
+      "executor: { resource: ../references/run.md }",
+      "sources:",
+      "  - { resource: all queries in project acme }",
+      "  - { resource: /metrics/margin.md }",
+    ].join("\n")
+    const t = tree({
+      "index.md": '---\nokf_version: "0.3"\n---\n',
+      "metrics/revenue.md": concept("", fm),
+      "metrics/margin.md": concept(),
+      "computations/revenue.sql": undefined,
+      "references/run.md": concept(),
+    })
+    const revenue = t.concept("metrics/revenue")
+    expect(
+      revenue?.paths.map((p) => [p.field, p.kind, p.resolved ?? p.target, p.exists, p.line]),
+    ).toEqual([
+      ["resource", "external", "https://bi.acme.example/revenue", undefined, 5],
+      ["superseded_by", "internal", "metrics/margin.md", true, 4],
+      ["computation", "internal", "computations/revenue.sql", true, 6],
+      ["executor.resource", "internal", "references/run.md", true, 7],
+      ["sources[1].resource", "internal", "metrics/margin.md", true, 10],
+    ])
+    expect(t.backlinks("metrics/margin").map((l) => l.field)).toEqual([
+      "superseded_by",
+      "sources[1].resource",
+    ])
+  })
+
+  it("reads one sources entry, written without a list, as a path field too (OKF §11.2)", () => {
+    const t = tree({
+      "a.md": concept("", "type: Note\nsources: { resource: b.md }"),
+      "b.md": concept(),
+    })
+    expect(t.concept("a")?.paths.map((p) => [p.field, p.resolved, p.line])).toEqual([
+      ["sources.resource", "b.md", 3],
+    ])
+  })
+
+  it("resolves a 0.2 bundle's bare path fields from the bundle root, as 0.2 wrote them (OKF §12.1)", () => {
+    const files = (version: string) => ({
+      "index.md": `---\nokf_version: "${version}"\n---\n`,
+      "metrics/revenue.md": concept("", "type: Metric\nsuperseded_by: metrics/margin.md"),
+      "metrics/margin.md": concept(),
+    })
+    const target = (version: string) =>
+      tree(files(version)).concept("metrics/revenue")?.paths[0]?.resolved
+    expect(target("0.2")).toBe("metrics/margin.md")
+    // Found from neither: reported where the file's folder puts it.
+    const missing = tree({
+      ...files("0.2"),
+      "metrics/revenue.md": concept("", "type: Metric\nsuperseded_by: metrics/gone.md"),
+    }).concept("metrics/revenue")?.paths[0]
+    expect(missing).toMatchObject({ resolved: "metrics/metrics/gone.md", exists: false })
+    expect(target("0.3")).toBe("metrics/metrics/margin.md")
+    expect(
+      outlineTree(Object.keys(files("0.2"))).read(
+        "metrics/revenue.md",
+        files("0.2")["metrics/revenue.md"],
+      ).kind,
+    ).toBe("concept")
+  })
+
+  it("reads the bundle's metadata from its root index.md (OKF §8.1)", () => {
+    const t = tree({
+      "index.md":
+        '---\nokf_version: "0.3"\ntitle: Acme retail\ndescription: Sales and margin.\nlicense: CC-BY-4.0\n---\n',
+    })
+    expect(t.metadata).toEqual({
+      title: "Acme retail",
+      description: "Sales and margin.",
+      license: "CC-BY-4.0",
+    })
+    expect(tree({ "index.md": '---\nokf_version: "0.3"\n---\n' }).metadata).toBeUndefined()
+  })
+
   it("classifies concepts and reserved files at any depth", () => {
     const t = tree({
       "index.md": '---\nokf_version: "0.2"\n---\n# Root\n',
@@ -41,7 +123,7 @@ describe("parseTree", () => {
     expect(t.files).toEqual(["a/b.md"])
   })
 
-  it("skips only .okforest and .git folders", () => {
+  it("skips every file and folder whose name starts with a dot (OKF §3.2)", () => {
     const t = tree({
       ".okforest/notes.md": "# notes\n",
       ".git/info.md": "# git\n",
@@ -51,12 +133,7 @@ describe("parseTree", () => {
       "README.md": "# Repo\n",
       "a.md": concept(),
     })
-    expect(t.concepts.map((c) => c.id)).toEqual([
-      ".github/pull_request_template",
-      "README",
-      "a",
-      "node_modules/pkg/README",
-    ])
+    expect(t.concepts.map((c) => c.id)).toEqual(["README", "a", "node_modules/pkg/README"])
     expect(t.ignored).toEqual([])
   })
 

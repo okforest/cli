@@ -1,4 +1,4 @@
-import { type ReservedFile, visit } from "@okforest/okf"
+import { okfVersionAtLeast, type ReservedFile, visit } from "@okforest/okf"
 import type { Heading, List, ListItem } from "mdast"
 import type { Rule } from "../types.js"
 import { at, isIsoDate, show } from "../util.js"
@@ -70,7 +70,7 @@ export const indexFrontmatter: Rule = {
       })
       return
     }
-    if (declaresAtLeast(index.frontmatter.okf_version, 0, 3)) return
+    if (okfVersionAtLeast(index.frontmatter.okf_version, "0.3")) return
     for (const key of Object.keys(index.frontmatter).filter((k) => k !== "okf_version")) {
       report({
         file: index.path,
@@ -79,17 +79,6 @@ export const indexFrontmatter: Rule = {
       })
     }
   },
-}
-
-/** Whether an `okf_version` value names this version or a later one. A
- * number counts as written (`okf_version: 0.3`, unquoted). */
-function declaresAtLeast(value: unknown, major: number, minor: number): boolean {
-  const match = /^(\d+)\.(\d+)$/.exec(
-    typeof value === "number" ? String(value) : String(value ?? ""),
-  )
-  if (!match) return false
-  const [declaredMajor, declaredMinor] = [Number(match[1]), Number(match[2])]
-  return declaredMajor > major || (declaredMajor === major && declaredMinor >= minor)
 }
 
 /** OKF §8: index entries are list items that start with a link. An index
