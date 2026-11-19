@@ -8,7 +8,7 @@ v0.2 trees.
 npx okforest validate .                 # exit 1 on errors; warnings never fail
 npx okforest validate . --format json   # for CI and tools
 npx okforest inventory .                # types, tags, keys, near-duplicates
-npx okforest init sales-okf --template company --name "Sales knowledge"
+npx okforest init sales-knowledge                # a repository with an empty tree in okf/
 npx okforest rule okf/type              # why a rule exists, and how to fix it
 npx okforest types init .               # draft a JSON Schema for each type
 ```

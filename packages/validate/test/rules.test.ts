@@ -85,6 +85,20 @@ describe("okf/index-entries", () => {
     ).toEqual([])
   })
 
+  it("flags an index that lists nothing only when its directory has something to list", async () => {
+    const root = '---\nokf_version: "0.2"\n---\n\n# A\n'
+    expect(
+      await only("okf/index-entries", {
+        "index.md": root,
+        "log.md": "# Log\n",
+        "sales/index.md": "# Sales\n",
+      }),
+    ).toEqual([
+      "index.md:4:1 warning okf/index-entries This index lists nothing: add `* [Title](path) - description` entries.",
+    ])
+    expect(await only("okf/index-entries", { "index.md": root, "log.md": "# Log\n" })).toEqual([])
+  })
+
   it("flags list items without a leading paragraph", async () => {
     expect(await only("okf/index-entries", { "index.md": "# A\n\n* \n" })).toEqual([
       "index.md:3:1 warning okf/index-entries Index entries should start with a link: `* [Title](path) - description`.",

@@ -11,7 +11,7 @@ export const HELP = `okforest ${VERSION}: validate, inventory, and scaffold Open
 Usage
   okforest validate [path] [--format text|json]
   okforest inventory [path] [--format text|json]
-  okforest init [path] --template company [--name <name>]
+  okforest init [path] [--name <name>]
   okforest new <type> <file> [--title <title>] [--description <text>]
   okforest rule [rule] [--format text|json]
   okforest types init [path] [--type <type>]... [--dry-run]
@@ -21,7 +21,8 @@ Commands
               Exits 1 when there are errors; warnings and info never fail.
   inventory   List every type, tag, and frontmatter key in use, with counts
               and likely near-duplicates.
-  init        Create a new tree from a starter template (templates: company).
+  init        Create an empty tree. For a company tree, start from
+              https://github.com/okforest/template-company-knowledge.
   new         Create a concept of a type, from the type's template
               (.okforest/types/<type>.template.md) when it has one.
   rule        Explain a rule: why it exists, an example, and the fix.

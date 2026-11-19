@@ -12,82 +12,85 @@ afterEach(() => rm(work, { recursive: true, force: true }))
 const init = (...args: string[]) => run(["init", ...args], { cwd: work })
 
 describe("okforest init", () => {
-  it("creates a company tree that validates with no findings", async () => {
-    const result = await init("acme-okf", "--template", "company")
+  it("creates a repository with an empty tree in okf/ that validates with no problems", async () => {
+    const result = await init("acme-knowledge")
     expect(result.code).toBe(0)
-    expect(result.stdout).toMatch(/^Created a company tree in acme-okf \(11 files\)\./)
-    expect(result.stdout).toContain("company/overview.md, customers/ideal-customer-profile.md")
-    expect(await run(["validate", "acme-okf"], { cwd: work })).toMatchObject({
+    expect(result.stdout).toMatch(
+      /^Created a repository for Acme knowledge in acme-knowledge, with an empty tree in acme-knowledge\/okf\/ \(9 files\)\./,
+    )
+    expect(result.stdout).toContain("npx okforest validate acme-knowledge/okf\n")
+    expect(result.stdout).toContain("https://github.com/okforest/template-company-knowledge")
+    expect(await run(["validate", "acme-knowledge/okf"], { cwd: work })).toMatchObject({
       code: 0,
-      stdout: "✔ No problems · 2 concepts in 6 files\n",
+      stdout: "✔ No problems · 0 concepts in 2 files\n",
     })
 
-    const settings = await readFile(join(work, "acme-okf", ".okforest", "settings.yaml"), "utf8")
-    expect(settings).toContain('name: "Acme knowledge"\n')
-    expect(settings).toContain("ignore:\n  - README.md\n")
-    const schema = JSON.parse(
-      await readFile(
-        join(work, "acme-okf", ".okforest", "types", "customer-profile.schema.json"),
-        "utf8",
-      ),
+    const read = (path: string) => readFile(join(work, "acme-knowledge", path), "utf8")
+    expect(await read("okf/index.md")).toMatch(
+      /^---\nokf_version: "0\.2"\n---\n\n# Acme knowledge\n/,
     )
-    expect(schema.title).toBe("Customer Profile")
-    const overview = await readFile(join(work, "acme-okf", "company", "overview.md"), "utf8")
-    expect(overview).toMatch(
-      /generated: \{ by: okforest\/[\d.]+, at: \d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ \}/,
+    expect(await read("okf/log.md")).toMatch(/^# Log\n\n## \d{4}-\d\d-\d\d\n/)
+    expect(await read("okf/.okforest/settings.yaml")).toContain('name: "Acme knowledge"\n')
+    expect(await read("README.md")).toMatch(/^# Acme knowledge\n/)
+    expect(await read("AGENTS.md")).toContain("Acme knowledge: an [OKF v0.2]")
+    expect(await read(".gitignore")).toBe(".DS_Store\nnode_modules/\n")
+    expect(await read(".github/dependabot.yaml")).toContain('package-ecosystem: "github-actions"')
+    const ci = await read(".github/workflows/ci.yaml")
+    expect(ci).toContain("betterleaks git .\n          --config .betterleaks.toml")
+    expect(ci).toContain("uses: okforest/validate-action@v1\n        with:\n          path: okf\n")
+    // The workflow's shell variables, kept as written.
+    expect(ci).toContain(
+      // biome-ignore lint/suspicious/noTemplateCurlyInString: a shell variable, not a placeholder
+      'base="https://github.com/betterleaks/betterleaks/releases/download/v${BETTERLEAKS_VERSION}"',
     )
-    const workflow = await readFile(
-      join(work, "acme-okf", ".github", "workflows", "okforest-validate.yaml"),
-      "utf8",
-    )
-    expect(workflow).toContain("uses: okforest/validate-action@v1")
-    expect(workflow).not.toMatch(/\{\{\w+\}\}/)
+    expect(await read(".betterleaks.toml")).toContain('id = "prose-password"')
+    for (const file of ["README.md", "AGENTS.md", ".github/workflows/ci.yaml"]) {
+      expect(await read(file)).not.toMatch(/\{\{\w+\}\}/)
+    }
   })
 
   it("accepts a name with YAML punctuation", async () => {
-    const result = await init("t", "--template", "company", "--name", 'Sales: "ops" #1')
+    const result = await init("t", "--name", 'Sales: "ops" #1')
     expect(result.code).toBe(0)
-    const settings = await readFile(join(work, "t", ".okforest", "settings.yaml"), "utf8")
+    const settings = await readFile(join(work, "t", "okf", ".okforest", "settings.yaml"), "utf8")
     expect(settings).toContain('name: "Sales: \\"ops\\" #1"\n')
-    expect((await run(["validate", "t"], { cwd: work })).code).toBe(0)
+    expect((await run(["validate", "t/okf"], { cwd: work })).code).toBe(0)
   })
 
   it("initializes the current directory, allowing an existing .git", async () => {
     const dir = join(work, "Product")
     await mkdir(join(dir, ".git"), { recursive: true })
-    const result = await run(["init", "--template", "company"], { cwd: dir })
+    const result = await run(["init"], { cwd: dir })
     expect(result.code).toBe(0)
-    expect(await readFile(join(dir, ".okforest", "settings.yaml"), "utf8")).toContain(
+    expect(result.stdout).toContain("with an empty tree in okf/ (9 files)")
+    expect(result.stdout).toContain("npx okforest validate okf\n")
+    expect(await readFile(join(dir, "okf", ".okforest", "settings.yaml"), "utf8")).toContain(
       'name: "Product knowledge"\n',
     )
   })
 
   it("falls back to a default name when the folder name has no letters", async () => {
-    expect((await init("___", "--template", "company")).code).toBe(0)
-    expect(await readFile(join(work, "___", ".okforest", "settings.yaml"), "utf8")).toContain(
-      'name: "Company knowledge"\n',
-    )
+    expect((await init("___")).code).toBe(0)
+    expect(
+      await readFile(join(work, "___", "okf", ".okforest", "settings.yaml"), "utf8"),
+    ).toContain('name: "Company knowledge"\n')
   })
 
   it("requires a name of 1 to 100 characters", async () => {
-    expect(await init("x", "--template", "company", "--name", " ")).toMatchObject({
+    expect(await init("x", "--name", " ")).toMatchObject({
       code: 2,
       stderr: "okforest: --name must be 1 to 100 characters (got 0).\n",
     })
-    expect(await init("x", "--template", "company", "--name", "n".repeat(101))).toMatchObject({
+    expect(await init("x", "--name", "n".repeat(101))).toMatchObject({
       code: 2,
       stderr: expect.stringMatching(/got 101/),
     })
   })
 
-  it("requires a known template", async () => {
-    expect(await init("x")).toMatchObject({
+  it("has no templates of its own", async () => {
+    expect(await init("x", "--template", "company")).toMatchObject({
       code: 2,
-      stderr: expect.stringMatching(/Choose a template .*\(company\)/),
-    })
-    expect(await init("x", "--template", "hr")).toMatchObject({
-      code: 2,
-      stderr: expect.stringMatching(/Unknown template `hr`/),
+      stderr: expect.stringMatching(/^okforest: Unknown option '--template'/),
     })
   })
 
@@ -95,7 +98,7 @@ describe("okforest init", () => {
     const dir = join(work, "full")
     await mkdir(dir)
     for (const name of ["a", "b", "c", "d"]) await writeFile(join(dir, name), "")
-    expect(await init("full", "--template", "company")).toMatchObject({
+    expect(await init("full")).toMatchObject({
       code: 2,
       stderr: "okforest: full is not empty (a, b, c, ...).\n",
     })

@@ -40,12 +40,19 @@ id>` explains one in the terminal.
 frontmatter key in use, with counts, lifecycle and trust totals, and likely
 near-duplicates (`e-commerce` and `ecommerce`, `Policy` and `Policies`).
 
-**`okforest init [path] --template company`** creates a new tree: a root
-`index.md` declaring `okf_version: "0.2"`, `log.md`, `.okforest/settings.yaml`
-with the bundle's `name` (`--name`, defaulting to the folder's name), a
-[type schema](#type-schemas) for each of its types, draft starter concepts,
-and a GitHub workflow that validates every pull request with the OKForest
-Validate action. To start from your own template instead, see
+**`okforest init [path] [--name <name>]`** creates a repository for a tree,
+laid out as the company template is: an empty bundle in `okf/` (a root
+`index.md` declaring `okf_version: "0.2"`, `log.md`, and
+`.okforest/settings.yaml` with the bundle's `name`, `--name`, defaulting to
+the folder's name), a `README.md` with a setup checklist, an `AGENTS.md` for
+AI agents, a `.gitignore`, Dependabot for the workflow's actions, and a CI
+workflow that scans for secrets with [Betterleaks](https://github.com/betterleaks/betterleaks)
+(`.betterleaks.toml`) and validates every pull request with the OKForest
+Validate action. For a company's tree, with its folders, types, and draft starter
+concepts, start from the template repository
+[okforest/template-company-knowledge](https://github.com/okforest/template-company-knowledge)
+instead (**Use this template**, or `npx giget
+gh:okforest/template-company-knowledge acme-knowledge`); for your own, see
 [Your own template](https://www.okforest.ai/docs/cli/#your-own-template).
 
 **`okforest rule [rule] [--format text|json]`** explains a rule: why it exists,
