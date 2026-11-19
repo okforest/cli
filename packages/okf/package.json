@@ -1,6 +1,6 @@
 {
   "name": "@okforest/okf",
-  "version": "0.16.0",
+  "version": "0.16.1",
   "description": "Read an Open Knowledge Format (OKF) tree, 0.2 or 0.3, into a model: concepts, frontmatter, links, backlinks, trust tiers, staleness, and a metadata inventory. No SDKs or frameworks; runs in Node, browsers, and Workers.",
   "keywords": [
     "okf",
