@@ -84,14 +84,19 @@ describe("concepts under OKF 0.2 and 0.3 (§3.2)", () => {
 describe("OKF 0.3's own rules", () => {
   it("asks for x- extension keys under 0.3 only", async () => {
     const page = {
-      "a.md": concept("owner: cfo\nx-acme-unit: usd\ntimestamp: 2026-01-01T00:00:00Z"),
+      "a.md": concept("owner: cfo\nx-unit: usd\ntimestamp: 2026-01-01T00:00:00Z"),
     }
     expect(await only("okf/extension-key", at("0.3", page))).toEqual([
       expect.stringMatching(
-        /^a\.md:\d+:1 warning okf\/extension-key `owner` isn't a key OKF defines.*`x-acme-owner`/,
+        /^a\.md:\d+:1 warning okf\/extension-key `owner` isn't a key OKF defines.*`x-owner`/,
       ),
     ])
     expect(await only("okf/extension-key", at("0.2", page))).toEqual([])
+    // A key with no letters or digits to keep still gets a usable suggestion.
+    const symbols = { "a.md": concept('"€€": 1') }
+    expect(await only("okf/extension-key", at("0.3", symbols))).toEqual([
+      expect.stringMatching(/`€€` isn't a key OKF defines.*such as `x-key`/),
+    ])
   })
 
   it("keeps log.md free of frontmatter under 0.3 only", async () => {
@@ -182,7 +187,7 @@ describe("okf/index-scope", () => {
 describe("okf/index-frontmatter", () => {
   const root = (frontmatter: string) => `---\n${frontmatter}---\n\n# Bundle\n`
   const META =
-    "title: Acme retail\ndescription: Sales and margin.\nlicense: CC-BY-4.0\nx-acme-owner: team:fpa\n"
+    "title: Acme retail\ndescription: Sales and margin.\nlicense: CC-BY-4.0\nx-owner: team:fpa\n"
 
   it("lets an OKF 0.3 root index.md describe the bundle, with extension keys", async () => {
     for (const version of ['"0.3"', "0.3", '"0.4"', '"1.0"']) {

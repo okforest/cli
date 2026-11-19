@@ -51,7 +51,7 @@ exports[`okforest rule > lists every rule without one 1`] = `
   okf/broken-link               warning  Links within the tree point at files that exist (a warning: OKF says never reject a bundle for broken links, §6.1, §11).
   okf/datetime                  error    Timestamps are ISO 8601 date-times with an explicit UTC offset, e.g. \`2026-06-30T14:00:00Z\`, or dates, e.g. \`2026-06-30\` (OKF §5).
   okf/description               warning  Concepts have a one-sentence \`description\` (recommended, OKF §4.1).
-  okf/extension-key             warning  Under OKF 0.3, frontmatter keys OKF doesn't define are named \`x-<producer>-<name>\`, such as \`x-acme-owner\` (OKF §4.1).
+  okf/extension-key             warning  Under OKF 0.3, frontmatter keys OKF doesn't define start with \`x-\`, such as \`x-owner\` (OKF §4.1).
   okf/field-types               warning  \`title\`, \`description\`, and \`resource\` are strings, and \`tags\` is a list of strings (OKF §4.1).
   okf/footnote-source           warning  In a concept that has \`sources\` with \`id\`s, every footnote label matches one of them (OKF §5.1 per-claim attribution).
   okf/frontmatter               error    Frontmatter blocks parse as YAML, and under OKF 0.2 every concept starts with one (OKF §4, §11).

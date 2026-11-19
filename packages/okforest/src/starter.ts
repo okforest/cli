@@ -24,9 +24,10 @@ export function starterFiles(name: string, date: string): Record<string, string>
 <!-- Started by \`okforest init\`. Make it yours: add how your team works with
 this repository, and remove anything that doesn't apply. -->
 
-${name}: an [OKF 0.3](https://github.com/open-knowledge-format/open-knowledge-format)
-bundle in \`okf/\`, managed with [OKForest](https://www.okforest.ai). People
-read it to learn; AI assistants use it to answer questions. Write for both.
+${name}: an [OKF](https://raw.githubusercontent.com/open-knowledge-format/open-knowledge-format/refs/heads/main/SPEC.md)
+bundle in \`okf/\`, managed with [OKForest](https://www.okforest.ai). The OKF
+version it follows is \`okf_version\` in \`okf/index.md\`. People read it to
+learn; AI assistants use it to answer questions. Write for both.
 
 Everything outside \`okf/\` (this file, \`README.md\`, \`.github/\`,
 \`.betterleaks.toml\`) is repository setup, not knowledge. Commands below run
@@ -53,6 +54,9 @@ from the repository root.
   tag, to reuse an existing one.
 - Every concept has a \`title\` and a one-sentence \`description\`. New or
   unreviewed pages are \`status: draft\`.
+- Fields OKF doesn't define start with \`x-\` (\`x-owner\`), so a later OKF
+  version can't give them another meaning. Add a new field to its type's
+  schema and template in the same change.
 - Link with standard markdown links, using absolute paths from the bundle
   root (\`okf/\`): \`[refunds](/policies/refunds.md)\`.
 - \`index.md\` and \`log.md\` are reserved names in every folder. Keep each
@@ -85,9 +89,10 @@ from the repository root.
 `,
     "README.md": `# ${name}
 
-${name}: an [Open Knowledge Format (OKF)](https://github.com/open-knowledge-format/open-knowledge-format)
-0.3 bundle in [\`okf/\`](okf/index.md), one markdown file per concept, with
-YAML frontmatter. Start at [\`okf/index.md\`](okf/index.md).
+${name}: an [Open Knowledge Format (OKF)](https://github.com/open-knowledge-format/open-knowledge-format/blob/main/SPEC.md)
+bundle in [\`okf/\`](okf/index.md), one markdown file per concept, with YAML
+frontmatter. Start at [\`okf/index.md\`](okf/index.md), which declares the OKF
+version it follows (\`okf_version\`).
 
 ## Getting started
 

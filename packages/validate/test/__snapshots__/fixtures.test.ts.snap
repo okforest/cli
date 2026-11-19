@@ -45,7 +45,7 @@ exports[`rule fixtures > okf/description 1`] = `
 
 exports[`rule fixtures > okf/extension-key 1`] = `
 [
-  "example.md:5:1 warning okf/extension-key \`owner\` isn't a key OKF defines: name your own keys \`x-<producer>-<name>\`, such as \`x-acme-owner\`, so a later OKF version can't give \`owner\` another meaning.",
+  "example.md:5:1 warning okf/extension-key \`owner\` isn't a key OKF defines: start your own keys with \`x-\`, such as \`x-owner\`, so a later OKF version can't give \`owner\` another meaning.",
 ]
 `;
 
