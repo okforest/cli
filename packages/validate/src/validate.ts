@@ -21,6 +21,7 @@ export async function validate(
       ...(tree.settings ? { settings: tree.settings } : {}),
       types: tree.types,
       templates: tree.templates,
+      ...(tree.okfVersion !== undefined ? { okfVersion: tree.okfVersion } : {}),
     },
     options,
   )

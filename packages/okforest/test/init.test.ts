@@ -27,7 +27,7 @@ describe("okforest init", () => {
 
     const read = (path: string) => readFile(join(work, "acme-knowledge", path), "utf8")
     expect(await read("okf/index.md")).toMatch(
-      /^---\nokf_version: "0\.2"\n---\n\n# Acme knowledge\n/,
+      /^---\nokf_version: "0\.3"\n---\n\n# Acme knowledge\n/,
     )
     expect(await read("okf/log.md")).toMatch(/^# Log\n\n## \d{4}-\d\d-\d\d\n/)
     expect(await read("okf/.okforest/settings.yaml")).toContain('name: "Acme knowledge"\n')

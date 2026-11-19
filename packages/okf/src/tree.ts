@@ -79,11 +79,7 @@ export function parseTree(input: Iterable<TreeFile>): Tree {
   for (const [path, text] of texts) {
     if (text !== undefined && isTypeFilePath(path)) typeTexts.set(path, text)
   }
-  const rootText = texts.get("index.md")
-  const okfVersion =
-    rootText === undefined
-      ? undefined
-      : readMarkdownFile("index.md", rootText).frontmatter?.okf_version
+  const okfVersion = declaredOkfVersion(texts.get("index.md"))
   const outline = outlineTree(texts.keys(), texts.get(SETTINGS_PATH), typeTexts, { okfVersion })
   const concepts: Concept[] = []
   const reserved: ReservedFile[] = []
@@ -188,6 +184,7 @@ export function outlineTree(
     ...(settings ? { settings } : {}),
     types,
     templates,
+    ...(options.okfVersion !== undefined ? { okfVersion: options.okfVersion } : {}),
     read(path, text) {
       if (!inTree.has(path)) throw new Error(`${path} is not one of the tree's markdown files.`)
       const { rawLinks, ...rest } = readMarkdownFile(path, text)
@@ -381,6 +378,14 @@ function resolveLink(
     ...(isDirectory ? { directory: true } : {}),
     ...(id !== undefined && conceptIds.has(id) ? { concept: id } : {}),
   }
+}
+
+/** The `okf_version` a bundle-root `index.md`'s text declares, as written
+ * (spec §8.1), for {@link outlineTree}: undefined when it declares none. */
+export function declaredOkfVersion(rootIndexText: string | undefined): unknown {
+  return rootIndexText === undefined
+    ? undefined
+    : readMarkdownFile("index.md", rootIndexText).frontmatter?.okf_version
 }
 
 /** Whether a bundle path matches one of the settings' `ignore:` globs. */

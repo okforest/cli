@@ -1,9 +1,16 @@
-import type { KeyPath, MarkdownFile, Position } from "@okforest/okf"
+import { type KeyPath, type MarkdownFile, okfVersionAtLeast, type Position } from "@okforest/okf"
+import type { CheckContext } from "./types.js"
 
 const DATETIME =
   /^(\d{4})-(\d{2})-(\d{2})[Tt](\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?(?:[Zz]|[+-](\d{2}):?(\d{2}))$/
 
 /** An ISO 8601 datetime with an explicit UTC offset (spec §5), on a real calendar date. */
+/** Whether a tree declares OKF 0.3 or later (spec §12): its rules apply.
+ * A tree on 0.2, or no version (§12.1), keeps 0.2's. */
+export function isOkf03(context: CheckContext): boolean {
+  return okfVersionAtLeast(context.outline.okfVersion, "0.3")
+}
+
 export function isDatetime(value: unknown): boolean {
   if (typeof value !== "string") return false
   const m = DATETIME.exec(value)

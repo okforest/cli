@@ -5,7 +5,9 @@ import {
   indexFrontmatter,
   indexScope,
   logDate,
+  logFrontmatter,
   logOrder,
+  notAConcept,
   okfVersion,
   type,
 } from "./conformance.js"
@@ -15,6 +17,7 @@ import {
   attestedComputation,
   datetime,
   description,
+  extensionKey,
   fieldTypes,
   generated,
   legacy,
@@ -24,20 +27,30 @@ import {
   verified,
 } from "./fields.js"
 import { brokenLink, footnoteSource } from "./links.js"
-import { placeholder, settingsFile, settingsKeys, slug, wikilink } from "./okforest.js"
+import {
+  okfVersionCurrent,
+  placeholder,
+  settingsFile,
+  settingsKeys,
+  slug,
+  wikilink,
+} from "./okforest.js"
 import { similarTag, similarType } from "./similar.js"
 import { typeSchema } from "./type-schema.js"
 import { typeTemplate } from "./type-template.js"
 
-/** Rules from the OKF v0.2 specification. */
+/** Rules from the OKF specification, by the version a tree declares (0.2
+ * and 0.3). */
 export const okfRules: readonly Rule[] = [
   frontmatter,
   type,
+  notAConcept,
   indexFrontmatter,
   indexEntries,
   indexScope,
   logDate,
   logOrder,
+  logFrontmatter,
   okfVersion,
   generated,
   verified,
@@ -48,6 +61,7 @@ export const okfRules: readonly Rule[] = [
   title,
   description,
   fieldTypes,
+  extensionKey,
   actor,
   brokenLink,
   footnoteSource,
@@ -57,6 +71,7 @@ export const okfRules: readonly Rule[] = [
 /** OKForest conventions beyond the spec: slugs, placeholders, settings, type
  * schemas and templates, near-duplicate types and tags, diagrams. */
 export const okforestRules: readonly Rule[] = [
+  okfVersionCurrent,
   settingsFile,
   settingsKeys,
   typeSchema,

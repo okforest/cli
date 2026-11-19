@@ -1,6 +1,6 @@
-import { type Concept, isRecord, isStatus, type KeyPath, visit } from "@okforest/okf"
+import { type Concept, isRecord, isStatus, type KeyPath, OKF_FIELDS, visit } from "@okforest/okf"
 import type { CheckContext, Report, Rule } from "../types.js"
-import { at, describeType, isDatetime, show } from "../util.js"
+import { at, describeType, isDatetime, isIsoDate, isOkf03, show, slugify } from "../util.js"
 import { headingText } from "./conformance.js"
 
 /** A rule's {@link Rule.checkFile} that runs `fn` for each concept with
@@ -10,8 +10,16 @@ const eachConcept =
     fn: (concept: Concept, fm: Record<string, unknown>, context: CheckContext) => void,
   ): NonNullable<Rule["checkFile"]> =>
   (file, context) => {
-    if (file.kind === "concept" && file.frontmatter) fn(file, file.frontmatter, context)
+    if (file.kind !== "concept" || !file.frontmatter) return
+    // Under OKF 0.3 a file without a `type` isn't a concept (§3.2):
+    // okf/not-a-concept says so, and nothing else checks it as one.
+    if (isOkf03(context) && !hasType(file.frontmatter)) return
+    fn(file, file.frontmatter, context)
   }
+
+/** Whether frontmatter has the non-empty `type` that makes a concept (OKF §3.2). */
+export const hasType = (fm: Record<string, unknown>): boolean =>
+  typeof fm.type === "string" && fm.type.trim() !== ""
 
 const reporter =
   (report: (r: Report) => void, concept: Concept) => (path: KeyPath, message: string) =>
@@ -199,37 +207,60 @@ function checkUsageWindow(
   }
 }
 
+/** OKF §5.4. A value OKF doesn't define isn't `stable`, so consumers that
+ * keep to current knowledge leave the concept out; OKF 0.3 says to keep it
+ * and warn, which is why this is a warning. */
 export const status: Rule = {
   id: "okf/status",
-  severity: "error",
-  description: "`status` is one of `draft`, `stable`, or `deprecated` (OKF §5.4).",
-  checkFile: eachConcept((concept, fm, { report }) => {
-    if (fm.status === undefined || isStatus(fm.status)) return
-    const hint = isStatus(String(fm.status).toLowerCase())
-      ? ` (use lowercase \`${String(fm.status).toLowerCase()}\`)`
-      : ""
-    reporter(report, concept)(
-      ["status"],
-      `\`status\` must be \`draft\`, \`stable\`, or \`deprecated\`${hint}; got ${show(fm.status)}.`,
-    )
+  severity: "warning",
+  description:
+    "`status` is one of `draft`, `stable`, or `deprecated`, and `superseded_by` goes with `deprecated` (OKF §5.4).",
+  checkFile: eachConcept((concept, fm, context) => {
+    const problem = reporter(context.report, concept)
+    if (fm.status !== undefined && fm.status !== null && !isStatus(fm.status)) {
+      const hint = isStatus(String(fm.status).toLowerCase())
+        ? ` (use lowercase \`${String(fm.status).toLowerCase()}\`)`
+        : ""
+      problem(
+        ["status"],
+        `\`status\` must be \`draft\`, \`stable\`, or \`deprecated\`${hint}; got ${show(fm.status)}, ` +
+          "which isn't `stable`, so it's left out of current knowledge.",
+      )
+    }
+    // `superseded_by` is OKF 0.3's; under 0.2 it's anyone's key.
+    if (!isOkf03(context) || fm.superseded_by === undefined || fm.superseded_by === null) return
+    if (typeof fm.superseded_by !== "string" || fm.superseded_by.trim() === "") {
+      problem(
+        ["superseded_by"],
+        "`superseded_by` must be the path of the concept that replaces this one.",
+      )
+    } else if (fm.status !== "deprecated") {
+      problem(
+        ["superseded_by"],
+        "`superseded_by` means something only with `status: deprecated`: deprecate this concept, or remove it.",
+      )
+    }
   }),
 }
 
-/** Every timestamp-valued key the spec defines (OKF §5). */
+/** Every timestamp-valued key the spec defines (OKF §5). OKF 0.3 accepts a
+ * date, the start of that day in UTC, and says 0.2 bundles that hold one
+ * stay valid, so every version does. */
 export const datetime: Rule = {
   id: "okf/datetime",
   severity: "error",
   description:
-    "Timestamps are ISO 8601 datetimes with an explicit UTC offset, e.g. `2026-06-30T14:00:00Z` (OKF §5).",
+    "Timestamps are ISO 8601 date-times with an explicit UTC offset, e.g. `2026-06-30T14:00:00Z`, or dates, e.g. `2026-06-30` (OKF §5).",
   checkFile: eachConcept((concept, fm, { report }) => {
     const problem = reporter(report, concept)
     const check = (value: unknown, path: KeyPath) => {
       if (value === undefined || isDatetime(value)) return
+      if (typeof value === "string" && isIsoDate(value)) return
       const name = keyName(path)
       problem(
         path,
-        `\`${name}\` must be an ISO 8601 datetime with an explicit UTC offset, such as ` +
-          `\`2026-12-31T00:00:00Z\` (got ${show(value)}).`,
+        `\`${name}\` must be an ISO 8601 date-time with an explicit UTC offset, such as ` +
+          `\`2026-12-31T00:00:00Z\`, or a date, \`2026-12-31\` (got ${show(value)}).`,
       )
     }
     check(fm.stale_after, ["stale_after"])
@@ -262,22 +293,24 @@ function keyName(path: KeyPath): string {
   return path.map((p, i) => (typeof p === "number" ? `[${p}]` : i === 0 ? p : `.${p}`)).join("")
 }
 
-const ACTOR = /^(?:human:\S+|process:\S+|[^\s:/]+\/\S+)$/
+const ACTOR = /^(?:[a-z][a-z0-9+.-]*:\S+|[^\s:/]+\/\S+)$/
 
-/** OKF §7: `<producer>/<version>`, `human:<id>`, or `process:<id>`. */
+/** OKF §7: `<producer>/<version>`, or `<scheme>:<id>`. OKF defines
+ * `human:`, `team:`, and `process:`, and consumers accept any other scheme
+ * as non-human. */
 export const actor: Rule = {
   id: "okf/actor",
   severity: "warning",
   description:
-    "`generated.by` and `verified[].by` follow the actor convention: `<producer>/<version>`, `human:<id>`, or `process:<id>` (OKF §7).",
+    "`generated.by`, `verified[].by`, and `sources[].author` follow the actor convention: `<producer>/<version>`, or `<scheme>:<id>` such as `human:<id>`, `team:<id>`, or `process:<id>` (OKF §7).",
   checkFile: eachConcept((concept, fm, { report }) => {
     const problem = reporter(report, concept)
     const check = (value: unknown, path: KeyPath) => {
       if (typeof value !== "string" || value.trim() === "" || ACTOR.test(value)) return
       problem(
         path,
-        `${show(value)} is not an actor: use \`human:<id>\` for a person, \`process:<id>\` for an ` +
-          "automated process, or `<producer>/<version>` for an agent or tool.",
+        `${show(value)} is not an actor: use \`human:<id>\` for a person, \`team:<id>\` for a ` +
+          "group, `process:<id>` for an automated process, or `<producer>/<version>` for an agent or tool.",
       )
     }
     if (isRecord(fm.generated)) check(fm.generated.by, ["generated", "by"])
@@ -285,6 +318,11 @@ export const actor: Rule = {
       for (const { entry, path } of verifiedEntries(fm.verified)) {
         if (isRecord(entry)) check(entry.by, [...path, "by"])
       }
+    }
+    if (Array.isArray(fm.sources)) {
+      fm.sources.forEach((entry, i) => {
+        if (isRecord(entry)) check(entry.author, ["sources", i, "author"])
+      })
     }
   }),
 }
@@ -295,9 +333,9 @@ export const attestedComputation: Rule = {
   severity: "error",
   description:
     "An Attested Computation has a `runtime`, well-formed `parameters`, `executor`, and `attester`, and a computation (a `computation` path or a code block under `# Computation`) (OKF §10).",
-  checkFile: eachConcept((concept, fm, { report }) => {
+  checkFile: eachConcept((concept, fm, context) => {
     if (fm.type !== "Attested Computation") return
-    const problem = reporter(report, concept)
+    const problem = reporter(context.report, concept)
     if (typeof fm.runtime !== "string" || fm.runtime.trim() === "") {
       problem(
         fm.runtime === undefined ? ["type"] : ["runtime"],
@@ -321,11 +359,22 @@ export const attestedComputation: Rule = {
               ["parameters", i],
               "Each parameter must be a mapping with a `name`: `{ name, type, required }`.",
             )
-          } else if (parameter.required !== undefined && typeof parameter.required !== "boolean") {
-            problem(
-              ["parameters", i, "required"],
-              "A parameter's `required` must be `true` or `false`.",
-            )
+          } else {
+            if (
+              isOkf03(context) &&
+              (typeof parameter.type !== "string" || parameter.type.trim() === "")
+            ) {
+              problem(
+                ["parameters", i],
+                "Each parameter needs a `type`: `{ name, type, required }`, such as `integer` or `date` (OKF 0.3).",
+              )
+            }
+            if (parameter.required !== undefined && typeof parameter.required !== "boolean") {
+              problem(
+                ["parameters", i, "required"],
+                "A parameter's `required` must be `true` or `false`.",
+              )
+            }
           }
         })
       }
@@ -368,12 +417,35 @@ function hasInlineComputation(concept: Concept): boolean {
   return found
 }
 
+/** OKF 0.3 §4.1: keys OKF doesn't define are the producer's own. Named
+ * `x-<producer>-<name>`, none can collide with a key a later OKF version
+ * defines, since OKF promises never to define one starting with `x-`. */
+export const extensionKey: Rule = {
+  id: "okf/extension-key",
+  severity: "warning",
+  description:
+    "Under OKF 0.3, frontmatter keys OKF doesn't define are named `x-<producer>-<name>`, such as `x-acme-owner` (OKF §4.1).",
+  checkFile: eachConcept((concept, fm, context) => {
+    if (!isOkf03(context)) return
+    const problem = reporter(context.report, concept)
+    for (const key of Object.keys(fm)) {
+      // `timestamp` is OKF 0.1's, which okf/legacy-v01 reports.
+      if (OKF_FIELDS.includes(key) || key.startsWith("x-") || key === "timestamp") continue
+      problem(
+        [key],
+        `\`${key}\` isn't a key OKF defines: name your own keys \`x-<producer>-<name>\`, such as ` +
+          `\`x-acme-${slugify(key) || "key"}\`, so a later OKF version can't give \`${key}\` another meaning.`,
+      )
+    }
+  }),
+}
+
 /** OKF §13: v0.1 conventions superseded in v0.2. */
 export const legacy: Rule = {
   id: "okf/legacy-v01",
   severity: "info",
   description:
-    "Flags OKF v0.1 conventions superseded in v0.2: `timestamp` and a body `# Citations` list (OKF §13).",
+    "Flags OKF v0.1 conventions superseded in v0.2: `timestamp` and a body `# Citations` list (OKF Appendix B).",
   checkFile: eachConcept((concept, fm, { report }) => {
     if (fm.timestamp !== undefined) {
       reporter(report, concept)(

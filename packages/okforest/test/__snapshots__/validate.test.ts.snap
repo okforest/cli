@@ -19,6 +19,9 @@ exports[`okforest validate > groups findings by file and exits 1 on errors 1`] =
 "empty-type.md
   2:1  error    \`type\` must be a non-empty string (got \`\`).  okf/type
 
+index.md
+  2:1  warning  This tree declares OKF 0.2; 0.3 is current. Move when you're ready: declare \`okf_version: "0.3"\` and fix what's then reported (what changed: https://github.com/open-knowledge-format/open-knowledge-format/blob/main/SPEC.md#13-changes-from-v02).  okforest/okf-version-current
+
 list-type.md
   2:1  error    \`type\` must be a non-empty string (got \`["Metric","Policy"]\`).  okf/type
 
@@ -26,9 +29,10 @@ missing-type.md
   1:1  error    Missing \`type\`, the one required key.  okf/type
 
 Rule docs
-  okf/type  https://www.okforest.ai/docs/rules/okf/type/
+  okf/type                      https://www.okforest.ai/docs/rules/okf/type/
+  okforest/okf-version-current  https://www.okforest.ai/docs/rules/okforest/okf-version-current/
   Run \`okforest rule <rule>\` for why and how to fix.
 
-✖ 3 errors, 0 warnings, 0 info · 3 concepts in 4 files
+✖ 3 errors, 1 warning, 0 info · 3 concepts in 4 files
 "
 `;

@@ -264,6 +264,9 @@ export interface TreeOutline {
   types: TypeSchema[]
   /** Its type templates whose text was given, sorted by path. */
   templates: TypeTemplate[]
+  /** The bundle-root `index.md` `okf_version` value, as written, when it
+   * was given (spec §12): it decides which version's rules apply. */
+  okfVersion?: unknown
   /** Read one of {@link markdown}, with its links resolved against the whole
    * tree, as {@link Tree} holds it. Throws for any other path. */
   read(path: string, text: string): Concept | ReservedFile

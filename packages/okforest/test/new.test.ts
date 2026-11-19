@@ -32,7 +32,7 @@ tags: [metric]
 async function metrics() {
   await write(
     "index.md",
-    '---\nokf_version: "0.2"\n---\n\n# Acme\n\n* [Metrics](metrics/index.md)\n',
+    '---\nokf_version: "0.3"\n---\n\n# Acme\n\n* [Metrics](metrics/index.md)\n',
   )
   await write("metrics/index.md", "# Metrics\n")
   await write(".okforest/types/metric.template.md", TEMPLATE)
@@ -124,14 +124,14 @@ describe("okforest new", () => {
   })
 
   it("leaves a folder that has no index alone", async () => {
-    await write("index.md", '---\nokf_version: "0.2"\n---\n# Acme\n')
+    await write("index.md", '---\nokf_version: "0.3"\n---\n# Acme\n')
     await mkdir(join(work, "notes"))
     const { stdout } = await run(["new", "Note", "notes/a.md"], { cwd: work })
     expect(await read("notes/a.md")).toBe("---\ntype: Note\n---\n\n")
     expect(stdout).toMatch(
       /^Created notes\/a\.md \(Note has no template in \.okforest\/types\/\)\.\n/,
     )
-    expect(await read("index.md")).toBe('---\nokf_version: "0.2"\n---\n# Acme\n')
+    expect(await read("index.md")).toBe('---\nokf_version: "0.3"\n---\n# Acme\n')
   })
 
   it("gives each folder it creates an index, listed in its parent's", async () => {

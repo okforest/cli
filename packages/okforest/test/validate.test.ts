@@ -33,24 +33,23 @@ describe("okforest validate", () => {
   })
 
   it("writes a versioned JSON document", async () => {
-    const result = await run(["validate", "rules/okf/status", "--format", "json"])
+    const result = await run(["validate", "rules/okf/generated", "--format", "json"])
     expect(result.code).toBe(1)
     const document = JSON.parse(result.stdout)
     expect(document).toMatchObject({
       schemaVersion: REPORT_SCHEMA_VERSION,
       tool: { name: "okforest", version: expect.any(String) },
-      path: "rules/okf/status",
+      path: "rules/okf/generated",
       summary: { ok: false, errors: 2, warnings: 0, infos: 0, concepts: 2, files: 3 },
     })
     expect(document.findings[0]).toEqual({
-      ruleId: "okf/status",
+      ruleId: "okf/generated",
       severity: "error",
-      file: "capitalized.md",
+      file: "a-string.md",
       line: 5,
       column: 1,
-      message:
-        "`status` must be `draft`, `stable`, or `deprecated` (use lowercase `draft`); got `Draft`.",
-      docs: "https://www.okforest.ai/docs/rules/okf/status/",
+      message: "`generated` must be a mapping: `generated: { by: <actor>, at: <datetime> }`.",
+      docs: "https://www.okforest.ai/docs/rules/okf/generated/",
     })
   })
 

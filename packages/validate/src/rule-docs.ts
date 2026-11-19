@@ -30,8 +30,7 @@ export interface RuleExample {
   context?: Readonly<Record<string, string>>
 }
 
-const SPEC = "https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md"
-const SPEC_0_3 = "https://github.com/open-knowledge-format/open-knowledge-format/blob/main/SPEC.md"
+const SPEC = "https://github.com/open-knowledge-format/open-knowledge-format/blob/main/SPEC.md"
 const SITE = "https://www.okforest.ai"
 
 const CHURN_BODY =
@@ -48,7 +47,7 @@ ${body}
 `
 
 const rootIndex = (entries: string) => `---
-okf_version: "0.2"
+okf_version: "0.3"
 ---
 
 # Metrics
@@ -57,6 +56,9 @@ ${entries}
 `
 
 const CHURN_ENTRY = "* [Monthly churn](churn.md) - The share of customers who cancel in a month."
+
+/** The root index of a tree on OKF 0.2, for the rules that apply only to it. */
+const rootIndex02 = (entries: string) => rootIndex(entries).replace('"0.3"', '"0.2"')
 
 /** A second concept, for rules that compare concepts, with extra
  * frontmatter lines. */
@@ -75,7 +77,7 @@ const BOTH_ENTRIES = `${CHURN_ENTRY}
 /** The rules documented so far, by ID. */
 export const ruleDocs: Readonly<Record<string, RuleDocs>> = {
   "okf/type": {
-    why: `OKF requires one key in every concept's frontmatter: \`type\`, a short string naming the kind of concept, such as \`Metric\` or \`Playbook\`. Consumers use it to route, filter, and present concepts, and a bundle is conformant only if every concept has a non-empty \`type\` ([§4.1](${SPEC}#41-frontmatter), [§11](${SPEC}#11-conformance)). Types aren't registered anywhere: pick one that describes the concept, and use it consistently.`,
+    why: `OKF requires one key in every concept's frontmatter: \`type\`, a short string naming the kind of concept, such as \`Metric\` or \`Playbook\`. Consumers use it to route, filter, and present concepts ([§4.1](${SPEC}#41-frontmatter)). Types aren't registered anywhere: pick one that describes the concept, and use it consistently. Under OKF 0.2, every markdown file other than \`index.md\` and \`log.md\` is a concept, so one without a \`type\` is an error. Under OKF 0.3, a file without one isn't a concept at all, and [\`okf/not-a-concept\`](${SITE}/docs/rules/okf/not-a-concept/) says so instead.`,
     example: {
       file: "churn.md",
       fails: `---
@@ -94,6 +96,25 @@ description: The share of customers who cancel in a month.
 
 Churn is the customers who cancel in a month, divided by the customers at its start.
 `,
+      context: { "index.md": rootIndex02(CHURN_ENTRY) },
+    },
+  },
+
+  "okf/not-a-concept": {
+    why: `OKF 0.3 says which markdown files are concepts: those whose frontmatter has a non-empty \`type\` ([§3.2](${SPEC}#32-concepts-assets-and-other-files)). A file without frontmatter, or without a \`type\`, isn't one: consumers skip it, so it isn't listed, searched, or served to AI assistants. That lets a bundle hold a \`README.md\` or \`CONTRIBUTING.md\`, but a page meant as knowledge that's missing its \`type\` disappears quietly, which is why validators say so. Give it a \`type\`, or, if it isn't knowledge, add it to [\`ignore:\`](${SITE}/docs/settings/#files-that-are-not-concepts) in \`.okforest/settings.yaml\` to say so. Under OKF 0.2, where every markdown file is a concept, [\`okf/type\`](${SITE}/docs/rules/okf/type/) and [\`okf/frontmatter\`](${SITE}/docs/rules/okf/frontmatter/) report these as errors instead.`,
+    example: {
+      file: "churn.md",
+      fails: `---
+title: Monthly churn
+description: The share of customers who cancel in a month.
+---
+
+${CHURN_BODY}
+`,
+      findings: [
+        "1:1 Not a concept: its frontmatter has no `type`, so OKF skips it. If it's knowledge, give it a `type`; if it isn't, add it to `ignore:` in .okforest/settings.yaml.",
+      ],
+      fixed: churn(),
       context: { "index.md": rootIndex(CHURN_ENTRY) },
     },
   },
@@ -250,7 +271,7 @@ Churn is the customers who cancel in a month, divided by the customers at its st
   },
 
   "okf/frontmatter": {
-    why: `Every concept is a markdown file that starts with YAML frontmatter between two \`---\` lines, followed by its markdown body ([§4](${SPEC}#4-concept-documents)). A bundle is conformant only if every file other than \`index.md\` and \`log.md\` has frontmatter that parses ([§11](${SPEC}#11-conformance)): it's where the concept's \`type\`, title, and trust signals live. A markdown file that isn't a concept, such as a README, can be left out with [\`ignore:\`](${SITE}/docs/settings/#files-that-are-not-concepts) in \`.okforest/settings.yaml\`.`,
+    why: `Every concept is a markdown file that starts with YAML frontmatter between two \`---\` lines, followed by its markdown body ([§4](${SPEC}#4-concept-documents)). Frontmatter must parse as YAML wherever it's written ([§11](${SPEC}#11-conformance)): it's where the concept's \`type\`, title, and trust signals live. Under OKF 0.2, every file other than \`index.md\` and \`log.md\` is a concept, so one without frontmatter is an error, unless it's left out with [\`ignore:\`](${SITE}/docs/settings/#files-that-are-not-concepts) in \`.okforest/settings.yaml\`, as a README is. Under OKF 0.3, a file without frontmatter isn't a concept, and [\`okf/not-a-concept\`](${SITE}/docs/rules/okf/not-a-concept/) says so instead.`,
     example: {
       file: "churn.md",
       fails: `# Monthly churn
@@ -261,12 +282,12 @@ ${CHURN_BODY}
         "1:1 No frontmatter: a concept must start with a `---` YAML block declaring at least `type`. If this is not a concept, add it to `ignore:` in .okforest/settings.yaml.",
       ],
       fixed: churn(),
-      context: { "index.md": rootIndex(CHURN_ENTRY) },
+      context: { "index.md": rootIndex02(CHURN_ENTRY) },
     },
   },
 
   "okf/index-frontmatter": {
-    why: `An \`index.md\` is a list of what its directory holds, not a concept, so it carries no frontmatter ([§8](${SPEC}#8-index-files)). The exception is the bundle-root \`index.md\`, which declares the OKF version the bundle targets ([§12](${SPEC}#12-versioning)). Under OKF 0.2 that's all it may hold. From [OKF 0.3](${SPEC_0_3}#81-bundle-metadata), it may also give the bundle's \`title\`, a \`description\` of what it covers, its \`license\`, and extension keys. A root \`index.md\` that declares 0.2, or no version, keeps 0.2's rule, so a tree moves to 0.3 when it says so.`,
+    why: `An \`index.md\` is a list of what its directory holds, not a concept, so it carries no frontmatter ([§8](${SPEC}#8-index-files)). The exception is the bundle-root \`index.md\`, which declares the OKF version the bundle targets ([§12](${SPEC}#12-versioning)). Under OKF 0.2 that's all it may hold. From [OKF 0.3](${SPEC}#81-bundle-metadata), it may also give the bundle's \`title\`, a \`description\` of what it covers, its \`license\`, and extension keys. A root \`index.md\` that declares 0.2, or no version, keeps 0.2's rule, so a tree moves to 0.3 when it says so.`,
     example: {
       file: "index.md",
       fails: `---
@@ -339,7 +360,7 @@ ${CHURN_ENTRY}
   },
 
   "okf/okf-version": {
-    why: `A bundle may declare the OKF version it targets, with \`okf_version: "0.2"\` in the frontmatter of its root \`index.md\`, the one place an index may have frontmatter ([§12](${SPEC}#12-versioning)). It's optional, so this is only a note, but it tells consumers which rules the bundle was written to.`,
+    why: `A bundle may declare the OKF version it targets, with \`okf_version: "0.3"\` in the frontmatter of its root \`index.md\` ([§8.1](${SPEC}#81-bundle-metadata), [§12](${SPEC}#12-versioning)). It's optional, so this is only a note, but it tells consumers which version's rules the bundle was written to: one that declares none is read as OKF 0.2. Quote it, so YAML reads \`0.3\` as text, not a number. Whether the version is the current one is [\`okforest/okf-version-current\`](${SITE}/docs/rules/okforest/okf-version-current/)'s to say.`,
     example: {
       file: "index.md",
       fails: `# Metrics
@@ -347,10 +368,35 @@ ${CHURN_ENTRY}
 ${CHURN_ENTRY}
 `,
       findings: [
-        '1:1 Declare the OKF version this bundle targets: frontmatter `okf_version: "0.2"`.',
+        '1:1 Declare the OKF version this bundle targets: frontmatter `okf_version: "0.3"`. Until it does, it\'s read as OKF 0.2.',
       ],
       fixed: rootIndex(CHURN_ENTRY),
       context: { "churn.md": churn() },
+    },
+  },
+
+  "okf/log-frontmatter": {
+    why: `A \`log.md\` is the history of changes in its directory: dates, newest first, each with its entries ([§9](${SPEC}#9-log-files)). OKF 0.3 says it has no frontmatter, as an \`index.md\` in a folder has none: what it records is in its body.`,
+    example: {
+      file: "log.md",
+      fails: `---
+title: History
+---
+
+# Log
+
+## 2026-10-01
+
+* **Creation:** Added [Monthly churn](churn.md).
+`,
+      findings: ["1:1 log.md has no frontmatter under OKF 0.3: remove this block."],
+      fixed: `# Log
+
+## 2026-10-01
+
+* **Creation:** Added [Monthly churn](churn.md).
+`,
+      context: { "index.md": rootIndex(CHURN_ENTRY), "churn.md": churn() },
     },
   },
 
@@ -385,23 +431,25 @@ ${CHURN_ENTRY}
   },
 
   "okf/status": {
-    why: `\`status\` says where a concept is in its life: \`draft\` (not reviewed yet, possibly incomplete), \`stable\` (ready to use, and the default), or \`deprecated\` (kept for links and history, no longer current) ([§5.4](${SPEC}#54-lifecycle-status)). Consumers act on these three values, such as warning that an answer rests on a draft, so any other value can't be understood.`,
+    why: `\`status\` says where a concept is in its life: \`draft\` (not reviewed yet, possibly incomplete), \`stable\` (ready to use, and the default), or \`deprecated\` (kept for links and history, no longer current) ([§5.4](${SPEC}#54-lifecycle-status-and-superseded_by)). Consumers act on these three values, such as warning that an answer rests on a draft. OKF 0.3 says a value it doesn't define isn't \`stable\`: a consumer keeps it, but leaves the concept out of current knowledge. \`superseded_by\` names the concept that replaces a deprecated one, and means nothing without \`status: deprecated\`.`,
     example: {
       file: "churn.md",
       fails: churn("status: published\n"),
-      findings: ["5:1 `status` must be `draft`, `stable`, or `deprecated`; got `published`."],
+      findings: [
+        "5:1 `status` must be `draft`, `stable`, or `deprecated`; got `published`, which isn't `stable`, so it's left out of current knowledge.",
+      ],
       fixed: churn("status: stable\n"),
       context: { "index.md": rootIndex(CHURN_ENTRY) },
     },
   },
 
   "okf/datetime": {
-    why: `OKF's timestamps (\`generated.at\`, \`verified.at\`, \`stale_after\`, and the sources' \`last_modified\` and \`usage_window\`) are ISO 8601 datetimes ([§5](${SPEC}#5-provenance-trust-and-lifecycle)). With an explicit UTC offset, such as \`Z\`, an instant means the same everywhere, and whether a concept is stale is a plain comparison ([§5.5](${SPEC}#55-lifecycle-stale_after)). A date alone, or a time with no offset, depends on where it's read.`,
+    why: `OKF's timestamps (\`generated.at\`, \`verified.at\`, \`stale_after\`, and the sources' \`last_modified\` and \`usage_window\`) are ISO 8601 date-times with an explicit UTC offset, such as \`2026-06-30T14:00:00Z\`, or dates, such as \`2026-06-30\`, which mean the start of that day in UTC ([§5](${SPEC}#5-provenance-trust-and-lifecycle)). Either way an instant means the same everywhere, and whether a concept is stale is a plain comparison ([§5.5](${SPEC}#55-lifecycle-stale_after)). A time with no offset depends on where it's read.`,
     example: {
       file: "churn.md",
-      fails: churn("stale_after: 2026-12-31\n"),
+      fails: churn("stale_after: 2026-12-31T00:00:00\n"),
       findings: [
-        "5:1 `stale_after` must be an ISO 8601 datetime with an explicit UTC offset, such as `2026-12-31T00:00:00Z` (got `2026-12-31`).",
+        "5:1 `stale_after` must be an ISO 8601 date-time with an explicit UTC offset, such as `2026-12-31T00:00:00Z`, or a date, `2026-12-31` (got `2026-12-31T00:00:00`).",
       ],
       fixed: churn("stale_after: 2026-12-31T00:00:00Z\n"),
       context: { "index.md": rootIndex(CHURN_ENTRY) },
@@ -409,7 +457,7 @@ ${CHURN_ENTRY}
   },
 
   "okf/attested-computation": {
-    why: `An Attested Computation carries a sanctioned way to compute a value, so a consumer can confirm an agent ran it rather than improvising its own ([§10](${SPEC}#10-attested-computations-concept)). Its contract is in the frontmatter ([§10.2](${SPEC}#102-contract-fields)): \`runtime\` (required: it defines what \`parameters\` mean), the \`parameters\` an agent may fill (\`{ name, type, required }\`), an \`executor\` that runs the computation and returns a receipt, and an \`attester\` that checks the receipt. The computation itself is a code block under \`# Computation\`, or a file named by \`computation\`.`,
+    why: `An Attested Computation carries a sanctioned way to compute a value, so a consumer can confirm an agent ran it rather than improvising its own ([§10](${SPEC}#10-attested-computations)). Its contract is in the frontmatter ([§10.2](${SPEC}#102-contract-fields)): \`runtime\` (required: it defines what \`parameters\` mean), the \`parameters\` an agent may fill (\`{ name, type, required }\`), an \`executor\` that runs the computation and returns a receipt, and an \`attester\` that checks the receipt. The computation itself is a code block under \`# Computation\`, or a file named by \`computation\`.`,
     example: {
       file: "revenue.md",
       fails: `---
@@ -503,13 +551,26 @@ ${CHURN_BODY}
     },
   },
 
+  "okf/extension-key": {
+    why: `OKF lets a bundle add any frontmatter keys it likes ([§4.1](${SPEC}#41-frontmatter)), and consumers keep the ones they don't know. OKF 0.3 also promises never to define a key that starts with \`x-\`, and asks producers to name their own keys \`x-<producer>-<name>\`, such as \`x-acme-owner\`. A key named that way can't collide with one a later OKF version defines and gives another meaning, as \`superseded_by\` was added in 0.3. A type's own fields, in its [schema](${SITE}/docs/types/), are extension keys too. Under OKF 0.2, which didn't ask, nothing is reported.`,
+    example: {
+      file: "churn.md",
+      fails: churn("owner: /people/roles/cfo\n"),
+      findings: [
+        "5:1 `owner` isn't a key OKF defines: name your own keys `x-<producer>-<name>`, such as `x-acme-owner`, so a later OKF version can't give `owner` another meaning.",
+      ],
+      fixed: churn("x-acme-owner: /people/roles/cfo\n"),
+      context: { "index.md": rootIndex(CHURN_ENTRY) },
+    },
+  },
+
   "okf/actor": {
-    why: `The fields that record who did something (\`generated.by\` and \`verified[].by\`) use one actor convention ([§7](${SPEC}#7-actor-convention)): \`human:<id>\` for a person, \`process:<id>\` for an automated process, and \`<producer>/<version>\` for an agent or tool. Trust tiers key off the \`human:\` prefix ([§5.3](${SPEC}#53-trust-tiers)), so a person's confirmation counts as human-reviewed only when it's written that way.`,
+    why: `The fields that record who did something (\`generated.by\`, \`verified[].by\`, and a source's \`author\`) use one actor convention ([§7](${SPEC}#7-actor-convention)): \`human:<id>\` for a person, \`team:<id>\` for a group of people, \`process:<id>\` for an automated process, and \`<producer>/<version>\` for an agent or tool. Other \`<scheme>:<id>\` actors are allowed, and count as non-human. Trust tiers key off the \`human:\` prefix ([§5.3](${SPEC}#53-trust-tiers)), so a person's confirmation counts as human-reviewed only when it's written that way.`,
     example: {
       file: "churn.md",
       fails: churn("verified: { by: Jane Smith, at: 2026-09-01T00:00:00Z }\n"),
       findings: [
-        "5:13 `Jane Smith` is not an actor: use `human:<id>` for a person, `process:<id>` for an automated process, or `<producer>/<version>` for an agent or tool.",
+        "5:13 `Jane Smith` is not an actor: use `human:<id>` for a person, `team:<id>` for a group, `process:<id>` for an automated process, or `<producer>/<version>` for an agent or tool.",
       ],
       fixed: churn("verified: { by: human:jane@acme.example, at: 2026-09-01T00:00:00Z }\n"),
       context: { "index.md": rootIndex(CHURN_ENTRY) },
@@ -544,7 +605,7 @@ ${CHURN_BODY}
   },
 
   "okf/legacy-v01": {
-    why: `OKF v0.2 replaced two v0.1 conventions ([§13.1](${SPEC}#131-breaking-changes)): \`timestamp\` became \`generated: { by, at }\`, and a body \`# Citations\` list became \`sources\` in the frontmatter, cited with footnotes. Consumers may still read the old forms, so this is only a note: a sign the concept predates v0.2.`,
+    why: `OKF v0.2 replaced two v0.1 conventions ([Appendix B.1](${SPEC}#b1-breaking-changes)): \`timestamp\` became \`generated: { by, at }\`, and a body \`# Citations\` list became \`sources\` in the frontmatter, cited with footnotes. Consumers may still read the old forms, so this is only a note: a sign the concept predates v0.2.`,
     example: {
       file: "churn.md",
       fails: churn("timestamp: 2026-06-01T00:00:00Z\n"),
@@ -553,6 +614,19 @@ ${CHURN_BODY}
       ],
       fixed: churn("generated: { by: human:jane@acme.example, at: 2026-06-01T00:00:00Z }\n"),
       context: { "index.md": rootIndex(CHURN_ENTRY) },
+    },
+  },
+
+  "okforest/okf-version-current": {
+    why: `A bundle's root \`index.md\` declares the OKF version it was written to ([§12](${SPEC}#12-versioning)), and OKForest checks it by that version's rules, so a tree moves to a new version when it says so, not when a tool updates. OKF doesn't ask a bundle to move, which is why this is an OKForest convention: a tree on an older version is told the current one, \`0.3\`, to move when it's ready. Declare the new version, then fix what's reported; OKF lists [what changed](${SPEC}#13-changes-from-v02). A tree that declares a version newer than this validator knows is checked by the newest rules it does know, so update \`okforest\`, or the [GitHub Action](${SITE}/docs/github-action/).`,
+    example: {
+      file: "index.md",
+      fails: rootIndex02(CHURN_ENTRY),
+      findings: [
+        "2:1 This tree declares OKF 0.2; 0.3 is current. Move when you're ready: declare `okf_version: \"0.3\"` and fix what's then reported (what changed: https://github.com/open-knowledge-format/open-knowledge-format/blob/main/SPEC.md#13-changes-from-v02).",
+      ],
+      fixed: rootIndex(CHURN_ENTRY),
+      context: { "churn.md": churn() },
     },
   },
 
@@ -585,15 +659,15 @@ description: What Acme's teams know about customers, billing, and retention.
   },
 
   "okforest/type-schema": {
-    why: `OKF lets each team name its types and add any fields it likes ([§4.1](${SPEC}#41-frontmatter)), so nothing in the format keeps a team's \`Metric\` concepts alike. A JSON Schema for the type, in \`.okforest/types/\` (\`metric.schema.json\`), says which fields they carry, what each may hold, and which they must have; every concept of that type must match it. The schema's \`title\` is the type, as concepts write it in \`type\`. OKF's own fields (\`title\`, \`tags\`, \`verified\`, ...) are left to the \`okf/*\` rules, so a schema lists only its type's fields, and can still name one, such as \`tags\`, to narrow it. A schema that can't be used (not JSON, no \`title\`, a second schema for the same type, a \`$ref\` that leads nowhere) is reported on its file, and no concept is checked against it.`,
+    why: `OKF lets each team name its types and add any fields it likes ([§4.1](${SPEC}#41-frontmatter)), so nothing in the format keeps a team's \`Metric\` concepts alike. A JSON Schema for the type, in \`.okforest/types/\` (\`metric.schema.json\`), says which fields they carry, what each may hold, and which they must have; every concept of that type must match it. The schema's \`title\` is the type, as concepts write it in \`type\`. OKF's own fields (\`title\`, \`tags\`, \`verified\`, ...) are left to the \`okf/*\` rules, so a schema lists only its type's fields, and can still name one, such as \`tags\`, to narrow it. Under OKF 0.3, a type's own fields are extension keys, named \`x-<producer>-<name>\` ([§4.1](${SPEC}#41-frontmatter)), as \`x-acme-unit\` is here. A schema that can't be used (not JSON, no \`title\`, a second schema for the same type, a \`$ref\` that leads nowhere) is reported on its file, and no concept is checked against it.`,
     example: {
       file: "churn.md",
-      fails: churn("unit: percentage\n"),
+      fails: churn("x-acme-unit: percentage\n"),
       findings: [
-        "2:1 Missing `owner`, which the Metric type requires.",
-        "5:1 `unit` must be one of `percent`, `count`, `usd` (got `percentage`).",
+        "2:1 Missing `x-acme-owner`, which the Metric type requires.",
+        "5:1 `x-acme-unit` must be one of `percent`, `count`, `usd` (got `percentage`).",
       ],
-      fixed: churn("unit: percent\nowner: data-team@acme.example\n"),
+      fixed: churn("x-acme-unit: percent\nx-acme-owner: data-team@acme.example\n"),
       context: {
         "index.md": rootIndex(CHURN_ENTRY),
         ".okforest/types/metric.schema.json": `{
@@ -602,10 +676,10 @@ description: What Acme's teams know about customers, billing, and retention.
   "description": "A number the business tracks.",
   "type": "object",
   "properties": {
-    "unit": { "enum": ["percent", "count", "usd"] },
-    "owner": { "type": "string", "format": "email" }
+    "x-acme-unit": { "enum": ["percent", "count", "usd"] },
+    "x-acme-owner": { "type": "string", "format": "email" }
   },
-  "required": ["unit", "owner"]
+  "required": ["x-acme-unit", "x-acme-owner"]
 }
 `,
       },

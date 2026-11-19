@@ -2,14 +2,15 @@
 
 exports[`rule fixtures > okf/actor 1`] = `
 [
-  "actors.md:5:14 warning okf/actor \`Jane Smith\` is not an actor: use \`human:<id>\` for a person, \`process:<id>\` for an automated process, or \`<producer>/<version>\` for an agent or tool.",
-  "actors.md:7:7 warning okf/actor \`jane\` is not an actor: use \`human:<id>\` for a person, \`process:<id>\` for an automated process, or \`<producer>/<version>\` for an agent or tool.",
+  "actors.md:5:14 warning okf/actor \`Jane Smith\` is not an actor: use \`human:<id>\` for a person, \`team:<id>\` for a group, \`process:<id>\` for an automated process, or \`<producer>/<version>\` for an agent or tool.",
+  "actors.md:7:7 warning okf/actor \`jane\` is not an actor: use \`human:<id>\` for a person, \`team:<id>\` for a group, \`process:<id>\` for an automated process, or \`<producer>/<version>\` for an agent or tool.",
 ]
 `;
 
 exports[`rule fixtures > okf/attested-computation 1`] = `
 [
   "bad-contract.md:7:5 error okf/attested-computation Each parameter must be a mapping with a \`name\`: \`{ name, type, required }\`.",
+  "bad-contract.md:8:5 error okf/attested-computation Each parameter needs a \`type\`: \`{ name, type, required }\`, such as \`integer\` or \`date\` (OKF 0.3).",
   "bad-contract.md:8:22 error okf/attested-computation A parameter's \`required\` must be \`true\` or \`false\`.",
   "bad-contract.md:9:1 error okf/attested-computation \`executor\` must be a mapping with a \`resource\` path.",
   "bad-contract.md:10:1 error okf/attested-computation \`computation\` must be a path to the file holding the computation.",
@@ -30,17 +31,21 @@ exports[`rule fixtures > okf/broken-link 1`] = `
 
 exports[`rule fixtures > okf/datetime 1`] = `
 [
-  "dates.md:5:1 error okf/datetime \`stale_after\` must be an ISO 8601 datetime with an explicit UTC offset, such as \`2026-12-31T00:00:00Z\` (got \`2026-12-31\`).",
-  "dates.md:6:30 error okf/datetime \`generated.at\` must be an ISO 8601 datetime with an explicit UTC offset, such as \`2026-12-31T00:00:00Z\` (got \`2026-06-01T12:00:00\`).",
-  "dates.md:7:29 error okf/datetime \`verified.at\` must be an ISO 8601 datetime with an explicit UTC offset, such as \`2026-12-31T00:00:00Z\` (got \`2026-02-30T00:00:00Z\`).",
-  "dates.md:10:5 error okf/datetime \`sources[0].last_modified\` must be an ISO 8601 datetime with an explicit UTC offset, such as \`2026-12-31T00:00:00Z\` (got \`June 2026\`).",
-  "dates.md:11:49 error okf/datetime \`sources[0].usage_window.to\` must be an ISO 8601 datetime with an explicit UTC offset, such as \`2026-12-31T00:00:00Z\` (got \`2026-05-31\`).",
+  "dates.md:6:30 error okf/datetime \`generated.at\` must be an ISO 8601 date-time with an explicit UTC offset, such as \`2026-12-31T00:00:00Z\`, or a date, \`2026-12-31\` (got \`2026-06-01T12:00:00\`).",
+  "dates.md:7:29 error okf/datetime \`verified.at\` must be an ISO 8601 date-time with an explicit UTC offset, such as \`2026-12-31T00:00:00Z\`, or a date, \`2026-12-31\` (got \`2026-02-30T00:00:00Z\`).",
+  "dates.md:10:5 error okf/datetime \`sources[0].last_modified\` must be an ISO 8601 date-time with an explicit UTC offset, such as \`2026-12-31T00:00:00Z\`, or a date, \`2026-12-31\` (got \`June 2026\`).",
 ]
 `;
 
 exports[`rule fixtures > okf/description 1`] = `
 [
   "no-description.md:1:1 warning okf/description No \`description\`: index entries, search snippets, and previews use it.",
+]
+`;
+
+exports[`rule fixtures > okf/extension-key 1`] = `
+[
+  "example.md:5:1 warning okf/extension-key \`owner\` isn't a key OKF defines: name your own keys \`x-<producer>-<name>\`, such as \`x-acme-owner\`, so a later OKF version can't give \`owner\` another meaning.",
 ]
 `;
 
@@ -65,6 +70,7 @@ exports[`rule fixtures > okf/frontmatter 1`] = `
   "a-list.md:2:1 error okf/frontmatter Frontmatter must be a YAML mapping of keys to values.",
   "bad-yaml.md:3:12 error okf/frontmatter Invalid YAML: Flow sequence in block collection must be sufficiently indented and end with a ]",
   "duplicate-keys.md:4:1 error okf/frontmatter Invalid YAML: Map keys must be unique",
+  "index.md:2:1 warning okforest/okf-version-current This tree declares OKF 0.2; 0.3 is current. Move when you're ready: declare \`okf_version: "0.3"\` and fix what's then reported (what changed: https://github.com/open-knowledge-format/open-knowledge-format/blob/main/SPEC.md#13-changes-from-v02).",
   "no-frontmatter.md:1:1 error okf/frontmatter No frontmatter: a concept must start with a \`---\` YAML block declaring at least \`type\`. If this is not a concept, add it to \`ignore:\` in .okforest/settings.yaml.",
   "unclosed.md:1:1 error okf/frontmatter Frontmatter block is not closed: add a \`---\` line after the last key.",
 ]
@@ -86,6 +92,7 @@ exports[`rule fixtures > okf/index-entries 1`] = `
 
 exports[`rule fixtures > okf/index-frontmatter 1`] = `
 [
+  "index.md:2:1 warning okforest/okf-version-current This tree declares OKF 0.2; 0.3 is current. Move when you're ready: declare \`okf_version: "0.3"\` and fix what's then reported (what changed: https://github.com/open-knowledge-format/open-knowledge-format/blob/main/SPEC.md#13-changes-from-v02).",
   "index.md:3:1 error okf/index-frontmatter Under OKF 0.2, the root index.md frontmatter may only declare \`okf_version\`; remove \`title\`, or declare \`okf_version: "0.3"\`.",
   "sub/index.md:1:1 error okf/index-frontmatter Only the bundle-root index.md may have frontmatter; remove this block.",
 ]
@@ -111,6 +118,12 @@ exports[`rule fixtures > okf/log-date 1`] = `
 ]
 `;
 
+exports[`rule fixtures > okf/log-frontmatter 1`] = `
+[
+  "log.md:1:1 error okf/log-frontmatter log.md has no frontmatter under OKF 0.3: remove this block.",
+]
+`;
+
 exports[`rule fixtures > okf/log-order 1`] = `
 [
   "log.md:6:1 warning okf/log-order 2026-06-01 comes after 2026-05-01; list dates newest first.",
@@ -118,9 +131,16 @@ exports[`rule fixtures > okf/log-order 1`] = `
 ]
 `;
 
+exports[`rule fixtures > okf/not-a-concept 1`] = `
+[
+  "README.md:1:1 warning okf/not-a-concept Not a concept: it has no frontmatter, so OKF skips it. If it's knowledge, give it a \`type\`; if it isn't, add it to \`ignore:\` in .okforest/settings.yaml.",
+  "untyped.md:1:1 warning okf/not-a-concept Not a concept: its frontmatter has no \`type\`, so OKF skips it. If it's knowledge, give it a \`type\`; if it isn't, add it to \`ignore:\` in .okforest/settings.yaml.",
+]
+`;
+
 exports[`rule fixtures > okf/okf-version 1`] = `
 [
-  "index.md:1:1 info okf/okf-version Declare the OKF version this bundle targets: frontmatter \`okf_version: "0.2"\`.",
+  "index.md:1:1 info okf/okf-version Declare the OKF version this bundle targets: frontmatter \`okf_version: "0.3"\`. Until it does, it's read as OKF 0.2.",
 ]
 `;
 
@@ -138,8 +158,8 @@ exports[`rule fixtures > okf/sources 1`] = `
 
 exports[`rule fixtures > okf/status 1`] = `
 [
-  "capitalized.md:5:1 error okf/status \`status\` must be \`draft\`, \`stable\`, or \`deprecated\` (use lowercase \`draft\`); got \`Draft\`.",
-  "unknown.md:5:1 error okf/status \`status\` must be \`draft\`, \`stable\`, or \`deprecated\`; got \`published\`.",
+  "capitalized.md:5:1 warning okf/status \`status\` must be \`draft\`, \`stable\`, or \`deprecated\` (use lowercase \`draft\`); got \`Draft\`, which isn't \`stable\`, so it's left out of current knowledge.",
+  "unknown.md:5:1 warning okf/status \`status\` must be \`draft\`, \`stable\`, or \`deprecated\`; got \`published\`, which isn't \`stable\`, so it's left out of current knowledge.",
 ]
 `;
 
@@ -152,6 +172,7 @@ exports[`rule fixtures > okf/title 1`] = `
 exports[`rule fixtures > okf/type 1`] = `
 [
   "empty-type.md:2:1 error okf/type \`type\` must be a non-empty string (got \`\`).",
+  "index.md:2:1 warning okforest/okf-version-current This tree declares OKF 0.2; 0.3 is current. Move when you're ready: declare \`okf_version: "0.3"\` and fix what's then reported (what changed: https://github.com/open-knowledge-format/open-knowledge-format/blob/main/SPEC.md#13-changes-from-v02).",
   "list-type.md:2:1 error okf/type \`type\` must be a non-empty string (got \`["Metric","Policy"]\`).",
   "missing-type.md:1:1 error okf/type Missing \`type\`, the one required key.",
 ]
@@ -182,6 +203,12 @@ exports[`rule fixtures > okforest/diagram-unchecked 1`] = `
 exports[`rule fixtures > okforest/mermaid-syntax 1`] = `
 [
   "diagram.md:14:1 error okforest/mermaid-syntax Mermaid syntax error: Parse error on line 3: Expecting 'AMP', 'COLON', 'PIPE', 'TESTSTR', ..., got 'EOF'",
+]
+`;
+
+exports[`rule fixtures > okforest/okf-version-current 1`] = `
+[
+  "index.md:2:1 warning okforest/okf-version-current This tree declares OKF 0.2; 0.3 is current. Move when you're ready: declare \`okf_version: "0.3"\` and fix what's then reported (what changed: https://github.com/open-knowledge-format/open-knowledge-format/blob/main/SPEC.md#13-changes-from-v02).",
 ]
 `;
 
@@ -253,6 +280,7 @@ exports[`rule fixtures > okforest/type-schema 1`] = `
   "acme.md:8:1 error okforest/type-schema \`seats\`: 0 is less than 1.",
   "acme.md:9:15 error okforest/type-schema \`regions[1]\` must be a string (got a number).",
   "acme.md:10:1 error okforest/type-schema \`renewal\` isn't a field of the Customer type.",
+  "index.md:2:1 warning okforest/okf-version-current This tree declares OKF 0.2; 0.3 is current. Move when you're ready: declare \`okf_version: "0.3"\` and fix what's then reported (what changed: https://github.com/open-knowledge-format/open-knowledge-format/blob/main/SPEC.md#13-changes-from-v02).",
 ]
 `;
 
