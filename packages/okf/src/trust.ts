@@ -30,7 +30,7 @@ export function parseTimestamp(value: unknown): number | undefined {
       value.trim(),
     )
   if (!match) return undefined
-  const [, year, month, day, hour, minute, second, , offset] = match
+  const [, year, month, day, hour, minute, second] = match
   const date = Date.UTC(Number(year), Number(month) - 1, Number(day))
   const check = new Date(date)
   if (check.getUTCMonth() !== Number(month) - 1 || check.getUTCDate() !== Number(day)) {
@@ -38,8 +38,9 @@ export function parseTimestamp(value: unknown): number | undefined {
   }
   if (hour === undefined) return date
   if (Number(hour) > 23 || Number(minute) > 59 || Number(second) > 60) return undefined
+  // The pattern requires an offset with a time, so this reads one instant.
   const instant = Date.parse(value.trim().replace(" ", "T"))
-  return Number.isNaN(instant) || offset === undefined ? undefined : instant
+  return Number.isNaN(instant) ? undefined : instant
 }
 
 /**

@@ -43,6 +43,16 @@ describe("parseTree", () => {
     ])
   })
 
+  it("reads one sources entry, written without a list, as a path field too (OKF §11.2)", () => {
+    const t = tree({
+      "a.md": concept("", "type: Note\nsources: { resource: b.md }"),
+      "b.md": concept(),
+    })
+    expect(t.concept("a")?.paths.map((p) => [p.field, p.resolved, p.line])).toEqual([
+      ["sources.resource", "b.md", 3],
+    ])
+  })
+
   it("resolves a 0.2 bundle's bare path fields from the bundle root, as 0.2 wrote them (OKF §12.1)", () => {
     const files = (version: string) => ({
       "index.md": `---\nokf_version: "${version}"\n---\n`,
@@ -52,6 +62,12 @@ describe("parseTree", () => {
     const target = (version: string) =>
       tree(files(version)).concept("metrics/revenue")?.paths[0]?.resolved
     expect(target("0.2")).toBe("metrics/margin.md")
+    // Found from neither: reported where the file's folder puts it.
+    const missing = tree({
+      ...files("0.2"),
+      "metrics/revenue.md": concept("", "type: Metric\nsuperseded_by: metrics/gone.md"),
+    }).concept("metrics/revenue")?.paths[0]
+    expect(missing).toMatchObject({ resolved: "metrics/metrics/gone.md", exists: false })
     expect(target("0.3")).toBe("metrics/metrics/margin.md")
     expect(
       outlineTree(Object.keys(files("0.2"))).read(

@@ -170,13 +170,18 @@ describe("trust and lifecycle helpers", () => {
     expect(isStaleAt(undefined, now)).toBe(false)
     expect(isStaleAt(null, now)).toBe(false)
     expect(isStaleAt("", now)).toBe(false)
+    expect(isStaleAt([], now)).toBe(false)
   })
 
   it("reads timestamps as OKF writes them: a date-time with an offset, or a date (OKF §5)", () => {
     expect(parseTimestamp("2026-06-30")).toBe(Date.UTC(2026, 5, 30))
     expect(parseTimestamp("2026-06-30T14:00:00Z")).toBe(Date.UTC(2026, 5, 30, 14))
     expect(parseTimestamp("2026-06-30T14:00:00.5+02:00")).toBe(Date.UTC(2026, 5, 30, 12, 0, 0, 500))
+    expect(parseTimestamp("2026-06-30 14:00:00z")).toBe(Date.UTC(2026, 5, 30, 14))
     for (const bad of [
+      "2026-06-30T24:00:00Z",
+      "2026-06-30T14:60:00Z",
+      "2026-06-30T23:59:60Z",
       "2026-06-30T14:00:00",
       "2026-02-30",
       "June 30, 2026",
