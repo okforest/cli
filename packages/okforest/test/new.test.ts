@@ -79,7 +79,7 @@ describe("okforest new", () => {
     expect(code).toBe(0)
     expect(await read("policies/refunds.md")).toBe("---\ntype: Policy\ntitle: Refunds\n---\n\n")
     expect(stdout).toContain(
-      "Created policies/refunds.md (Policy has no template in .okforest/types/).",
+      "Created policies/refunds.md (Policy has no template in .okforest/types/),",
     )
   })
 
@@ -123,10 +123,52 @@ describe("okforest new", () => {
     expect(stdout).toContain("okf/okf-version")
   })
 
-  it("leaves a folder without an index alone", async () => {
+  it("leaves a folder that has no index alone", async () => {
     await write("index.md", '---\nokf_version: "0.2"\n---\n# Acme\n')
-    await run(["new", "Note", "notes/a.md"], { cwd: work })
+    await mkdir(join(work, "notes"))
+    const { stdout } = await run(["new", "Note", "notes/a.md"], { cwd: work })
     expect(await read("notes/a.md")).toBe("---\ntype: Note\n---\n\n")
+    expect(stdout).toMatch(
+      /^Created notes\/a\.md \(Note has no template in \.okforest\/types\/\)\.\n/,
+    )
+    expect(await read("index.md")).toBe('---\nokf_version: "0.2"\n---\n# Acme\n')
+  })
+
+  it("gives each folder it creates an index, listed in its parent's", async () => {
+    await metrics()
+    const persona = await run(
+      [
+        "new",
+        "Persona",
+        "metrics/buyer-personas/cfo.md",
+        "--title",
+        "CFO",
+        "--description",
+        "Signs.",
+      ],
+      { cwd: work },
+    )
+    expect(persona.code).toBe(0)
+    expect(await read("metrics/buyer-personas/index.md")).toBe(
+      "# Buyer personas\n\n* [CFO](cfo.md) - Signs.\n",
+    )
+    expect(await read("metrics/index.md")).toBe(
+      "# Metrics\n* [Buyer personas](buyer-personas/index.md)\n",
+    )
+    expect(persona.stdout).toMatch(
+      /^Created metrics\/buyer-personas\/cfo\.md \(Persona has no template in \.okforest\/types\/\), with metrics\/buyer-personas\/index\.md, listed in metrics\/index\.md\.\n/,
+    )
+    // Two folders at once, under the root.
+    const budget = await run(["new", "Budget", "finance/budgets/2027.md"], { cwd: work })
+    expect(await read("finance/budgets/index.md")).toBe("# Budgets\n\n* [2027](2027.md)\n")
+    expect(await read("finance/index.md")).toBe("# Finance\n\n* [Budgets](budgets/index.md)\n")
+    expect(await read("index.md")).toMatch(/\* \[Finance\]\(finance\/index\.md\)\n$/)
+    expect(budget.stdout).toContain(
+      "with finance/index.md and finance/budgets/index.md, listed in index.md.",
+    )
+    // The indexes it wrote have no findings of their own.
+    expect(budget.stdout).not.toMatch(/index\.md\n {2}\d/)
+    expect((await run(["validate", "."], { cwd: work })).stdout).not.toContain("okf/index")
   })
 
   it.each([

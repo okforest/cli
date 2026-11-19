@@ -77,16 +77,21 @@ export const indexFrontmatter: Rule = {
   },
 }
 
-/** OKF §8: index entries are list items that start with a link. */
+/** OKF §8: index entries are list items that start with a link. An index
+ * that lists nothing is reported only when its directory has something to
+ * list, so a new, empty tree has no findings. */
 export const indexEntries: Rule = {
   id: "okf/index-entries",
   severity: "warning",
   description:
     "index.md lists its directory as `* [Title](path) - description` entries under headings (OKF §8).",
-  checkFile(index, { report }) {
+  checkFile(index, { outline, report }) {
     if (index.kind !== "index") return
     const items = topLevelItems(index)
-    if (items.length === 0) {
+    const prefix = index.directory === "" ? "" : `${index.directory}/`
+    const own = new Set([`${prefix}index.md`, `${prefix}log.md`])
+    const contents = outline.markdown.some((path) => path.startsWith(prefix) && !own.has(path))
+    if (items.length === 0 && contents) {
       report({
         file: index.path,
         line: index.bodyStartLine,

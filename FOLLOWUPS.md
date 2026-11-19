@@ -72,9 +72,11 @@ Options if a real tree ever needs more:
   (the brief's "index builder"), and append to `log.md`.
 - **`okforest freshness`**: stale, draft, and unverified concepts (mirrors the
   MCP `freshness_report` tool).
-- **More templates** for `init`: department trees (HR, Sales, Finance, IT) and
-  product; a starter type registry once the standards format exists; `--force`
-  for non-empty directories.
+- **More template repositories**, beside
+  [template-company-knowledge](https://github.com/okforest/template-company-knowledge):
+  department trees (HR, Sales, Finance, IT) and product; a starter type
+  registry once the standards format exists. `init --force` for non-empty
+  directories.
 
 ## Upstream
 

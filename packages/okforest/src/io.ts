@@ -24,10 +24,6 @@ export function paint(io: Io, style: Style, text: string): string {
 }
 
 // src/*.ts and the bundled dist/cli.mjs both sit one level below the package root.
-const packageRoot = new URL("../", import.meta.url)
-
 export const VERSION: string = (
   createRequire(import.meta.url)("../package.json") as { version: string }
 ).version
-
-export const TEMPLATES_DIR = new URL("templates/", packageRoot)

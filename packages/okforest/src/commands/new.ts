@@ -14,8 +14,9 @@ from the type's template, ${TYPES_FOLDER}<type>.template.md, as written: its
 front matter in its order, its body, and its guidance. The title and
 description given replace the template's. A type without a template starts
 with just its type, title, and description. When the file's folder has an
-index.md, the new concept is listed in it. Then the new page is checked, so
-what's left to fill in shows at once.
+index.md, the new concept is listed in it; a folder it creates gets an
+index.md listing the page, and is listed in its parent's. Then the new page
+is checked, so what's left to fill in shows at once.
 
 Options
   --title <title>        The concept's title.
@@ -71,33 +72,57 @@ export async function newCommand(args: readonly string[], io: Io): Promise<numbe
     },
     template,
   )
+  // The folders this page creates, outermost first.
+  const created: string[] = []
+  for (let folder = posix.dirname(path); folder !== "."; folder = posix.dirname(folder)) {
+    if (!(await exists(resolve(io.cwd, root, folder)))) created.unshift(folder)
+  }
   await mkdir(dirname(target), { recursive: true })
   await writeFile(target, text, { flag: "wx" })
 
-  const folder = posix.dirname(path)
-  const index = folder === "." ? "index.md" : `${folder}/index.md`
+  // Each folder it created gets an index.md listing what's in it, and the
+  // outermost is listed in its parent's index.md, when that has one.
+  const label = (values.title ?? name.slice(0, -".md".length)).replace(/[[\]]/g, "\\$&")
+  let entry = `* [${label}](${name})${values.description ? ` - ${values.description}` : ""}`
+  const written: string[] = []
+  for (const folder of created.toReversed()) {
+    const heading = folderTitle(posix.basename(folder))
+    const index = `${folder}/index.md`
+    await writeFile(resolve(io.cwd, root, index), `# ${heading}\n\n${entry}\n`, { flag: "wx" })
+    written.push(index)
+    entry = `* [${heading}](${posix.basename(folder)}/index.md)`
+  }
+  const parent = posix.dirname(created[0] ?? path)
+  const index = parent === "." ? "index.md" : `${parent}/index.md`
   const listed = tree.files.includes(index)
   if (listed) {
     const indexFile = resolve(io.cwd, root, index)
     const before = await readFile(indexFile, "utf8")
-    const label = (values.title ?? name.slice(0, -".md".length)).replace(/[[\]]/g, "\\$&")
-    const entry = `* [${label}](${name})${values.description ? ` - ${values.description}` : ""}`
     await writeFile(
       indexFile,
       `${before}${before === "" || before.endsWith("\n") ? "" : "\n"}${entry}\n`,
     )
+    written.push(index)
   }
 
   io.stdout(
     `Created ${path} ${template ? `from ${template.path}` : `(${type} has no template in ${TYPES_FOLDER})`}` +
+      `${created.length > 0 ? `, with ${written.slice(0, created.length).toReversed().join(" and ")}` : ""}` +
       `${listed ? `, listed in ${index}` : ""}.\n\n`,
   )
   const result = await validate(await loadTree(root, io))
-  const mine = result.findings.filter((f) => f.file === path || (listed && f.file === index))
+  const mine = result.findings.filter((f) => f.file === path || written.includes(f.file))
   if (mine.length > 0) {
-    io.stdout(toText(onlyThese(mine, listed ? 2 : 1), io))
+    io.stdout(toText(onlyThese(mine, 1 + written.length), io))
   }
   return EXIT.ok
+}
+
+/** A folder's title for its index, from its name: `customer-support` is
+ * "Customer support". */
+function folderTitle(name: string): string {
+  const words = name.replace(/[-_]+/g, " ").trim()
+  return (words.charAt(0).toUpperCase() + words.slice(1)).replace(/[[\]]/g, "\\$&")
 }
 
 /** A result narrowed to the new page (and its index), counted again. */

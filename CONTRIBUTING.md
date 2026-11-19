@@ -27,7 +27,7 @@ fetches the pinned pnpm and Node versions automatically (`packageManager` and
 | -------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | `packages/okf`             | `@okforest/okf`: parse a tree into a model. Browser- and Worker-safe; Node file access only in `src/node.ts`. |
 | `packages/validate`        | `@okforest/validate`: the rules (`src/rules/`) and the runner.                                                |
-| `packages/okforest`        | The `okforest` CLI and its tree templates (`templates/`).                                                     |
+| `packages/okforest`        | The `okforest` CLI.                                                                                           |
 | `fixtures/okf-samples`     | Google's OKF sample bundles, vendored unmodified. Refresh with `pnpm fixtures:refresh`.                       |
 | `fixtures/rules/<rule id>` | One small failing tree per rule.                                                                              |
 | `fixtures/valid`           | A clean tree that exercises every family; must produce no findings.                                           |

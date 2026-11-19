@@ -161,7 +161,7 @@ One row per customer, with the date they joined and the date they cancelled.
   },
 
   "okf/index-entries": {
-    why: `An \`index.md\` lists what its directory holds, so a person or agent can see what's there before opening anything ([§8](${SPEC}#8-index-files)). Each entry is a list item that starts with a link, followed by a short description, usually the linked concept's own \`description\`: \`* [Title](path) - description\`. Entries in that shape are what consumers and index generators can read.`,
+    why: `An \`index.md\` lists what its directory holds, so a person or agent can see what's there before opening anything ([§8](${SPEC}#8-index-files)). Each entry is a list item that starts with a link, followed by a short description, usually the linked concept's own \`description\`: \`* [Title](path) - description\`. Entries in that shape are what consumers and index generators can read. An index that lists nothing is reported only when its directory holds something to list, so a new, empty tree passes.`,
     example: {
       file: "index.md",
       fails: rootIndex("* Monthly churn: the share of customers who cancel in a month (churn.md)"),
