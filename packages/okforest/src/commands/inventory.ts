@@ -41,7 +41,8 @@ export function inventoryText(inventory: Inventory, io: Io): string {
   out.push(
     `${inventory.concepts} concepts · ${inventory.types.length} types · ${inventory.tags.length} tags · ` +
       `${inventory.keys.length} frontmatter keys`,
-    `Status: ${s.stable} stable, ${s.draft} draft, ${s.deprecated} deprecated · ` +
+    `Status: ${s.stable} stable, ${s.draft} draft, ${s.deprecated} deprecated` +
+      `${s.unrecognized > 0 ? `, ${s.unrecognized} unrecognized` : ""} · ` +
       `Trust: ${t["human-reviewed"]} human-reviewed, ${t["machine-confirmed"]} machine-confirmed, ` +
       `${t.unverified} unverified · ${inventory.stale} stale`,
   )

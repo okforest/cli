@@ -2,13 +2,16 @@ import { readMarkdownFile } from "./document.js"
 import type { RawLink } from "./markdown.js"
 import { basename, dirname, globToRegExp, isExternal, normalize } from "./paths.js"
 import {
+  currentVerifications,
   deriveStatus,
   deriveTrustTier,
+  isAbsent,
   isStaleAt,
   normalizeSources,
   normalizeVerified,
 } from "./trust.js"
 import type {
+  BundleMetadata,
   Concept,
   Diagnostic,
   DiagramSettings,
@@ -22,6 +25,7 @@ import type {
   TypeSchema,
   TypeTemplate,
 } from "./types.js"
+import { okfVersionAtLeast } from "./version.js"
 import { isRecord, parseYaml } from "./yaml.js"
 
 /** Where OKForest keeps a bundle's settings (an OKForest convention, not OKF). */
@@ -53,9 +57,6 @@ export function isTypeFilePath(path: string): boolean {
   return isTypeSchemaPath(path) || isTypeTemplatePath(path)
 }
 
-/** Folders never part of a tree: OKForest's own and version control's. */
-const SKIPPED_FOLDERS = new Set([".okforest", ".git"])
-
 const RESERVED = new Set(["index.md", "log.md"])
 
 /**
@@ -64,8 +65,9 @@ const RESERVED = new Set(["index.md", "log.md"])
  * reading a directory). Never throws on malformed content; problems are
  * recorded on the files for `@okforest/validate` to report.
  *
- * Every markdown file is part of the tree except those under `.okforest/` and
- * `.git/`, as OKF says; settings `ignore:` globs leave out others.
+ * Every markdown file is part of the tree except those in a file or folder
+ * whose name starts with `.` (`.okforest/`, `.git/`, `.github/`), as OKF
+ * says (§3.2); settings `ignore:` globs leave out others.
  */
 export function parseTree(input: Iterable<TreeFile>): Tree {
   const texts = new Map<string, string | undefined>()
@@ -77,7 +79,12 @@ export function parseTree(input: Iterable<TreeFile>): Tree {
   for (const [path, text] of texts) {
     if (text !== undefined && isTypeFilePath(path)) typeTexts.set(path, text)
   }
-  const outline = outlineTree(texts.keys(), texts.get(SETTINGS_PATH), typeTexts)
+  const rootText = texts.get("index.md")
+  const okfVersion =
+    rootText === undefined
+      ? undefined
+      : readMarkdownFile("index.md", rootText).frontmatter?.okf_version
+  const outline = outlineTree(texts.keys(), texts.get(SETTINGS_PATH), typeTexts, { okfVersion })
   const concepts: Concept[] = []
   const reserved: ReservedFile[] = []
   for (const path of outline.markdown) {
@@ -89,7 +96,7 @@ export function parseTree(input: Iterable<TreeFile>): Tree {
   const byId = new Map(concepts.map((c) => [c.id, c]))
   const backlinks = new Map<string, Link[]>()
   for (const concept of concepts) {
-    for (const link of concept.links) {
+    for (const link of [...concept.links, ...concept.paths]) {
       if (!link.concept) continue
       const list = backlinks.get(link.concept) ?? []
       list.push(link)
@@ -97,6 +104,7 @@ export function parseTree(input: Iterable<TreeFile>): Tree {
     }
   }
   const rootIndex = reserved.find((r) => r.path === "index.md")
+  const metadata = readBundleMetadata(rootIndex?.frontmatter)
 
   return {
     files: outline.files,
@@ -109,6 +117,7 @@ export function parseTree(input: Iterable<TreeFile>): Tree {
     ...(rootIndex?.frontmatter && "okf_version" in rootIndex.frontmatter
       ? { okfVersion: rootIndex.frontmatter.okf_version }
       : {}),
+    ...(metadata ? { metadata } : {}),
     links: [...concepts, ...reserved]
       .sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0))
       .flatMap((doc) => doc.links),
@@ -123,11 +132,14 @@ export function parseTree(input: Iterable<TreeFile>): Tree {
  * schemas and templates by path ({@link isTypeFilePath}), without reading its markdown:
  * a tree too large to hold parsed at once is then read one file at a time
  * with {@link TreeOutline.read}, each file as {@link parseTree} reads it.
+ * `okfVersion`, the root `index.md`'s, decides how path fields resolve (a
+ * bundle on 0.2 or no version may resolve them from the bundle root, §6.2).
  */
 export function outlineTree(
   paths: Iterable<string>,
   settingsText?: string,
   typeTexts: ReadonlyMap<string, string> = new Map(),
+  options: { okfVersion?: unknown } = {},
 ): TreeOutline {
   const unique = new Set<string>()
   for (const raw of paths) {
@@ -148,8 +160,7 @@ export function outlineTree(
   const markdown: string[] = []
   for (const path of files) {
     if (!path.endsWith(".md")) continue
-    const segments = path.split("/")
-    if (segments.some((s) => SKIPPED_FOLDERS.has(s))) continue
+    if (path.split("/").some((segment) => segment.startsWith("."))) continue
     if (isIgnored(path)) ignored.push(path)
     else markdown.push(path)
   }
@@ -180,9 +191,22 @@ export function outlineTree(
     read(path, text) {
       if (!inTree.has(path)) throw new Error(`${path} is not one of the tree's markdown files.`)
       const { rawLinks, ...rest } = readMarkdownFile(path, text)
-      const links = rawLinks.map((raw) => resolveLink(raw, path, fileSet, directories, conceptIds))
+      const resolve = (raw: RawLink, from = path) =>
+        resolveLink(raw, from, fileSet, directories, conceptIds)
+      const links = rawLinks.map((raw) => resolve(raw))
       const name = basename(path)
-      if (!RESERVED.has(name)) return buildConcept({ ...rest, links })
+      if (!RESERVED.has(name)) {
+        const legacy = !okfVersionAtLeast(options.okfVersion, "0.3")
+        return buildConcept({ ...rest, links }, (raw) => {
+          const link = resolve(raw)
+          if (!legacy || link.kind !== "internal" || link.form !== "relative" || link.exists) {
+            return link
+          }
+          // OKF 0.2 wrote path fields from the bundle root (§12.1).
+          const rooted = resolve(raw, basename(path))
+          return rooted.exists ? { ...rooted, from: path } : link
+        })
+      }
       return {
         ...rest,
         links,
@@ -193,35 +217,44 @@ export function outlineTree(
   }
 }
 
-function buildConcept(file: Omit<Concept, keyof ConceptFields>): Concept {
+function buildConcept(
+  file: Omit<Concept, keyof ConceptFields>,
+  resolvePath: (raw: RawLink) => Link,
+): Concept {
   const fm = file.frontmatter ?? {}
   const str = (key: string) => {
     const value = fm[key]
     return typeof value === "string" && value.trim() !== "" ? value : undefined
   }
   const verified = normalizeVerified(fm.verified)
-  const staleAfter = str("stale_after")
+  const staleAfter = isAbsent(fm.stale_after) ? undefined : String(fm.stale_after)
   const generated = isRecord(fm.generated)
     ? {
         ...(typeof fm.generated.by === "string" ? { by: fm.generated.by } : {}),
         ...(typeof fm.generated.at === "string" ? { at: fm.generated.at } : {}),
       }
     : undefined
-  const tags = Array.isArray(fm.tags)
-    ? fm.tags.filter((t): t is string => typeof t === "string")
-    : typeof fm.tags === "string"
-      ? [fm.tags]
-      : []
+  // One tag is a list of one, never split at commas (§11.2).
+  const tags = (Array.isArray(fm.tags) ? fm.tags : [fm.tags]).filter(
+    (t): t is string => typeof t === "string" && t.trim() !== "",
+  )
+  const status = deriveStatus(fm.status)
+  const current = new Set(currentVerifications(verified, generated?.at))
   const fields: ConceptFields = {
     kind: "concept",
     id: file.path.slice(0, -".md".length),
     tags,
-    status: deriveStatus(fm.status),
+    status,
     verified,
-    trustTier: deriveTrustTier(verified),
+    verifiedBefore: verified.filter((v) => !current.has(v) && v.at !== undefined),
+    trustTier: deriveTrustTier(verified, generated?.at),
     sources: normalizeSources(fm.sources),
+    paths: pathFields(fm, file.locate).map(resolvePath),
     isStale: (now = new Date()) => isStaleAt(staleAfter, now),
   }
+  if (status === "unrecognized") fields.statusValue = String(fm.status)
+  const supersededBy = str("superseded_by")
+  if (supersededBy !== undefined) fields.supersededBy = supersededBy
   for (const key of ["type", "title", "description", "resource"] as const) {
     const value = str(key)
     if (value !== undefined) fields[key] = value
@@ -241,22 +274,87 @@ type ConceptFields = Pick<
   | "resource"
   | "tags"
   | "status"
+  | "statusValue"
+  | "supersededBy"
   | "generated"
   | "verified"
+  | "verifiedBefore"
   | "trustTier"
   | "staleAfter"
   | "sources"
+  | "paths"
   | "isStale"
 >
 
+/**
+ * A concept's path fields (spec §6.2), unresolved, each with its key and
+ * where it's written. A `sources` entry's `resource` may describe a scope
+ * (`all queries in project X`) rather than name a file (§5.1): one with
+ * whitespace isn't a path, since a path percent-encodes its spaces (§6).
+ */
+function pathFields(
+  fm: Record<string, unknown>,
+  locate: Concept["locate"],
+): (RawLink & { field: string })[] {
+  const found: (RawLink & { field: string })[] = []
+  const add = (keys: (string | number)[], value: unknown, field: string) => {
+    if (typeof value !== "string" || value.trim() === "") return
+    const at = locate(keys) ?? { line: 1, column: 1 }
+    found.push({ target: value, line: at.line, column: at.column, image: false, field })
+  }
+  for (const key of ["resource", "superseded_by", "computation"]) add([key], fm[key], key)
+  for (const key of ["executor", "attester"]) {
+    const value = fm[key]
+    if (isRecord(value)) add([key, "resource"], value.resource, `${key}.resource`)
+  }
+  const sources = fm.sources
+  const entries = Array.isArray(sources) ? sources : isRecord(sources) ? [sources] : []
+  entries.forEach((entry, i) => {
+    if (
+      !isRecord(entry) ||
+      typeof entry.resource !== "string" ||
+      /\s/.test(entry.resource.trim())
+    ) {
+      return
+    }
+    const keys = Array.isArray(sources) ? ["sources", i, "resource"] : ["sources", "resource"]
+    add(
+      keys,
+      entry.resource,
+      Array.isArray(sources) ? `sources[${i}].resource` : "sources.resource",
+    )
+  })
+  return found
+}
+
+/** A bundle's metadata from its root `index.md`'s frontmatter (spec §8.1):
+ * `title`, `description`, and `license`, when they're non-blank text. */
+export function readBundleMetadata(
+  frontmatter: Record<string, unknown> | undefined,
+): BundleMetadata | undefined {
+  const metadata: BundleMetadata = {}
+  for (const key of ["title", "description", "license"] as const) {
+    const value = frontmatter?.[key]
+    if (typeof value === "string" && value.trim() !== "") metadata[key] = value
+  }
+  return Object.keys(metadata).length > 0 ? metadata : undefined
+}
+
 function resolveLink(
-  raw: RawLink,
+  raw: RawLink & { field?: string },
   from: string,
   files: ReadonlySet<string>,
   directories: ReadonlySet<string>,
   conceptIds: ReadonlySet<string>,
 ): Link {
-  const base = { from, target: raw.target, line: raw.line, column: raw.column, image: raw.image }
+  const base = {
+    from,
+    target: raw.target,
+    line: raw.line,
+    column: raw.column,
+    image: raw.image,
+    ...(raw.field !== undefined ? { field: raw.field } : {}),
+  }
   const target = raw.target.trim()
   if (isExternal(target)) return { ...base, kind: "external" }
   let path = target.replace(/[?#].*$/, "")
