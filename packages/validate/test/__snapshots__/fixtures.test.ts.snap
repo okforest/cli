@@ -86,7 +86,7 @@ exports[`rule fixtures > okf/index-entries 1`] = `
 
 exports[`rule fixtures > okf/index-frontmatter 1`] = `
 [
-  "index.md:3:1 error okf/index-frontmatter The root index.md frontmatter may only declare \`okf_version\`; remove \`title\`.",
+  "index.md:3:1 error okf/index-frontmatter Under OKF 0.2, the root index.md frontmatter may only declare \`okf_version\`; remove \`title\`, or declare \`okf_version: "0.3"\`.",
   "sub/index.md:1:1 error okf/index-frontmatter Only the bundle-root index.md may have frontmatter; remove this block.",
 ]
 `;
