@@ -754,9 +754,9 @@ owner:
   },
 
   "okforest/slug": {
-    why: `A concept's ID is its path without \`.md\` (\`metrics/monthly-churn\`), and OKForest uses it in addresses and citations. Names made of lowercase letters, digits, and hyphens read the same everywhere: in URLs, without escaping; on file systems that ignore case; and when people and AI assistants type them.`,
+    why: `A concept's ID is its path without \`.md\` (\`metrics/monthly-churn\`), and OKForest uses it in addresses and citations. Names made of lowercase letters, digits, hyphens, and underscores read the same everywhere: in URLs, without escaping; on file systems that ignore case; and when people and AI assistants type them. Hyphens are usual (\`monthly-churn\`), but a concept named after something that has underscores, such as a table (\`n_day_active_users\`), can keep them, so it's found by that name.`,
     example: {
-      file: "Churn_Rate.md",
+      file: "Churn Rate.md",
       fails: `---
 type: Metric
 title: Churn rate
@@ -766,7 +766,7 @@ description: The yearly share of customers who cancel.
 The churn rate is the customers who cancel in a year, divided by the customers at its start.
 `,
       findings: [
-        "-:- File name `Churn_Rate` is not a slug: use lowercase letters, digits, and hyphens (e.g. `churn-rate`).",
+        "-:- File name `Churn Rate` is not a slug: use lowercase letters, digits, hyphens, and underscores (e.g. `churn-rate`).",
       ],
       fixed: `---
 type: Metric

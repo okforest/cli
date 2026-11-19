@@ -13,7 +13,10 @@ import type { Report, Rule } from "../types.js"
 import { at, describeType, isOkf03, show, slugify } from "../util.js"
 import { hasType } from "./fields.js"
 
-const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+/** Lowercase letters, digits, hyphens, and underscores, starting with a
+ * letter or digit: `monthly-churn`, and `n_day_active_users`, named after a
+ * table. */
+const SLUG = /^[a-z0-9][a-z0-9_-]*$/
 
 /** Where OKF's changes from one version to the next are listed. */
 const CHANGES =
@@ -53,7 +56,7 @@ export const slug: Rule = {
   id: "okforest/slug",
   severity: "warning",
   description:
-    "File and directory names of concepts are slugs: lowercase letters, digits, and hyphens.",
+    "File and directory names of concepts are slugs: lowercase letters, digits, hyphens, and underscores.",
   checkFile(file, context) {
     if (file.kind !== "concept") return
     // Under OKF 0.3 a file without a `type` isn't a concept (a README).
@@ -78,9 +81,13 @@ export const slug: Rule = {
 }
 
 function notSlug(name: string, what: string): string {
-  const suggestion = slugify(name)
+  // The name's own underscores are kept; anything else becomes a hyphen.
+  const suggestion = name
+    .toLowerCase()
+    .replace(/[^a-z0-9_]+/g, "-")
+    .replace(/^[-_]+|-+$/g, "")
   return (
-    `${what} ${show(name)} is not a slug: use lowercase letters, digits, and hyphens` +
+    `${what} ${show(name)} is not a slug: use lowercase letters, digits, hyphens, and underscores` +
     (suggestion && suggestion !== name ? ` (e.g. ${show(suggestion)}).` : ".")
   )
 }

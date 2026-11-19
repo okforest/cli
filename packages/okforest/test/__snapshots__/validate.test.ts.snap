@@ -2,10 +2,10 @@
 
 exports[`okforest validate > exits 0 when there are only warnings and info, and shows positionless findings 1`] = `
 "Bad_Name.md
-    warning  File name \`Bad_Name\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`bad-name\`).  okforest/slug
+    warning  File name \`Bad_Name\` is not a slug: use lowercase letters, digits, hyphens, and underscores (e.g. \`bad_name\`).  okforest/slug
 
 My Dir/
-    warning  Directory name \`My Dir\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`my-dir\`).  okforest/slug
+    warning  Directory name \`My Dir\` is not a slug: use lowercase letters, digits, hyphens, and underscores (e.g. \`my-dir\`).  okforest/slug
 
 Rule docs
   okforest/slug  https://www.okforest.ai/docs/rules/okforest/slug/

@@ -1,8 +1,8 @@
 # okforest
 
 The OKForest CLI: validate, inventory, and scaffold
-[Open Knowledge Format (OKF)](https://github.com/GoogleCloudPlatform/open-knowledge-format)
-v0.2 trees.
+[Open Knowledge Format (OKF)](https://github.com/open-knowledge-format/open-knowledge-format)
+trees, 0.2 and 0.3.
 
 ```sh
 npx okforest validate .                 # exit 1 on errors; warnings never fail

@@ -6,7 +6,7 @@ import { typesCommand } from "./commands/types.js"
 import { validateCommand } from "./commands/validate.js"
 import { EXIT, type Io, UsageError, VERSION } from "./io.js"
 
-export const HELP = `okforest ${VERSION}: validate, inventory, and scaffold Open Knowledge Format (OKF) v0.2 trees
+export const HELP = `okforest ${VERSION}: validate, inventory, and scaffold Open Knowledge Format (OKF) trees
 
 Usage
   okforest validate [path] [--format text|json]
@@ -17,7 +17,8 @@ Usage
   okforest types init [path] [--type <type>]... [--dry-run]
 
 Commands
-  validate    Check a tree against OKF v0.2 and OKForest conventions.
+  validate    Check a tree against OKF, by the version it declares, and
+              OKForest conventions.
               Exits 1 when there are errors; warnings and info never fail.
   inventory   List every type, tag, and frontmatter key in use, with counts
               and likely near-duplicates.

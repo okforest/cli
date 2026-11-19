@@ -11,17 +11,20 @@ import { readTreeFiles } from "@okforest/okf/node"
 import { treeChecker, validate } from "../src/index.js"
 import { FIXTURES, NOW } from "./helpers.js"
 
-const samples = JSON.parse(readFileSync(join(FIXTURES, "okf-samples", "SOURCE.json"), "utf8")) as {
-  bundles: string[]
-}
+const samples = ["okf-samples", "okf-samples-0.3"].flatMap((dir) => {
+  const source = JSON.parse(readFileSync(join(FIXTURES, dir, "SOURCE.json"), "utf8")) as {
+    bundles: string[]
+  }
+  return source.bundles.map((bundle) => join(dir, bundle))
+})
 
-/** Every fixture tree: each rule's, the clean one, and Google's samples. */
+/** Every fixture tree: each rule's, the clean one, and OKF's samples in both versions. */
 const trees = [
   ...readdirSync(join(FIXTURES, "rules")).flatMap((namespace) =>
     readdirSync(join(FIXTURES, "rules", namespace)).map((name) => join("rules", namespace, name)),
   ),
   "valid",
-  ...samples.bundles.map((bundle) => join("okf-samples", bundle)),
+  ...samples,
 ]
 
 describe("treeChecker", () => {

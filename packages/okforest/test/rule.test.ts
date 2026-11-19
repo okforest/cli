@@ -19,7 +19,7 @@ describe("okforest rule", () => {
 
   it("prints a finding about a whole file without a position", async () => {
     const result = await run(["rule", "okforest/slug"])
-    expect(result.stdout).toContain("\n      warning  File name `Churn_Rate` is not a slug")
+    expect(result.stdout).toContain("\n      warning  File name `Churn Rate` is not a slug")
   })
 
   it("lists every rule without one", async () => {

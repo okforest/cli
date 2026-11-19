@@ -19,15 +19,18 @@ internals (dependencies point one way: private → public).
   outline, its paths and settings (`checkTree`), never the whole parsed tree,
   so trees too large to hold parsed at once are validated a file at a time
   (`outlineTree`, `treeChecker`) with the same findings.
-- Rules have stable, namespaced IDs (`okf/*` for the OKF v0.2 spec,
-  `okforest/*` for OKForest conventions). Severity follows the spec: what it
-  requires is an `error`; what it recommends, and OKForest conventions, are
-  `warning` or `info`. Never make broken links an error (OKF §6.1, §11).
+- Rules have stable, namespaced IDs (`okf/*` for the OKF spec, by the
+  version a tree declares; `okforest/*` for OKForest conventions). Severity
+  follows the spec: what it requires is an `error`; what it recommends, and
+  OKForest conventions, are `warning` or `info`. Never make broken links an error (OKF §6.1, §11).
 - Every rule has a failing fixture at `fixtures/rules/<rule id>/`
   (`fixtures.test.ts` fails otherwise), and `fixtures/valid/` must stay free
   of findings.
-- `fixtures/okf-samples/` is Google's OKF sample bundles, vendored unmodified
-  (Apache 2.0, see its NOTICE). Never edit them; refresh with
+- `fixtures/okf-samples/` is Google's OKF 0.2 sample bundles, and
+  `fixtures/okf-samples-0.3/` the OKF 0.3 ones from
+  open-knowledge-format/open-knowledge-format, both vendored unmodified
+  (Apache 2.0, see each NOTICE). Never edit them. The 0.2 set stays as it
+  is (its repository is deprecated); refresh the 0.3 set with
   `pnpm fixtures:refresh` and review the snapshot diff.
 - The `--format json` output of `validate` and `inventory` is a public
   interface: bump `schemaVersion` on breaking changes. The validation report is

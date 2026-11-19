@@ -1,7 +1,7 @@
 # @okforest/validate
 
-Validate [Open Knowledge Format (OKF)](https://github.com/GoogleCloudPlatform/open-knowledge-format)
-v0.2 trees: spec conformance, field shapes, links, OKForest conventions, and
+Validate [Open Knowledge Format (OKF)](https://github.com/open-knowledge-format/open-knowledge-format)
+trees, by the version each declares (0.2 or 0.3): spec conformance, field shapes, links, OKForest conventions, and
 D2 and Mermaid diagram syntax. Findings are structured, with stable rule IDs,
 severities, and file, line, and column locations. Deterministic: no model
 calls and no network.

@@ -1,0 +1,13 @@
+{
+  "repository": "https://github.com/open-knowledge-format/open-knowledge-format",
+  "commit": "527e81aff55992be21507e97004286789126f88c",
+  "committed": "2026-11-18T17:00:25Z",
+  "path": "bundles",
+  "bundles": [
+    "acme_retail",
+    "crypto_bitcoin",
+    "ga4",
+    "stackoverflow"
+  ],
+  "license": "Apache-2.0"
+}
