@@ -93,6 +93,32 @@ describe("diagram loaders", () => {
     expect(initialize).toHaveBeenCalledWith({ startOnLoad: false, logLevel: "fatal" })
   })
 
+  it.each([
+    "DOMPurify.addHook is not a function",
+    // The GitHub Action's bundle renames DOMPurify.
+    "purify_default.addHook is not a function",
+    "dompurify_1.default.sanitize is not a function",
+  ])(
+    "reports a diagram Mermaid can't parse without a browser as unchecked: %s",
+    async (message) => {
+      const module: MermaidModule = {
+        default: {
+          initialize: vi.fn(),
+          parse: async () => {
+            throw new TypeError(message)
+          },
+        },
+      }
+      const result = await validateFiles(
+        { "a.md": concept("", "```mermaid\nflowchart TD\n  A --> B\n```") },
+        { diagrams: { mermaid: async () => module } },
+      )
+      expect(diagramFindings(result.findings)).toEqual([
+        "a.md:7:1 info okforest/diagram-unchecked Mermaid diagram not checked: Mermaid's parser for this diagram type needs a browser and cannot run here.",
+      ])
+    },
+  )
+
   it("falls back to the default loader for a language given as undefined", async () => {
     const result = await validateFiles(
       { "a.md": concept("", "```d2\na -> {\n```") },

@@ -133,9 +133,16 @@ function mermaidEngine({ default: mermaid }: MermaidModule): Engine {
 
 function mermaidErrors(error: unknown): Located[] {
   const text = error instanceof Error ? error.message : String(error)
-  // Some diagram types (pie, gitGraph, architecture, ...) sanitize with
-  // DOMPurify while parsing, which needs a browser DOM that Node lacks.
-  if (/DOMPurify|document is not defined|window is not defined/.test(text)) {
+  // Some diagram types (flowchart, pie, gitGraph, architecture, ...) sanitize
+  // with DOMPurify while parsing, which needs a browser DOM that Node lacks.
+  // Without one, DOMPurify has no methods. Match its method names as well as
+  // its name: a bundler may rename `DOMPurify` (the GitHub Action's bundle
+  // reports "purify_default.addHook is not a function").
+  if (
+    /DOMPurify|\b(?:addHook|removeHooks?|removeAllHooks|sanitize) is not a function|document is not defined|window is not defined/.test(
+      text,
+    )
+  ) {
     throw new Unchecked(
       "Mermaid's parser for this diagram type needs a browser and cannot run here.",
     )
