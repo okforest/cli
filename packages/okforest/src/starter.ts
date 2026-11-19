@@ -135,7 +135,7 @@ New pages are drafts (\`status: draft\`): fill them in and mark them \`stable\`.
 Never commit secrets; record where each is kept instead.
 `,
     [`${BUNDLE}/index.md`]: `---
-okf_version: "0.2"
+okf_version: "0.3"
 ---
 
 # ${name}

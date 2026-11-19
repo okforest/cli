@@ -1,11 +1,11 @@
-import { concept, only } from "./helpers.js"
+import { concept, lines, only, validateFiles } from "./helpers.js"
 
 // Branches the per-rule fixtures don't reach. Each test names the rule it covers.
 
 describe("okf/okf-version", () => {
   it("asks for a root index.md when there is none", async () => {
     expect(await only("okf/okf-version", { "a.md": concept() })).toEqual([
-      'index.md:-:- info okf/okf-version No root index.md: add one declaring `okf_version: "0.2"` and listing the top-level directories.',
+      'index.md:-:- info okf/okf-version No root index.md: add one declaring `okf_version: "0.3"` and listing the top-level directories.',
     ])
   })
 
@@ -15,15 +15,118 @@ describe("okf/okf-version", () => {
     ])
   })
 
-  it("notes best-effort checking of other versions", async () => {
-    expect(await only("okf/okf-version", { "index.md": '---\nokf_version: "0.3"\n---\n' })).toEqual(
-      [
-        'index.md:2:1 info okf/okf-version This validator implements OKF 0.2; `okf_version: "0.3"` is checked best-effort.',
-      ],
+  it("accepts any version it can read, and says when it can't read one", async () => {
+    for (const version of ['"0.2"', '"0.3"', '"0.4"']) {
+      const index = `---\nokf_version: ${version}\n---\n`
+      expect(await only("okf/okf-version", { "index.md": index })).toEqual([])
+    }
+    expect(await only("okf/okf-version", { "index.md": '---\nokf_version: "v3"\n---\n' })).toEqual([
+      'index.md:2:1 info okf/okf-version `okf_version` is `<major>.<minor>`, such as `"0.3"` (got `v3`); until it is, the bundle is read as OKF 0.2.',
+    ])
+  })
+})
+
+describe("okforest/okf-version-current", () => {
+  const version = (v: string) => ({ "index.md": `---\nokf_version: ${v}\n---\n` })
+
+  it("says nothing of the current version, or none", async () => {
+    expect(await only("okforest/okf-version-current", version('"0.3"'))).toEqual([])
+    expect(await only("okforest/okf-version-current", { "index.md": "# Root\n" })).toEqual([])
+  })
+
+  it("tells a tree behind the current version, and one ahead of this validator", async () => {
+    expect(await only("okforest/okf-version-current", version('"0.2"'))).toEqual([
+      expect.stringMatching(
+        /^index\.md:2:1 warning .* declares OKF 0\.2; 0\.3 is current\. Move when/,
+      ),
+    ])
+    expect(await only("okforest/okf-version-current", version("0.4"))).toEqual([
+      expect.stringMatching(
+        /declares OKF 0\.4, newer than this validator knows \(0\.3\).*update okforest/,
+      ),
+    ])
+  })
+})
+
+/** A root index.md declaring a version, and the files beside it. */
+const at = (okfVersion: string, files: Record<string, string>) => ({
+  "index.md": `---\nokf_version: "${okfVersion}"\n---\n`,
+  ...files,
+})
+
+describe("concepts under OKF 0.2 and 0.3 (§3.2)", () => {
+  const files = { "README.md": "# Readme\n", "note.md": "---\ntitle: Untyped\n---\n" }
+
+  it("reports a markdown file without frontmatter or type as an error under 0.2", async () => {
+    const findings = lines((await validateFiles(at("0.2", files))).findings)
+    expect(findings).toContainEqual(
+      expect.stringMatching(/^README\.md:1:1 error okf\/frontmatter No frontmatter/),
     )
-    expect(await only("okf/okf-version", { "index.md": '---\nokf_version: "0.2"\n---\n' })).toEqual(
-      [],
+    expect(findings).toContainEqual(
+      "note.md:1:1 error okf/type Missing `type`, the one required key.",
     )
+    expect(findings.some((f) => f.includes("okf/not-a-concept"))).toBe(false)
+  })
+
+  it("says it isn't a concept under 0.3, and checks it no further", async () => {
+    const findings = lines((await validateFiles(at("0.3", files))).findings)
+    expect(findings.filter((f) => !f.includes("okf/index-entries"))).toEqual([
+      expect.stringMatching(
+        /^README\.md:1:1 warning okf\/not-a-concept Not a concept: it has no frontmatter/,
+      ),
+      expect.stringMatching(
+        /^note\.md:1:1 warning okf\/not-a-concept Not a concept: its frontmatter has no `type`/,
+      ),
+    ])
+  })
+})
+
+describe("OKF 0.3's own rules", () => {
+  it("asks for x- extension keys under 0.3 only", async () => {
+    const page = {
+      "a.md": concept("owner: cfo\nx-acme-unit: usd\ntimestamp: 2026-01-01T00:00:00Z"),
+    }
+    expect(await only("okf/extension-key", at("0.3", page))).toEqual([
+      expect.stringMatching(
+        /^a\.md:\d+:1 warning okf\/extension-key `owner` isn't a key OKF defines.*`x-acme-owner`/,
+      ),
+    ])
+    expect(await only("okf/extension-key", at("0.2", page))).toEqual([])
+  })
+
+  it("keeps log.md free of frontmatter under 0.3 only", async () => {
+    const log = { "log.md": "---\ntitle: Log\n---\n# Log\n" }
+    expect(await only("okf/log-frontmatter", at("0.3", log))).toHaveLength(1)
+    expect(await only("okf/log-frontmatter", at("0.2", log))).toEqual([])
+  })
+
+  it("pairs superseded_by with deprecated, under 0.3 only", async () => {
+    const page = (fm: string) => ({ "a.md": concept(fm) })
+    expect(
+      await only("okf/status", at("0.3", page("status: deprecated\nsuperseded_by: b.md"))),
+    ).toEqual([])
+    expect(await only("okf/status", at("0.3", page("superseded_by: b.md")))).toEqual([
+      expect.stringMatching(/`superseded_by` means something only with `status: deprecated`/),
+    ])
+    expect(
+      await only("okf/status", at("0.3", page("status: deprecated\nsuperseded_by: 3"))),
+    ).toEqual([
+      expect.stringMatching(
+        /`superseded_by` must be the path of the concept that replaces this one/,
+      ),
+    ])
+    expect(await only("okf/status", at("0.2", page("superseded_by: b.md")))).toEqual([])
+  })
+
+  it("asks each computation parameter for a type under 0.3 only", async () => {
+    const computation = {
+      "c.md":
+        "---\ntype: Attested Computation\nruntime: bigquery\nparameters:\n  - { name: year }\nexecutor: { resource: run.md }\nattester: { resource: check.py }\n---\n# Computation\n\n```sql\nSELECT 1\n```\n",
+    }
+    expect(await only("okf/attested-computation", at("0.3", computation))).toEqual([
+      expect.stringMatching(/Each parameter needs a `type`/),
+    ])
+    expect(await only("okf/attested-computation", at("0.2", computation))).toEqual([])
   })
 })
 
@@ -173,12 +276,28 @@ describe("okf/datetime", () => {
         ),
       }),
     ).toEqual([
-      "a.md:7:20 error okf/datetime `verified[1].at` must be an ISO 8601 datetime with an explicit UTC offset, such as `2026-12-31T00:00:00Z` (got `yesterday`).",
+      "a.md:7:20 error okf/datetime `verified[1].at` must be an ISO 8601 date-time with an explicit UTC offset, such as `2026-12-31T00:00:00Z`, or a date, `2026-12-31` (got `yesterday`).",
     ])
+  })
+
+  it("accepts a date, the start of that day in UTC (OKF 0.3 §5)", async () => {
+    expect(await only("okf/datetime", { "a.md": concept("stale_after: 2026-12-31") })).toEqual([])
   })
 })
 
 describe("okf/actor", () => {
+  it("accepts any scheme, and checks a source's author too (OKF 0.3 §7)", async () => {
+    expect(
+      await only("okf/actor", {
+        "a.md": concept(
+          "verified:\n  - { by: team:fpa, at: 2026-01-01T00:00:00Z }\n  - { by: bot:release, at: 2026-01-01T00:00:00Z }\nsources:\n  - { resource: https://acme.example, author: Jane Doe }",
+        ),
+      }),
+    ).toEqual([
+      expect.stringMatching(/^a\.md:\d+:\d+ warning okf\/actor `Jane Doe` is not an actor/),
+    ])
+  })
+
   it("accepts the three actor forms and ignores non-strings", async () => {
     expect(
       await only("okf/actor", {

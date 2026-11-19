@@ -12,6 +12,7 @@ export { visit } from "./markdown.js"
 export { globToRegExp } from "./paths.js"
 export { type PageStart, startPage } from "./template.js"
 export {
+  declaredOkfVersion,
   isTypeFilePath,
   isTypeSchemaPath,
   isTypeTemplatePath,

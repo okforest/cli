@@ -5,7 +5,7 @@ exports[`OKF sample bundles > acme_retail 1`] = `
   "concepts": 9,
   "files": 17,
   "findings": [
-    "index.md:1:1 info okf/okf-version Declare the OKF version this bundle targets: frontmatter \`okf_version: "0.2"\`.",
+    "index.md:1:1 info okf/okf-version Declare the OKF version this bundle targets: frontmatter \`okf_version: "0.3"\`. Until it does, it's read as OKF 0.2.",
   ],
 }
 `;
@@ -16,7 +16,7 @@ exports[`OKF sample bundles > crypto_bitcoin 1`] = `
   "files": 15,
   "findings": [
     "datasets/crypto_bitcoin.md:-:- warning okforest/slug File name \`crypto_bitcoin\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`crypto-bitcoin\`).",
-    "index.md:1:1 info okf/okf-version Declare the OKF version this bundle targets: frontmatter \`okf_version: "0.2"\`.",
+    "index.md:1:1 info okf/okf-version Declare the OKF version this bundle targets: frontmatter \`okf_version: "0.3"\`. Until it does, it's read as OKF 0.2.",
     "references/joins/blocks___transactions.md:-:- warning okforest/slug File name \`blocks___transactions\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`blocks-transactions\`).",
     "references/joins/inputs___transactions.md:-:- warning okforest/slug File name \`inputs___transactions\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`inputs-transactions\`).",
     "references/joins/outputs___transactions.md:-:- warning okforest/slug File name \`outputs___transactions\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`outputs-transactions\`).",
@@ -31,7 +31,7 @@ exports[`OKF sample bundles > ga4 1`] = `
   "files": 14,
   "findings": [
     "datasets/ga4_obfuscated_sample_ecommerce.md:-:- warning okforest/slug File name \`ga4_obfuscated_sample_ecommerce\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`ga4-obfuscated-sample-ecommerce\`).",
-    "index.md:1:1 info okf/okf-version Declare the OKF version this bundle targets: frontmatter \`okf_version: "0.2"\`.",
+    "index.md:1:1 info okf/okf-version Declare the OKF version this bundle targets: frontmatter \`okf_version: "0.3"\`. Until it does, it's read as OKF 0.2.",
     "references/metrics/acquired_users.md:-:- warning okforest/slug File name \`acquired_users\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`acquired-users\`).",
     "references/metrics/frequently_active_users.md:-:- warning okforest/slug File name \`frequently_active_users\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`frequently-active-users\`).",
     "references/metrics/google_acquired_cohorts.md:-:- warning okforest/slug File name \`google_acquired_cohorts\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`google-acquired-cohorts\`).",
@@ -49,7 +49,7 @@ exports[`OKF sample bundles > stackoverflow 1`] = `
   "files": 32,
   "findings": [
     "datasets/stackoverflow.md:8:1 warning okf/field-types \`tags\` should be a list, e.g. \`tags: [Stack Overflow, Q&A, developer, programming, public dataset]\`.",
-    "index.md:1:1 info okf/okf-version Declare the OKF version this bundle targets: frontmatter \`okf_version: "0.2"\`.",
+    "index.md:1:1 info okf/okf-version Declare the OKF version this bundle targets: frontmatter \`okf_version: "0.3"\`. Until it does, it's read as OKF 0.2.",
     "references/content_licenses.md:-:- warning okforest/slug File name \`content_licenses\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`content-licenses\`).",
     "references/joins/comments__posts.md:-:- warning okforest/slug File name \`comments__posts\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`comments-posts\`).",
     "references/joins/post_links__posts.md:-:- warning okforest/slug File name \`post_links__posts\` is not a slug: use lowercase letters, digits, and hyphens (e.g. \`post-links-posts\`).",

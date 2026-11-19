@@ -2,14 +2,50 @@ import {
   editDistance,
   isRecord,
   type KeyPath,
+  LATEST_OKF_VERSION,
   MERMAID_RENDERERS,
+  okfVersionAtLeast,
+  parseOkfVersion,
   SETTINGS_PATH,
   visit,
 } from "@okforest/okf"
 import type { Report, Rule } from "../types.js"
-import { describeType, show, slugify } from "../util.js"
+import { at, describeType, isOkf03, show, slugify } from "../util.js"
+import { hasType } from "./fields.js"
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+
+/** Where OKF's changes from one version to the next are listed. */
+const CHANGES =
+  "https://github.com/open-knowledge-format/open-knowledge-format/blob/main/SPEC.md#13-changes-from-v02"
+
+/**
+ * An OKForest convention, not OKF's: OKF doesn't ask a bundle to move to a
+ * newer version, and a consumer reads one it doesn't know best-effort
+ * (§12). A tree behind the current version is told so, to move when it's
+ * ready; one ahead of this validator is told to update it, since its own
+ * version's rules aren't the ones checked.
+ */
+export const okfVersionCurrent: Rule = {
+  id: "okforest/okf-version-current",
+  severity: "warning",
+  description: `The tree declares the current OKF version, ${LATEST_OKF_VERSION}: one behind it should move when ready, and one ahead of this validator needs a newer one.`,
+  checkFile(root, { report }) {
+    if (root.path !== "index.md") return
+    const value = root.frontmatter?.okf_version
+    const version = parseOkfVersion(value)
+    if (!version) return
+    const declared = `${version.major}.${version.minor}`
+    if (declared === LATEST_OKF_VERSION) return
+    report({
+      file: root.path,
+      ...at(root, ["okf_version"]),
+      message: okfVersionAtLeast(value, LATEST_OKF_VERSION)
+        ? `This tree declares OKF ${declared}, newer than this validator knows (${LATEST_OKF_VERSION}), so it's checked by ${LATEST_OKF_VERSION}'s rules: update okforest, or okforest/validate-action.`
+        : `This tree declares OKF ${declared}; ${LATEST_OKF_VERSION} is current. Move when you're ready: declare \`okf_version: "${LATEST_OKF_VERSION}"\` and fix what's then reported (what changed: ${CHANGES}).`,
+    })
+  },
+}
 
 /** Lowercase-hyphen slugs: punctuated slugs produce broken URL variants when
  * bundles are published on the web. */
@@ -18,8 +54,11 @@ export const slug: Rule = {
   severity: "warning",
   description:
     "File and directory names of concepts are slugs: lowercase letters, digits, and hyphens.",
-  checkFile(file, { report }) {
+  checkFile(file, context) {
     if (file.kind !== "concept") return
+    // Under OKF 0.3 a file without a `type` isn't a concept (a README).
+    if (isOkf03(context) && !(file.frontmatter && hasType(file.frontmatter))) return
+    const { report } = context
     const stem = (file.path.split("/").at(-1) as string).slice(0, -".md".length)
     if (!SLUG.test(stem)) report({ file: file.path, message: notSlug(stem, "File name") })
   },
