@@ -17,9 +17,8 @@ import { at, describeType, show, slugify } from "../util.js"
  * table. */
 const SLUG = /^[a-z0-9][a-z0-9_-]*$/
 
-/** Where OKF's changes from one version to the next are listed. */
-const CHANGES =
-  "https://github.com/open-knowledge-format/open-knowledge-format/blob/main/SPEC.md#13-changes-from-v02"
+/** How to move a tree to the current version, step by step. */
+const UPGRADE = "https://www.okforest.ai/docs/guides/upgrade-to-okf-0-3/"
 
 /**
  * An OKForest convention, not OKF's: OKF doesn't ask a bundle to move to a
@@ -44,7 +43,7 @@ export const okfVersionCurrent: Rule = {
       ...at(root, ["okf_version"]),
       message: okfVersionAtLeast(value, LATEST_OKF_VERSION)
         ? `This tree declares OKF ${declared}, newer than this validator knows (${LATEST_OKF_VERSION}), so it's checked by ${LATEST_OKF_VERSION}'s rules: update okforest, or okforest/validate-action.`
-        : `This tree declares OKF ${declared}; ${LATEST_OKF_VERSION} is current. Move when you're ready: declare \`okf_version: "${LATEST_OKF_VERSION}"\` and fix what's then reported (what changed: ${CHANGES}).`,
+        : `This tree declares OKF ${declared}; ${LATEST_OKF_VERSION} is current. Move when you're ready: declare \`okf_version: "${LATEST_OKF_VERSION}"\` and fix what's then reported (how: ${UPGRADE}).`,
     })
   },
 }

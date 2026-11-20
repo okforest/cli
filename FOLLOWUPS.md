@@ -23,14 +23,6 @@ upstream).
   treemap) call DOMPurify and need a DOM, so they are reported as
   `okforest/diagram-unchecked`. Check them with `@mermaid-js/parser` directly
   (MIT, no DOM), or a minimal DOMPurify shim.
-- **Bare path-valued fields.** OKF §6.2 says `resource`, `sources[].resource`,
-  `computation`, `executor.resource`, and `attester.resource` may be relative
-  paths, but Google's sample bundles write bundle-root paths without a leading
-  slash (`executor.resource: skills/run-on-bq.md` from `computations/`).
-  `okf/broken-link` therefore only checks `/…`, `./…`, and `../…` forms.
-  Upstream [PR #31](https://github.com/GoogleCloudPlatform/open-knowledge-format/pull/31)
-  (fixing issue #29) proposes the leading slash in the samples and spec
-  examples; check bare paths once it is settled.
 - **Rule configuration.** Per-tree severity overrides in
   `.okforest/settings.yaml` (the library already accepts `severity` overrides),
   plus CLI flags such as `--max-warnings` and `--rule <id>=off`.
@@ -40,8 +32,9 @@ upstream).
   interface and `once()` resources are designed for it.
 - **More checks from the brief:** a scan for secrets and personal data;
   binary images that should be diagrams as code; `index.md` entries that miss
-  concepts in their directory (or list ones that don't exist); a `deprecated`
-  concept linking to its successor.
+  concepts in their directory (or list ones that don't exist). (A deprecated
+  concept naming its successor is OKF 0.3's `superseded_by`, which `okf/status`
+  and `okf/broken-link` check.)
 - **Revisit strictness** if real-world trees trip it: duplicate YAML keys are
   errors (`okf/frontmatter`), and `okf/datetime` requires the `T` separator
   (RFC 3339 also allows a space).

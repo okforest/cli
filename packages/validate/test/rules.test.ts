@@ -49,7 +49,7 @@ describe("okforest/okf-version-current", () => {
 })
 
 /** A root index.md declaring a version, and the files beside it. */
-const at = (okfVersion: string, files: Record<string, string>) => ({
+const at = (okfVersion: string, files: Record<string, string | undefined>) => ({
   "index.md": `---\nokf_version: "${okfVersion}"\n---\n`,
   ...files,
 })
@@ -373,6 +373,28 @@ describe("okf/broken-link", () => {
         "refs/run.md": concept(),
       }),
     ).toEqual([])
+  })
+
+  it("checks bare path fields under OKF 0.3, from the concept's folder", async () => {
+    const files = {
+      "a/b.md": concept(
+        [
+          "resource: refs/run.md",
+          "computation: c.sql",
+          "superseded_by: gone.md",
+          "executor: { resource: 'bq:project.dataset' }",
+          "sources:\n  - { resource: acme.sales.orders }",
+        ].join("\n"),
+      ),
+      "a/c.sql": undefined,
+      "refs/run.md": concept(),
+    }
+    expect(await only("okf/broken-link", at("0.3", files))).toEqual([
+      "a/b.md:5:1 warning okf/broken-link `refs/run.md` does not exist from this concept's folder, where OKF 0.3 resolves a path without a leading `/`; from the tree's root, write `/refs/run.md`.",
+      "a/b.md:7:1 warning okf/broken-link `gone.md` does not exist in this tree.",
+    ])
+    // Under 0.2 a bare path may be from the tree's root (§12.1): not checked.
+    expect(await only("okf/broken-link", at("0.2", files))).toEqual([])
   })
 })
 
