@@ -10,8 +10,7 @@ import {
   visit,
 } from "@okforest/okf"
 import type { Report, Rule } from "../types.js"
-import { at, describeType, isOkf03, show, slugify } from "../util.js"
-import { hasType } from "./fields.js"
+import { at, describeType, show, slugify } from "../util.js"
 
 /** Lowercase letters, digits, hyphens, and underscores, starting with a
  * letter or digit: `monthly-churn`, and `n_day_active_users`, named after a
@@ -58,9 +57,8 @@ export const slug: Rule = {
   description:
     "File and directory names of concepts are slugs: lowercase letters, digits, hyphens, and underscores.",
   checkFile(file, context) {
-    if (file.kind !== "concept") return
     // Under OKF 0.3 a file without a `type` isn't a concept (a README).
-    if (isOkf03(context) && !(file.frontmatter && hasType(file.frontmatter))) return
+    if (file.kind !== "concept") return
     const { report } = context
     const stem = (file.path.split("/").at(-1) as string).slice(0, -".md".length)
     if (!SLUG.test(stem)) report({ file: file.path, message: notSlug(stem, "File name") })

@@ -79,6 +79,16 @@ describe("concepts under OKF 0.2 and 0.3 (§3.2)", () => {
       ),
     ])
   })
+
+  it("counts only concepts, and leaves an unreadable block to okf/frontmatter", async () => {
+    const broken = { ...files, "broken.md": "---\ntype: [\n---\n", "a.md": concept() }
+    const result = await validateFiles(at("0.3", broken))
+    expect(result.concepts).toBe(1)
+    expect(lines(result.findings).filter((f) => f.startsWith("broken.md"))).toEqual([
+      expect.stringMatching(/^broken\.md:\d+:\d+ error okf\/frontmatter /),
+    ])
+    expect((await validateFiles(at("0.2", broken))).concepts).toBe(4)
+  })
 })
 
 describe("OKF 0.3's own rules", () => {

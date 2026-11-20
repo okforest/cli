@@ -165,8 +165,8 @@ it in more detail.
 ## What counts as a concept
 
 Under OKF 0.3, a `.md` file is a concept when its frontmatter has a `type`.
-One without, such as a `README.md`, isn't: it's skipped, with an
-`okf/not-a-concept` warning to say so. Under OKF 0.2, every `.md` file is a
+One without, such as a `README.md`, isn't: it's skipped (not counted, checked,
+or linked to as a concept), with an `okf/not-a-concept` warning to say so. Under OKF 0.2, every `.md` file is a
 concept except `index.md` and `log.md` (reserved by OKF). Either way, files
 and folders whose names start with `.` (`.okforest/`, `.git/`, `.github/`)
 aren't part of the tree. Leave out other files that aren't concepts with
