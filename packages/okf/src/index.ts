@@ -24,6 +24,7 @@ export {
   readTypeTemplate,
   SETTINGS_PATH,
   TYPES_FOLDER,
+  typeSlug,
 } from "./tree.js"
 export {
   currentVerifications,

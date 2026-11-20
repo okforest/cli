@@ -398,6 +398,70 @@ describe("okf/broken-link", () => {
   })
 })
 
+describe("type rules: unused, undeclared, and file names", () => {
+  const schema = (title: string) =>
+    JSON.stringify({
+      $schema: "https://json-schema.org/draft/2020-12/schema",
+      title,
+      type: "object",
+    })
+  const template = (type: string) => `---\ntype: ${type}\ntitle:\n---\n`
+  const typed = (type: string) =>
+    `---\ntype: ${type}\ntitle: Example\ndescription: An example.\n---\n\nBody.\n`
+
+  it("notes a type no concept gives, once, naming its schema and template", async () => {
+    expect(
+      await only("okforest/unused-type", {
+        "a.md": typed("Metric"),
+        ".okforest/types/metric.schema.json": schema("Metric"),
+        ".okforest/types/budget.schema.json": schema("Budget"),
+        ".okforest/types/budget.template.md": template("Budget"),
+        ".okforest/types/plan.template.md": template("Plan"),
+      }),
+    ).toEqual([
+      ".okforest/types/budget.schema.json:1:59 info okforest/unused-type No concept in this tree has the type `Budget`: if none will, remove `budget.schema.json` and `budget.template.md`.",
+      ".okforest/types/plan.template.md:2:1 info okforest/unused-type No concept in this tree has the type `Plan`: if none will, remove `plan.template.md`.",
+    ])
+  })
+
+  it("notes a type without a schema once, only in a tree with schemas", async () => {
+    const files = {
+      "a.md": typed("Note"),
+      "b.md": typed("Note"),
+      "c.md": typed("Policy"),
+      "d.md": typed("Attested Computation"),
+      "e.md": typed("policy"),
+    }
+    // No schemas: the tree doesn't use them.
+    expect(await only("okforest/undeclared-type", files)).toEqual([])
+    expect(
+      await only("okforest/undeclared-type", {
+        ...files,
+        ".okforest/types/policy.schema.json": schema("Policy"),
+      }),
+    ).toEqual([
+      // OKF's own type is exempt, and `policy` is okforest/similar-type's.
+      "a.md:2:1 info okforest/undeclared-type `Note` (2 concepts) has no schema in `.okforest/types/`, so its fields aren't checked: add `.okforest/types/note.schema.json` (`okforest types init` drafts it).",
+    ])
+  })
+
+  it("warns about a schema or template named for another type", async () => {
+    expect(
+      await only("okforest/type-file-name", {
+        "a.md": typed("Customer Profile"),
+        "b.md": typed("顧客"),
+        ".okforest/types/customer-profile.schema.json": schema("Customer Profile"),
+        ".okforest/types/顧客.template.md": template("顧客"),
+        ".okforest/types/budget.template.md": template("Customer Profile"),
+        ".okforest/types/widget.schema.json": schema("顧客"),
+      }),
+    ).toEqual([
+      ".okforest/types/budget.template.md:2:1 warning okforest/type-file-name This template is for `Customer Profile`, so name it `customer-profile.template.md`, or make its `type` the type its name says.",
+      ".okforest/types/widget.schema.json:1:59 warning okforest/type-file-name This schema is for `顧客`, so name it `顧客.schema.json`, or make its `title` the type its name says.",
+    ])
+  })
+})
+
 describe("okf/footnote-source", () => {
   it("is quiet when the concept keys no sources", async () => {
     expect(

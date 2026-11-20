@@ -57,6 +57,15 @@ ${entries}
 
 const CHURN_ENTRY = "* [Monthly churn](churn.md) - The share of customers who cancel in a month."
 
+/** A schema for the example concept's type. */
+const METRIC_SCHEMA_JSON = `{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Metric",
+  "description": "A number the business tracks.",
+  "type": "object"
+}
+`
+
 /** The root index of a tree on OKF 0.2, for the rules that apply only to it. */
 const rootIndex02 = (entries: string) => rootIndex(entries).replace('"0.3"', '"0.2"')
 
@@ -711,6 +720,73 @@ owner:
 # Definition
 `,
       context: { "index.md": rootIndex(CHURN_ENTRY), "churn.md": churn() },
+    },
+  },
+
+  "okforest/type-file-name": {
+    why: `A type's schema and template in \`.okforest/types/\` are found by its name: \`okforest types init\` writes \`customer-profile.schema.json\` for \`Customer Profile\`, and people look for a type's files the same way. OKForest reads which type a file is for from inside it (a schema's \`title\`, a template's \`type\`), so a file named for another type still works, but it misleads anyone reading the folder, and it's what renaming a type or splitting a tree leaves behind. The name is the type in lowercase, with a hyphen for each run of spaces and punctuation ([Types](${SITE}/docs/types/#how-a-schema-applies)).`,
+    example: {
+      file: ".okforest/types/kpi.schema.json",
+      fails: METRIC_SCHEMA_JSON,
+      findings: [
+        "3:3 This schema is for `Metric`, so name it `metric.schema.json`, or make its `title` the type its name says.",
+      ],
+      fixed: METRIC_SCHEMA_JSON,
+      fixedFile: ".okforest/types/metric.schema.json",
+      context: { "index.md": rootIndex(CHURN_ENTRY), "churn.md": churn() },
+    },
+  },
+
+  "okforest/unused-type": {
+    why: `A type's schema and template in \`.okforest/types/\` describe the concepts that give its \`type\`. One that no concept gives checks nothing: often it's left behind when a type is renamed, or when a tree is split and its pages move to another tree ([Scaling](${SITE}/docs/guides/scaling/#how-to-split-a-tree)), and it still offers the type for new pages. A type can also be defined before its first page is written, as a template's are, so this is only noted: remove the files if no page will use the type.`,
+    example: {
+      file: ".okforest/types/budget.schema.json",
+      fails: `{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Budget",
+  "description": "A plan for spending, by period.",
+  "type": "object"
+}
+`,
+      findings: [
+        "3:3 No concept in this tree has the type `Budget`: if none will, remove `budget.schema.json`.",
+      ],
+      context: {
+        "index.md": rootIndex(CHURN_ENTRY),
+        "churn.md": churn(),
+        ".okforest/types/metric.schema.json": METRIC_SCHEMA_JSON,
+      },
+    },
+  },
+
+  "okforest/undeclared-type": {
+    why: `A tree that describes its types with schemas in \`.okforest/types/\` relies on them: a type's schema checks its concepts' fields, and its template starts new ones. A type its concepts give that has no schema is checked by nothing, and is usually a type that was added without one, or a variant of one that has one. \`okforest types init\` drafts a schema for each such type from its concepts. A tree with no schemas has chosen not to use them, so it's left alone, as is OKF's own \`Attested Computation\`, whose fields OKF defines.`,
+    example: {
+      file: "churn.md",
+      fails: churn(),
+      findings: [
+        "2:1 `Metric` (1 concept) has no schema in `.okforest/types/`, so its fields aren't checked: add `.okforest/types/metric.schema.json` (`okforest types init` drafts it).",
+      ],
+      context: {
+        "index.md": rootIndex(
+          `${CHURN_ENTRY}\n* [Refunds](refunds.md) - When customers get their money back.`,
+        ),
+        "refunds.md": `---
+type: Policy
+title: Refunds
+description: When customers get their money back.
+---
+
+Customers can return any order within 30 days.
+`,
+        ".okforest/types/policy.schema.json": `{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Policy",
+  "description": "A rule the business follows.",
+  "type": "object"
+}
+`,
+      },
     },
   },
 

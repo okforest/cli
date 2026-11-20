@@ -153,6 +153,9 @@ it in more detail.
 | `okforest/settings-keys`       | warning  | `.okforest/settings.yaml` uses only the settings OKForest knows; others, such as a misspelled key, are ignored.                                                                                                                               |
 | `okforest/type-schema`         | error    | Concepts match their type's JSON Schema in `.okforest/types/`, and each schema there is a usable JSON Schema for one type.                                                                                                                    |
 | `okforest/type-template`       | error    | Each type template in `.okforest/types/` starts with front matter naming its `type`, and a type has one template.                                                                                                                             |
+| `okforest/type-file-name`      | warning  | A type's schema and template in `.okforest/types/` are named for it: `Customer Profile` in `customer-profile.schema.json` and `customer-profile.template.md`.                                                                                 |
+| `okforest/unused-type`         | info     | Each type schema and template in `.okforest/types/` is for a type some concept in the tree gives.                                                                                                                                             |
+| `okforest/undeclared-type`     | info     | In a tree with type schemas, each type its concepts give has one in `.okforest/types/`.                                                                                                                                                       |
 | `okforest/similar-type`        | warning  | A concept's `type` isn't a near-duplicate (case, punctuation, plural, or spelling) of a type more concepts use, or one with a schema.                                                                                                         |
 | `okforest/similar-tag`         | warning  | A concept's tags aren't near-duplicates (case, punctuation, plural, or spelling) of tags more concepts use.                                                                                                                                   |
 | `okforest/slug`                | warning  | File and directory names of concepts are slugs: lowercase letters, digits, hyphens, and underscores.                                                                                                                                          |
@@ -255,7 +258,12 @@ type's schema: an empty `owner:` is how it says "fill this in", and the new
 page is checked like any concept, so `okforest new` shows what's left. A
 template is never a concept (nothing under `.okforest/` is); the
 `okforest/type-template` rule checks that each one names its type, and that a
-type has one.
+type has one. A type's schema and template are named for it
+(`customer-profile.schema.json` and `customer-profile.template.md` for
+`Customer Profile`, as `okforest/type-file-name` checks), and the type rules
+note what drifts: a type no concept gives any more (`okforest/unused-type`,
+often left by a renamed type or a split tree), and, in a tree with schemas, a
+type its concepts give that has none (`okforest/undeclared-type`).
 
 ```sh
 npx okforest new Metric metrics/churn.md --title "Monthly churn"

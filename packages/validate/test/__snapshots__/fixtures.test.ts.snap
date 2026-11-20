@@ -251,10 +251,13 @@ exports[`rule fixtures > okforest/similar-tag 1`] = `
 
 exports[`rule fixtures > okforest/similar-type 1`] = `
 [
+  ".okforest/types/customer-profile.schema.json:3:3 info okforest/unused-type No concept in this tree has the type \`Customer Profile\`: if none will, remove \`customer-profile.schema.json\`.",
   "acme.md:2:1 warning okforest/similar-type Type \`customer-profile\` (1 concept) looks like \`Customer Profile\` (a schema): did you mean \`Customer Profile\`?",
   "arr.md:2:1 warning okforest/similar-type Type \`metric\` (1 concept) looks like \`Metric\` (2 concepts): did you mean \`Metric\`?",
+  "churn.md:2:1 info okforest/undeclared-type \`Metric\` (2 concepts) has no schema in \`.okforest/types/\`, so its fields aren't checked: add \`.okforest/types/metric.schema.json\` (\`okforest types init\` drafts it).",
   "mrr.md:2:1 warning okforest/similar-type Type \`Metrc\` (1 concept) looks like \`Metric\` (2 concepts): did you mean \`Metric\`?",
   "nps.md:2:1 warning okforest/similar-type Type \`Metrics\` (1 concept) looks like \`Metric\` (2 concepts): did you mean \`Metric\`?",
+  "refunds.md:2:1 info okforest/undeclared-type \`Policy\` (1 concept) has no schema in \`.okforest/types/\`, so its fields aren't checked: add \`.okforest/types/policy.schema.json\` (\`okforest types init\` drafts it).",
 ]
 `;
 
@@ -265,11 +268,22 @@ exports[`rule fixtures > okforest/slug 1`] = `
 ]
 `;
 
+exports[`rule fixtures > okforest/type-file-name 1`] = `
+[
+  ".okforest/types/kpi.schema.json:3:3 warning okforest/type-file-name This schema is for \`Metric\`, so name it \`metric.schema.json\`, or make its \`title\` the type its name says.",
+  ".okforest/types/measure.template.md:2:1 warning okforest/type-file-name This template is for \`Metric\`, so name it \`metric.template.md\`, or make its \`type\` the type its name says.",
+]
+`;
+
 exports[`rule fixtures > okforest/type-schema 1`] = `
 [
   ".okforest/types/broken.schema.json:3:1 error okforest/type-schema Not valid JSON: Expected double-quoted property name.",
+  ".okforest/types/customer.v2.schema.json:1:3 warning okforest/type-file-name This schema is for \`Customer\`, so name it \`customer.schema.json\`, or make its \`title\` the type its name says.",
   ".okforest/types/customer.v2.schema.json:1:3 error okforest/type-schema .okforest/types/customer.schema.json is already the schema for \`Customer\`; a type has one schema.",
+  ".okforest/types/dangling.schema.json:2:3 info okforest/unused-type No concept in this tree has the type \`Dangling\`: if none will, remove \`dangling.schema.json\`.",
   ".okforest/types/dangling.schema.json:3:30 error okforest/type-schema \`$ref\` \`#/$defs/person\` leads nowhere in this schema.",
+  ".okforest/types/list.schema.json:2:3 warning okforest/type-file-name This schema is for \`Regions\`, so name it \`regions.schema.json\`, or make its \`title\` the type its name says.",
+  ".okforest/types/list.schema.json:2:3 info okforest/unused-type No concept in this tree has the type \`Regions\`: if none will, remove \`list.schema.json\`.",
   ".okforest/types/list.schema.json:3:3 error okforest/type-schema A type schema describes frontmatter, which is a mapping: its \`type\` must be \`object\`, not \`array\`.",
   ".okforest/types/not-object.schema.json:1:1 error okforest/type-schema A type schema must be a JSON object (got a list).",
   ".okforest/types/untitled.schema.json:1:1 error okforest/type-schema A type schema needs a \`title\`: the type it's for, as concepts write it in \`type\`.",
@@ -289,8 +303,21 @@ exports[`rule fixtures > okforest/type-template 1`] = `
   ".okforest/types/bare.template.md:1:1 error okforest/type-template A type template starts with front matter between \`---\` lines, naming the type it's for (\`type: Metric\`).",
   ".okforest/types/broken.template.md:3:17 error okforest/type-template Invalid YAML: Flow sequence in block collection must be sufficiently indented and end with a ]",
   ".okforest/types/listed.template.md:2:1 error okforest/type-template A type template needs a \`type\`: the type it's for, as concepts write it.",
+  ".okforest/types/second-metric.template.md:2:1 warning okforest/type-file-name This template is for \`Metric\`, so name it \`metric.template.md\`, or make its \`type\` the type its name says.",
   ".okforest/types/second-metric.template.md:2:1 error okforest/type-template .okforest/types/metric.template.md is already the template for \`Metric\`; a type has one template.",
   ".okforest/types/untyped.template.md:1:1 error okforest/type-template A type template needs a \`type\`: the type it's for, as concepts write it.",
+]
+`;
+
+exports[`rule fixtures > okforest/undeclared-type 1`] = `
+[
+  "example.md:2:1 info okforest/undeclared-type \`Metric\` (1 concept) has no schema in \`.okforest/types/\`, so its fields aren't checked: add \`.okforest/types/metric.schema.json\` (\`okforest types init\` drafts it).",
+]
+`;
+
+exports[`rule fixtures > okforest/unused-type 1`] = `
+[
+  ".okforest/types/budget.schema.json:3:3 info okforest/unused-type No concept in this tree has the type \`Budget\`: if none will, remove \`budget.schema.json\` and \`budget.template.md\`.",
 ]
 `;
 

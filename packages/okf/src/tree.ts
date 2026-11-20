@@ -40,6 +40,18 @@ export const MERMAID_RENDERERS: readonly MermaidRenderer[] = ["mermaid", "pele"]
  * type (an OKForest convention, not OKF). */
 export const TYPES_FOLDER = ".okforest/types/"
 
+/** A type's name as its files in {@link TYPES_FOLDER} are named, before
+ * `.schema.json` and `.template.md`: `BigQuery Table` → `bigquery-table`,
+ * `顧客` → `顧客`; `type` when no letter or digit is left. */
+export function typeSlug(type: string): string {
+  return (
+    type
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}]+/gu, "-")
+      .replace(/^-+|-+$/g, "") || "type"
+  )
+}
+
 /** Whether a bundle path is a type schema: a `.schema.json` file in
  * {@link TYPES_FOLDER}, the name editors check as a JSON Schema. */
 export function isTypeSchemaPath(path: string): boolean {
