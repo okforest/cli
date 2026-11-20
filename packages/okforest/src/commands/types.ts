@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from "node:fs/promises"
 import { join, resolve } from "node:path"
-import { type Concept, TYPES_FOLDER } from "@okforest/okf"
+import { type Concept, TYPES_FOLDER, typeSlug } from "@okforest/okf"
 import { draftTypeSchema } from "@okforest/validate"
 import { parseCommand } from "../args.js"
 import { EXIT, type Io, UsageError, VERSION } from "../io.js"
@@ -75,7 +75,7 @@ async function typesInit(args: readonly string[], io: Io): Promise<number> {
   let drafted = 0
   for (const type of wanted) {
     const concepts = byType.get(type) as Concept[]
-    const file = `${TYPES_FOLDER}${slug(type)}.schema.json`
+    const file = `${TYPES_FOLDER}${typeSlug(type)}.schema.json`
     if (schemas.has(type)) {
       lines.push(`  skipped  ${type}: it has a schema already`)
       continue
@@ -116,15 +116,4 @@ async function typesInit(args: readonly string[], io: Io): Promise<number> {
         : ""),
   )
   return EXIT.ok
-}
-
-/** `BigQuery Table` → `bigquery-table`, `顧客` → `顧客`; `type` when no
- * letter or digit is left. */
-function slug(type: string): string {
-  return (
-    type
-      .toLowerCase()
-      .replace(/[^\p{L}\p{N}]+/gu, "-")
-      .replace(/^-+|-+$/g, "") || "type"
-  )
 }

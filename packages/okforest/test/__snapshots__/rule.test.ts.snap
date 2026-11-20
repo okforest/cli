@@ -87,8 +87,11 @@ OKForest conventions
   okforest/similar-tag          warning  A concept's tags aren't near-duplicates (case, punctuation, plural, or spelling) of tags more concepts use.
   okforest/similar-type         warning  A concept's \`type\` isn't a near-duplicate (case, punctuation, plural, or spelling) of a type more concepts use, or one with a schema.
   okforest/slug                 warning  File and directory names of concepts are slugs: lowercase letters, digits, hyphens, and underscores.
+  okforest/type-file-name       warning  A type's schema and template in \`.okforest/types/\` are named for it: \`Customer Profile\` in \`customer-profile.schema.json\` and \`customer-profile.template.md\`.
   okforest/type-schema          error    Concepts match their type's JSON Schema in \`.okforest/types/\`, and each schema there is a usable JSON Schema for one type.
   okforest/type-template        error    Each type template in \`.okforest/types/\` starts with front matter naming its \`type\`, and a type has one template.
+  okforest/undeclared-type      info     In a tree with type schemas, each type its concepts give has one in \`.okforest/types/\`.
+  okforest/unused-type          info     Each type schema and template in \`.okforest/types/\` is for a type some concept in the tree gives.
   okforest/wikilink             warning  Concepts link with standard markdown links, not \`[[wikilinks]]\` (OKF §6.1).
 
 Run \`okforest rule <rule>\` for why a rule exists and how to fix it.

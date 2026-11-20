@@ -38,6 +38,7 @@ import {
 import { similarTag, similarType } from "./similar.js"
 import { typeSchema } from "./type-schema.js"
 import { typeTemplate } from "./type-template.js"
+import { typeFileName, undeclaredType, unusedType } from "./type-usage.js"
 
 /** Rules from the OKF specification, by the version a tree declares (0.2
  * and 0.3). */
@@ -76,6 +77,9 @@ export const okforestRules: readonly Rule[] = [
   settingsKeys,
   typeSchema,
   typeTemplate,
+  typeFileName,
+  unusedType,
+  undeclaredType,
   similarType,
   similarTag,
   slug,
