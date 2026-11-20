@@ -48,15 +48,15 @@ const outline = outlineTree(paths, settingsText, typeTexts, {
   okfVersion: declaredOkfVersion(rootIndexText),
 })
 for (const path of outline.markdown) {
-  // A Concept, a ReservedFile (index.md, log.md), or, under OKF 0.3, an
-  // OtherFile: one without a `type`, which isn't a concept (§3.2).
+  // A Concept, a ReservedMarkdown (index.md, log.md), or, under OKF 0.3, an
+  // OtherMarkdown: one without a `type`, which isn't a concept (§3.2).
   const file = outline.read(path, await textOf(path))
   // ...use it, and let it go
 }
 ```
 
 Read this way, a link's `concept` is the ID its target's path gives: under
-OKF 0.3 that file may turn out to be an `OtherFile` once it's read, which
+OKF 0.3 that file may turn out to be an `OtherMarkdown` once it's read, which
 `parseTree` accounts for and a reader going a file at a time has to.
 
 Parsing never throws on malformed content: problems are recorded on each file

@@ -101,7 +101,7 @@ describe("parseTree", () => {
     })
     const t = tree(files("0.3"))
     expect(t.concepts.map((c) => c.path)).toEqual(["orders.md"])
-    expect(t.others.map((o) => [o.path, o.kind, o.hasFrontmatter])).toEqual([
+    expect(t.otherMarkdown.map((o) => [o.path, o.kind, o.hasFrontmatter])).toEqual([
       ["README.md", "other", false],
       ["blank.md", "other", true],
       ["broken.md", "other", true],
@@ -130,7 +130,7 @@ describe("parseTree", () => {
     ).toEqual(["README", "notes"])
     // Under 0.2, every one is a concept.
     const legacy = tree(files("0.2"))
-    expect(legacy.others).toEqual([])
+    expect(legacy.otherMarkdown).toEqual([])
     expect(legacy.concepts.map((c) => c.path)).toEqual([
       "README.md",
       "blank.md",

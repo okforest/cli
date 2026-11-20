@@ -2,7 +2,7 @@ import {
   LATEST_OKF_VERSION,
   okfVersionAtLeast,
   parseOkfVersion,
-  type ReservedFile,
+  type ReservedMarkdown,
   visit,
 } from "@okforest/okf"
 import type { Heading, List, ListItem } from "mdast"
@@ -11,7 +11,7 @@ import { at, isIsoDate, isOkf03, show } from "../util.js"
 
 /** OKF §11.1: a frontmatter block parses. Under OKF 0.2, every
  * non-reserved `.md` file has one; under 0.3 a file without one isn't a
- * concept (§3.2) but an OtherFile, which okf/not-a-concept reports.
+ * concept (§3.2) but an OtherMarkdown, which okf/not-a-concept reports.
  * Unreadable blocks in any file are reported here. */
 export const frontmatter: Rule = {
   id: "okf/frontmatter",
@@ -35,7 +35,7 @@ export const frontmatter: Rule = {
 }
 
 /** OKF §11.2: under OKF 0.2, every frontmatter block has a non-empty
- * `type`; under 0.3 one without isn't a concept (§3.2) but an OtherFile,
+ * `type`; under 0.3 one without isn't a concept (§3.2) but an OtherMarkdown,
  * which okf/not-a-concept reports. */
 export const type: Rule = {
   id: "okf/type",
@@ -184,13 +184,13 @@ export const indexScope: Rule = {
   },
 }
 
-function topLevelItems(index: ReservedFile): ListItem[] {
+function topLevelItems(index: ReservedMarkdown): ListItem[] {
   return index.ast.children
     .filter((node): node is List => node.type === "list")
     .flatMap((list) => list.children)
 }
 
-const dateHeadings = (log: ReservedFile) =>
+const dateHeadings = (log: ReservedMarkdown) =>
   log.ast.children
     .filter((node): node is Heading => node.type === "heading" && node.depth === 2)
     .map((heading) => ({

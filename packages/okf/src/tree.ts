@@ -17,8 +17,8 @@ import type {
   DiagramSettings,
   Link,
   MermaidRenderer,
-  OtherFile,
-  ReservedFile,
+  OtherMarkdown,
+  ReservedMarkdown,
   Tree,
   TreeFile,
   TreeOutline,
@@ -83,20 +83,20 @@ export function parseTree(input: Iterable<TreeFile>): Tree {
   const okfVersion = declaredOkfVersion(texts.get("index.md"))
   const outline = outlineTree(texts.keys(), texts.get(SETTINGS_PATH), typeTexts, { okfVersion })
   const concepts: Concept[] = []
-  const reserved: ReservedFile[] = []
-  const others: OtherFile[] = []
+  const reserved: ReservedMarkdown[] = []
+  const otherMarkdown: OtherMarkdown[] = []
   for (const path of outline.markdown) {
     const file = outline.read(path, texts.get(path) ?? "")
     if (file.kind === "concept") concepts.push(file)
-    else if (file.kind === "other") others.push(file)
+    else if (file.kind === "other") otherMarkdown.push(file)
     else reserved.push(file)
   }
 
   const byId = new Map(concepts.map((c) => [c.id, c]))
   // A link names a concept by its target's path, read before the target was;
   // one that turned out not to be a concept (OKF 0.3 §3.2) doesn't.
-  if (others.length > 0) {
-    for (const file of [...concepts, ...reserved, ...others]) {
+  if (otherMarkdown.length > 0) {
+    for (const file of [...concepts, ...reserved, ...otherMarkdown]) {
       const paths = file.kind === "concept" ? file.paths : []
       for (const link of [...file.links, ...paths]) {
         if (link.concept !== undefined && !byId.has(link.concept)) delete link.concept
@@ -119,7 +119,7 @@ export function parseTree(input: Iterable<TreeFile>): Tree {
     files: outline.files,
     concepts,
     reserved,
-    others,
+    otherMarkdown,
     ignored: outline.ignored,
     ...(outline.settings ? { settings: outline.settings } : {}),
     types: outline.types,
@@ -128,7 +128,7 @@ export function parseTree(input: Iterable<TreeFile>): Tree {
       ? { okfVersion: rootIndex.frontmatter.okf_version }
       : {}),
     ...(metadata ? { metadata } : {}),
-    links: [...concepts, ...reserved, ...others]
+    links: [...concepts, ...reserved, ...otherMarkdown]
       .sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0))
       .flatMap((doc) => doc.links),
     concept: (id) => byId.get(id),

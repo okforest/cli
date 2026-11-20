@@ -1,4 +1,4 @@
-import type { Concept, OtherFile, ReservedFile, Tree, TreeOutline } from "@okforest/okf"
+import type { Concept, OtherMarkdown, ReservedMarkdown, Tree, TreeOutline } from "@okforest/okf"
 import { defaultDiagramLoaders } from "./rules/diagrams.js"
 import { defaultRules } from "./rules/index.js"
 import type { CheckContext, Finding, Rule, ValidateOptions, ValidationResult } from "./types.js"
@@ -12,7 +12,7 @@ export async function validate(
   tree: Tree,
   options: ValidateOptions = {},
 ): Promise<ValidationResult> {
-  const files = [...tree.concepts, ...tree.reserved, ...tree.others].sort((a, b) =>
+  const files = [...tree.concepts, ...tree.reserved, ...tree.otherMarkdown].sort((a, b) =>
     compare(a.path, b.path),
   )
   const run = new Run(
@@ -38,7 +38,7 @@ export async function validate(
 /** Checks a tree read one file at a time ({@link TreeOutline.read}). */
 export interface TreeChecker {
   /** Checks one of the outline's markdown files, as read. */
-  check(file: Concept | ReservedFile | OtherFile): Promise<void>
+  check(file: Concept | ReservedMarkdown | OtherMarkdown): Promise<void>
   /** Checks the tree as a whole, and returns every finding, as
    * {@link validate} would for the whole tree. Always call it: it also
    * disposes of the run's resources (diagram engines). */
@@ -113,7 +113,7 @@ class Run {
     }
   }
 
-  async file(file: Concept | ReservedFile | OtherFile): Promise<void> {
+  async file(file: Concept | ReservedMarkdown | OtherMarkdown): Promise<void> {
     this.#files++
     if (file.kind === "concept") this.#concepts++
     for (const { rule, context } of this.#rules) await rule.checkFile?.(file, context)
