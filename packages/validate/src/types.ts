@@ -1,4 +1,4 @@
-import type { Concept, ReservedFile, TreeOutline } from "@okforest/okf"
+import type { Concept, OtherMarkdown, ReservedMarkdown, TreeOutline } from "@okforest/okf"
 
 /** `error` fails validation; `warning` and `info` are reported but never fail. */
 export type Severity = "error" | "warning" | "info"
@@ -58,7 +58,10 @@ export interface Rule {
   description: string
   /** Checks one of the tree's markdown files: a concept, `index.md`, or
    * `log.md`. Runs once for each, in any order. */
-  checkFile?(file: Concept | ReservedFile, context: CheckContext): void | Promise<void>
+  checkFile?(
+    file: Concept | ReservedMarkdown | OtherMarkdown,
+    context: CheckContext,
+  ): void | Promise<void>
   /** Checks what belongs to the tree as a whole, from its outline: its
    * paths and settings. Runs once, after every file. */
   checkTree?(context: CheckContext): void | Promise<void>

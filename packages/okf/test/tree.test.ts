@@ -90,6 +90,57 @@ describe("parseTree", () => {
     expect(tree({ "index.md": '---\nokf_version: "0.3"\n---\n' }).metadata).toBeUndefined()
   })
 
+  it("reads a file without frontmatter or a type as not a concept under 0.3 (OKF §3.2)", () => {
+    const files = (version: string) => ({
+      "index.md": `---\nokf_version: "${version}"\n---\n`,
+      "README.md": "# About\n\nStart at [orders](orders.md).\n",
+      "notes.md": concept("", "title: Notes"),
+      "blank.md": concept("", 'type: " "'),
+      "broken.md": "---\ntype: [\n---\n",
+      "orders.md": concept("See [the README](README.md) and [notes](notes.md)."),
+    })
+    const t = tree(files("0.3"))
+    expect(t.concepts.map((c) => c.path)).toEqual(["orders.md"])
+    expect(t.otherMarkdown.map((o) => [o.path, o.kind, o.hasFrontmatter])).toEqual([
+      ["README.md", "other", false],
+      ["blank.md", "other", true],
+      ["broken.md", "other", true],
+      ["notes.md", "other", true],
+    ])
+    expect(t.concept("README")).toBeUndefined()
+    // Links to them don't name a concept, so they aren't graph edges…
+    expect(t.concept("orders")?.links.map((l) => [l.target, l.exists, l.concept])).toEqual([
+      ["README.md", true, undefined],
+      ["notes.md", true, undefined],
+    ])
+    expect(t.backlinks("README")).toEqual([])
+    // …but their own links are still the tree's.
+    expect(t.links.map((l) => [l.from, l.target, l.concept])).toContainEqual([
+      "README.md",
+      "orders.md",
+      "orders",
+    ])
+    // Read a file at a time, a link names the concept its path would be.
+    const outline = outlineTree(Object.keys(files("0.3")), undefined, new Map(), {
+      okfVersion: "0.3",
+    })
+    expect(outline.read("README.md", files("0.3")["README.md"]).kind).toBe("other")
+    expect(
+      outline.read("orders.md", files("0.3")["orders.md"]).links.map((l) => l.concept),
+    ).toEqual(["README", "notes"])
+    // Under 0.2, every one is a concept.
+    const legacy = tree(files("0.2"))
+    expect(legacy.otherMarkdown).toEqual([])
+    expect(legacy.concepts.map((c) => c.path)).toEqual([
+      "README.md",
+      "blank.md",
+      "broken.md",
+      "notes.md",
+      "orders.md",
+    ])
+    expect(legacy.backlinks("README").map((l) => l.from)).toEqual(["orders.md"])
+  })
+
   it("classifies concepts and reserved files at any depth", () => {
     const t = tree({
       "index.md": '---\nokf_version: "0.2"\n---\n# Root\n',

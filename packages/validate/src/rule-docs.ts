@@ -144,7 +144,7 @@ Churn is the customers who cancel in a month, divided by the customers at its st
   },
 
   "okf/broken-link": {
-    why: `Concepts link to each other with ordinary markdown links: bundle-relative, like \`/tables/customers.md\` (recommended, as it survives moving the linking file), or relative, like \`./other.md\` ([§6.1](${SPEC}#61-links-between-concepts)). OKF says a broken link isn't malformed, since it may point at knowledge not written yet, and consumers must not reject a bundle for one ([§11](${SPEC}#11-conformance)). So this is a warning: it finds links to files that don't exist, and links that climb out of the tree.`,
+    why: `Concepts link to each other with ordinary markdown links: bundle-relative, like \`/tables/customers.md\` (recommended, as it survives moving the linking file), or relative, like \`./other.md\` ([§6.1](${SPEC}#61-links-between-concepts)). Path fields such as \`resource\` and \`superseded_by\` are checked too: those written \`/…\`, \`./…\`, or \`../…\`, and under OKF 0.3 a bare one, which resolves from the concept's folder ([§6.2](${SPEC}#62-path-fields)), so a path 0.2's examples wrote from the tree's root needs its leading \`/\`. OKF says a broken link isn't malformed, since it may point at knowledge not written yet, and consumers must not reject a bundle for one ([§11](${SPEC}#11-conformance)). So this is a warning: it finds links to files that don't exist, and links that climb out of the tree.`,
     example: {
       file: "churn.md",
       fails: `---
@@ -618,12 +618,12 @@ ${CHURN_BODY}
   },
 
   "okforest/okf-version-current": {
-    why: `A bundle's root \`index.md\` declares the OKF version it was written to ([§12](${SPEC}#12-versioning)), and OKForest checks it by that version's rules, so a tree moves to a new version when it says so, not when a tool updates. OKF doesn't ask a bundle to move, which is why this is an OKForest convention: a tree on an older version is told the current one, \`0.3\`, to move when it's ready. Declare the new version, then fix what's reported; OKF lists [what changed](${SPEC}#13-changes-from-v02). A tree that declares a version newer than this validator knows is checked by the newest rules it does know, so update \`okforest\`, or the [GitHub Action](${SITE}/docs/github-action/).`,
+    why: `A bundle's root \`index.md\` declares the OKF version it was written to ([§12](${SPEC}#12-versioning)), and OKForest checks it by that version's rules, so a tree moves to a new version when it says so, not when a tool updates. OKF doesn't ask a bundle to move, which is why this is an OKForest convention: a tree on an older version is told the current one, \`0.3\`, to move when it's ready. Declare the new version, then fix what's reported: [Upgrade a tree to OKF 0.3](${SITE}/docs/guides/upgrade-to-okf-0-3/) goes through it, and OKF lists [what changed](${SPEC}#13-changes-from-v02). A tree that declares a version newer than this validator knows is checked by the newest rules it does know, so update \`okforest\`, or the [GitHub Action](${SITE}/docs/github-action/).`,
     example: {
       file: "index.md",
       fails: rootIndex02(CHURN_ENTRY),
       findings: [
-        "2:1 This tree declares OKF 0.2; 0.3 is current. Move when you're ready: declare `okf_version: \"0.3\"` and fix what's then reported (what changed: https://github.com/open-knowledge-format/open-knowledge-format/blob/main/SPEC.md#13-changes-from-v02).",
+        "2:1 This tree declares OKF 0.2; 0.3 is current. Move when you're ready: declare `okf_version: \"0.3\"` and fix what's then reported (how: https://www.okforest.ai/docs/guides/upgrade-to-okf-0-3/).",
       ],
       fixed: rootIndex(CHURN_ENTRY),
       context: { "churn.md": churn() },

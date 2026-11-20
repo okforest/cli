@@ -2,28 +2,26 @@ import {
   LATEST_OKF_VERSION,
   okfVersionAtLeast,
   parseOkfVersion,
-  type ReservedFile,
+  type ReservedMarkdown,
   visit,
 } from "@okforest/okf"
 import type { Heading, List, ListItem } from "mdast"
 import type { Rule } from "../types.js"
 import { at, isIsoDate, isOkf03, show } from "../util.js"
-import { hasType } from "./fields.js"
 
 /** OKF §11.1: a frontmatter block parses. Under OKF 0.2, every
  * non-reserved `.md` file has one; under 0.3 a file without one isn't a
- * concept (§3.2), which okf/not-a-concept reports. Unreadable blocks in
- * `index.md` and `log.md` are reported here too. */
+ * concept (§3.2) but an OtherMarkdown, which okf/not-a-concept reports.
+ * Unreadable blocks in any file are reported here. */
 export const frontmatter: Rule = {
   id: "okf/frontmatter",
   severity: "error",
   description:
     "Frontmatter blocks parse as YAML, and under OKF 0.2 every concept starts with one (OKF §4, §11).",
-  checkFile(file, context) {
-    const { report } = context
+  checkFile(file, { report }) {
     if (file.frontmatterError) {
       report({ file: file.path, ...file.frontmatterError })
-    } else if (file.kind === "concept" && !file.hasFrontmatter && !isOkf03(context)) {
+    } else if (file.kind === "concept" && !file.hasFrontmatter) {
       report({
         file: file.path,
         line: 1,
@@ -37,16 +35,15 @@ export const frontmatter: Rule = {
 }
 
 /** OKF §11.2: under OKF 0.2, every frontmatter block has a non-empty
- * `type`; under 0.3 one without isn't a concept (§3.2), which
- * okf/not-a-concept reports. */
+ * `type`; under 0.3 one without isn't a concept (§3.2) but an OtherMarkdown,
+ * which okf/not-a-concept reports. */
 export const type: Rule = {
   id: "okf/type",
   severity: "error",
   description:
     "Under OKF 0.2, every concept's frontmatter has a non-empty string `type` (OKF §4.1, §11).",
-  checkFile(concept, context) {
-    const { report } = context
-    if (concept.kind !== "concept" || !concept.frontmatter || isOkf03(context)) return
+  checkFile(concept, { report }) {
+    if (concept.kind !== "concept" || !concept.frontmatter) return
     const value = concept.frontmatter.type
     if (value === undefined) {
       report({
@@ -73,10 +70,10 @@ export const notAConcept: Rule = {
   severity: "warning",
   description:
     "Under OKF 0.3, a `.md` file without frontmatter or a `type` isn't a concept: consumers skip it (OKF §3.2).",
-  checkFile(file, context) {
-    if (file.kind !== "concept" || file.frontmatterError || !isOkf03(context)) return
-    if (file.frontmatter && hasType(file.frontmatter)) return
-    context.report({
+  checkFile(file, { report }) {
+    // An unreadable block is okf/frontmatter's to report.
+    if (file.kind !== "other" || file.frontmatterError) return
+    report({
       file: file.path,
       line: 1,
       column: 1,
@@ -187,13 +184,13 @@ export const indexScope: Rule = {
   },
 }
 
-function topLevelItems(index: ReservedFile): ListItem[] {
+function topLevelItems(index: ReservedMarkdown): ListItem[] {
   return index.ast.children
     .filter((node): node is List => node.type === "list")
     .flatMap((list) => list.children)
 }
 
-const dateHeadings = (log: ReservedFile) =>
+const dateHeadings = (log: ReservedMarkdown) =>
   log.ast.children
     .filter((node): node is Heading => node.type === "heading" && node.depth === 2)
     .map((heading) => ({

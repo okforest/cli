@@ -36,19 +36,28 @@ const tree = parseTree([
 
 A tree too large to hold parsed at once can be read one file at a time.
 `outlineTree` works out the tree from its paths alone (and the texts of the
-settings file and the type schemas); `read` then parses one of its markdown
-files, with its links resolved against the whole tree, as `parseTree` would:
+settings file, the type schemas, and the root `index.md`'s `okf_version`);
+`read` then parses one of its markdown files, with its links resolved against
+the whole tree, as `parseTree` would:
 
 ```ts
-import { outlineTree } from "@okforest/okf"
+import { declaredOkfVersion, outlineTree } from "@okforest/okf"
 
 // .okforest/settings.yaml, if any, and .okforest/types/*.schema.json by path
-const outline = outlineTree(paths, settingsText, typeTexts)
+const outline = outlineTree(paths, settingsText, typeTexts, {
+  okfVersion: declaredOkfVersion(rootIndexText),
+})
 for (const path of outline.markdown) {
-  const file = outline.read(path, await textOf(path)) // a Concept or ReservedFile
+  // A Concept, a ReservedMarkdown (index.md, log.md), or, under OKF 0.3, an
+  // OtherMarkdown: one without a `type`, which isn't a concept (§3.2).
+  const file = outline.read(path, await textOf(path))
   // ...use it, and let it go
 }
 ```
+
+Read this way, a link's `concept` is the ID its target's path gives: under
+OKF 0.3 that file may turn out to be an `OtherMarkdown` once it's read, which
+`parseTree` accounts for and a reader going a file at a time has to.
 
 Parsing never throws on malformed content: problems are recorded on each file
 (`frontmatterError`) for [`@okforest/validate`](https://www.npmjs.com/package/@okforest/validate)

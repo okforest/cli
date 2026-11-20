@@ -10,17 +10,15 @@ import {
   visit,
 } from "@okforest/okf"
 import type { Report, Rule } from "../types.js"
-import { at, describeType, isOkf03, show, slugify } from "../util.js"
-import { hasType } from "./fields.js"
+import { at, describeType, show, slugify } from "../util.js"
 
 /** Lowercase letters, digits, hyphens, and underscores, starting with a
  * letter or digit: `monthly-churn`, and `n_day_active_users`, named after a
  * table. */
 const SLUG = /^[a-z0-9][a-z0-9_-]*$/
 
-/** Where OKF's changes from one version to the next are listed. */
-const CHANGES =
-  "https://github.com/open-knowledge-format/open-knowledge-format/blob/main/SPEC.md#13-changes-from-v02"
+/** How to move a tree to the current version, step by step. */
+const UPGRADE = "https://www.okforest.ai/docs/guides/upgrade-to-okf-0-3/"
 
 /**
  * An OKForest convention, not OKF's: OKF doesn't ask a bundle to move to a
@@ -45,7 +43,7 @@ export const okfVersionCurrent: Rule = {
       ...at(root, ["okf_version"]),
       message: okfVersionAtLeast(value, LATEST_OKF_VERSION)
         ? `This tree declares OKF ${declared}, newer than this validator knows (${LATEST_OKF_VERSION}), so it's checked by ${LATEST_OKF_VERSION}'s rules: update okforest, or okforest/validate-action.`
-        : `This tree declares OKF ${declared}; ${LATEST_OKF_VERSION} is current. Move when you're ready: declare \`okf_version: "${LATEST_OKF_VERSION}"\` and fix what's then reported (what changed: ${CHANGES}).`,
+        : `This tree declares OKF ${declared}; ${LATEST_OKF_VERSION} is current. Move when you're ready: declare \`okf_version: "${LATEST_OKF_VERSION}"\` and fix what's then reported (how: ${UPGRADE}).`,
     })
   },
 }
@@ -58,9 +56,8 @@ export const slug: Rule = {
   description:
     "File and directory names of concepts are slugs: lowercase letters, digits, hyphens, and underscores.",
   checkFile(file, context) {
-    if (file.kind !== "concept") return
     // Under OKF 0.3 a file without a `type` isn't a concept (a README).
-    if (isOkf03(context) && !(file.frontmatter && hasType(file.frontmatter))) return
+    if (file.kind !== "concept") return
     const { report } = context
     const stem = (file.path.split("/").at(-1) as string).slice(0, -".md".length)
     if (!SLUG.test(stem)) report({ file: file.path, message: notSlug(stem, "File name") })

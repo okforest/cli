@@ -54,7 +54,11 @@ export interface Link {
   directory?: boolean
   /** For internal links: the path climbs above the bundle root. */
   outside?: boolean
-  /** For internal links to a concept: its concept ID. */
+  /** For internal links to a concept: its concept ID. Read a file at a time
+   * ({@link TreeOutline.read}), it's the ID the target's path gives, since
+   * under OKF 0.3 whether that file is a concept isn't known until it's read
+   * (it may be an {@link OtherMarkdown}); a {@link Tree} keeps it only for
+   * concepts. */
   concept?: string
   /** For a path field (spec §6.2) rather than a link in the body: the
    * frontmatter key it's written in, such as `superseded_by` or
@@ -130,7 +134,9 @@ export interface BundleMetadata {
   license?: string
 }
 
-/** A concept document: any non-reserved `.md` file. */
+/** A concept document: a `.md` file other than `index.md` and `log.md`.
+ * Under OKF 0.3 only one whose frontmatter has a non-empty `type` is one
+ * (spec §3.2); the rest are {@link OtherMarkdown}. */
 export interface Concept extends MarkdownFile {
   kind: "concept"
   /** Concept ID: the path without the `.md` suffix (spec §2). */
@@ -171,11 +177,20 @@ export interface Concept extends MarkdownFile {
   isStale(now?: Date): boolean
 }
 
-/** A reserved file: `index.md` (spec §8) or `log.md` (spec §9). */
-export interface ReservedFile extends MarkdownFile {
+/** A reserved markdown file: `index.md` (spec §8) or `log.md` (spec §9). */
+export interface ReservedMarkdown extends MarkdownFile {
   kind: "index" | "log"
   /** Bundle-relative directory the file describes (`""` for the root). */
   directory: string
+}
+
+/** A markdown file that isn't a concept, `index.md`, or `log.md`: under OKF
+ * 0.3, one without frontmatter or a non-empty `type` (spec §3.2), such as a
+ * `README.md`. Consumers skip it: it isn't listed, searched, or linked to as
+ * a concept. Under OKF 0.2, or no version, every such file is a
+ * {@link Concept}. */
+export interface OtherMarkdown extends MarkdownFile {
+  kind: "other"
 }
 
 /** `.okforest/settings.yaml`, OKForest's settings for a bundle (not part of OKF). */
@@ -255,7 +270,8 @@ export interface TreeOutline {
   /** Every file path in the tree, sorted. */
   files: string[]
   /** The markdown files that are part of the tree, sorted: its concepts,
-   * `index.md`, and `log.md` files, without those the settings ignore. */
+   * `index.md`, and `log.md` files, and under OKF 0.3 those that aren't
+   * concepts ({@link OtherMarkdown}), without those the settings ignore. */
   markdown: string[]
   /** Markdown files left out by the settings' `ignore:` globs. */
   ignored: string[]
@@ -268,8 +284,9 @@ export interface TreeOutline {
    * was given (spec §12): it decides which version's rules apply. */
   okfVersion?: unknown
   /** Read one of {@link markdown}, with its links resolved against the whole
-   * tree, as {@link Tree} holds it. Throws for any other path. */
-  read(path: string, text: string): Concept | ReservedFile
+   * tree, as {@link Tree} holds it: under OKF 0.3, a file without a `type`
+   * is an {@link OtherMarkdown}, which isn't a concept. Throws for any other path. */
+  read(path: string, text: string): Concept | ReservedMarkdown | OtherMarkdown
 }
 
 /** A tree (an OKF bundle) read into a model. */
@@ -279,7 +296,10 @@ export interface Tree {
   /** Concepts, sorted by path. */
   concepts: Concept[]
   /** `index.md` and `log.md` files, sorted by path. */
-  reserved: ReservedFile[]
+  reserved: ReservedMarkdown[]
+  /** Markdown files that aren't concepts (OKF 0.3 §3.2: no frontmatter or
+   * no `type`), sorted by path; always empty under 0.2. */
+  otherMarkdown: OtherMarkdown[]
   /** Markdown files left out by the settings' `ignore:` globs. */
   ignored: string[]
   settings?: TreeSettings

@@ -11,15 +11,8 @@ const eachConcept =
   ): NonNullable<Rule["checkFile"]> =>
   (file, context) => {
     if (file.kind !== "concept" || !file.frontmatter) return
-    // Under OKF 0.3 a file without a `type` isn't a concept (§3.2):
-    // okf/not-a-concept says so, and nothing else checks it as one.
-    if (isOkf03(context) && !hasType(file.frontmatter)) return
     fn(file, file.frontmatter, context)
   }
-
-/** Whether frontmatter has the non-empty `type` that makes a concept (OKF §3.2). */
-export const hasType = (fm: Record<string, unknown>): boolean =>
-  typeof fm.type === "string" && fm.type.trim() !== ""
 
 const reporter =
   (report: (r: Report) => void, concept: Concept) => (path: KeyPath, message: string) =>

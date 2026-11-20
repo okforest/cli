@@ -17,7 +17,8 @@ import type {
   DiagramSettings,
   Link,
   MermaidRenderer,
-  ReservedFile,
+  OtherMarkdown,
+  ReservedMarkdown,
   Tree,
   TreeFile,
   TreeOutline,
@@ -82,14 +83,26 @@ export function parseTree(input: Iterable<TreeFile>): Tree {
   const okfVersion = declaredOkfVersion(texts.get("index.md"))
   const outline = outlineTree(texts.keys(), texts.get(SETTINGS_PATH), typeTexts, { okfVersion })
   const concepts: Concept[] = []
-  const reserved: ReservedFile[] = []
+  const reserved: ReservedMarkdown[] = []
+  const otherMarkdown: OtherMarkdown[] = []
   for (const path of outline.markdown) {
     const file = outline.read(path, texts.get(path) ?? "")
     if (file.kind === "concept") concepts.push(file)
+    else if (file.kind === "other") otherMarkdown.push(file)
     else reserved.push(file)
   }
 
   const byId = new Map(concepts.map((c) => [c.id, c]))
+  // A link names a concept by its target's path, read before the target was;
+  // one that turned out not to be a concept (OKF 0.3 §3.2) doesn't.
+  if (otherMarkdown.length > 0) {
+    for (const file of [...concepts, ...reserved, ...otherMarkdown]) {
+      const paths = file.kind === "concept" ? file.paths : []
+      for (const link of [...file.links, ...paths]) {
+        if (link.concept !== undefined && !byId.has(link.concept)) delete link.concept
+      }
+    }
+  }
   const backlinks = new Map<string, Link[]>()
   for (const concept of concepts) {
     for (const link of [...concept.links, ...concept.paths]) {
@@ -106,6 +119,7 @@ export function parseTree(input: Iterable<TreeFile>): Tree {
     files: outline.files,
     concepts,
     reserved,
+    otherMarkdown,
     ignored: outline.ignored,
     ...(outline.settings ? { settings: outline.settings } : {}),
     types: outline.types,
@@ -114,7 +128,7 @@ export function parseTree(input: Iterable<TreeFile>): Tree {
       ? { okfVersion: rootIndex.frontmatter.okf_version }
       : {}),
     ...(metadata ? { metadata } : {}),
-    links: [...concepts, ...reserved]
+    links: [...concepts, ...reserved, ...otherMarkdown]
       .sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0))
       .flatMap((doc) => doc.links),
     concept: (id) => byId.get(id),
@@ -194,6 +208,9 @@ export function outlineTree(
       const name = basename(path)
       if (!RESERVED.has(name)) {
         const legacy = !okfVersionAtLeast(options.okfVersion, "0.3")
+        // Under OKF 0.3, a file is a concept only when its frontmatter has a
+        // non-empty `type` (§3.2); under 0.2 every one is.
+        if (!legacy && !hasType(rest.frontmatter)) return { ...rest, links, kind: "other" }
         return buildConcept({ ...rest, links }, (raw) => {
           const link = resolve(raw)
           if (!legacy || link.kind !== "internal" || link.form !== "relative" || link.exists) {
@@ -378,6 +395,12 @@ function resolveLink(
     ...(isDirectory ? { directory: true } : {}),
     ...(id !== undefined && conceptIds.has(id) ? { concept: id } : {}),
   }
+}
+
+/** Whether frontmatter has the non-empty `type` that makes a file a concept
+ * under OKF 0.3 (spec §3.2). */
+function hasType(frontmatter: Record<string, unknown> | undefined): boolean {
+  return typeof frontmatter?.type === "string" && frontmatter.type.trim() !== ""
 }
 
 /** The `okf_version` a bundle-root `index.md`'s text declares, as written
