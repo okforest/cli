@@ -7,9 +7,13 @@ Links within the tree point at files that exist (a warning: OKF says never
 reject a bundle for broken links, §6.1, §11).
 
 Why
-  Concepts link to each other with ordinary markdown links: bundle-relative,
-  like \`/tables/customers.md\` (recommended, as it survives moving the linking
-  file), or relative, like \`./other.md\` (§6.1 [1]). Path fields such as
+  Concepts link to each other with ordinary markdown links, relative to the
+  linking file's folder, like \`./other.md\`, or from the tree's root, like
+  \`/tables/customers.md\` (§6.1 [1]). Each survives a different move: a relative
+  link survives renaming or moving a folder that holds both pages, and a link
+  from the root survives moving the page that has it. In a tree kept in a folder
+  of its repository (\`okf/\`, as the templates have it), only relative links work
+  on GitHub, which reads \`/\` from the repository's root. Path fields such as
   \`resource\` and \`superseded_by\` are checked too: those written \`/…\`, \`./…\`, or
   \`../…\`, and under OKF 0.3 a bare one, which resolves from the concept's folder
   (§6.2 [2]), so a path 0.2's examples wrote from the tree's root needs its
