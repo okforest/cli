@@ -1,5 +1,12 @@
 # @okforest/validate
 
+## 0.18.1
+
+### Patch Changes
+
+- 1544910: **`okf/broken-link`'s explanation weighs both link forms** rather than recommending links from the tree's root: a relative link survives moving a folder, a link from the root survives moving the page that has it, and only relative links work on GitHub when the tree is in a folder of its repository.
+- @okforest/okf@0.18.1
+
 ## 0.18.0
 
 ### Minor Changes
