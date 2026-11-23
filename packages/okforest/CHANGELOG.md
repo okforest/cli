@@ -1,5 +1,13 @@
 # okforest
 
+## 0.18.1
+
+### Patch Changes
+
+- Updated dependencies [1544910]
+  - @okforest/validate@0.18.1
+  - @okforest/okf@0.18.1
+
 ## 0.18.0
 
 ### Minor Changes
