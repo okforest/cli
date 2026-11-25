@@ -184,6 +184,37 @@ function offsetIn(value: string, index: number, start: { line: number; column: n
     : { line: start.line + newlines, column: index - before.lastIndexOf("\n") }
 }
 
+/** Where Claude Code alone reads an agent's instructions. */
+const CLAUDE_MD = "CLAUDE.md"
+
+/** Where agents of every provider read them (https://agents.md/). */
+const AGENTS_MD = "AGENTS.md"
+
+/** Agents' instructions in `AGENTS.md`, the open convention, which Claude
+ * Code also reads since 2.1.277; a `CLAUDE.md` speaks only to Claude Code. */
+export const claudeMd: Rule = {
+  id: "okforest/claude-md",
+  severity: "warning",
+  description:
+    "Instructions for AI agents are in `AGENTS.md`, which agents of every provider read (Claude Code too, since 2.1.277), not `CLAUDE.md`, which only Claude Code reads.",
+  checkTree({ outline, report }) {
+    const files = new Set(outline.files)
+    for (const path of outline.files) {
+      const name = path.slice(path.lastIndexOf("/") + 1)
+      if (name !== CLAUDE_MD) continue
+      const beside = `${path.slice(0, -CLAUDE_MD.length)}${AGENTS_MD}`
+      report({
+        file: path,
+        line: 1,
+        column: 1,
+        message: files.has(beside)
+          ? `Move what \`${CLAUDE_MD}\` says into the \`${AGENTS_MD}\` beside it, and delete it: agents of every provider read \`${AGENTS_MD}\`, Claude Code too since 2.1.277, while only Claude Code reads \`${CLAUDE_MD}\`.`
+          : `Rename \`${CLAUDE_MD}\` to \`${AGENTS_MD}\`: agents of every provider read \`${AGENTS_MD}\`, Claude Code too since 2.1.277, while only Claude Code reads \`${CLAUDE_MD}\`.`,
+      })
+    }
+  },
+}
+
 /** Only the `.yaml` spelling is read; a `.yml` file would be ignored without
  * a word. */
 const MISSPELLED_SETTINGS_PATH = ".okforest/settings.yml"

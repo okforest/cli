@@ -28,6 +28,7 @@ import {
 } from "./fields.js"
 import { brokenLink, footnoteSource } from "./links.js"
 import {
+  claudeMd,
   okfVersionCurrent,
   placeholder,
   settingsFile,
@@ -70,7 +71,8 @@ export const okfRules: readonly Rule[] = [
 ]
 
 /** OKForest conventions beyond the spec: slugs, placeholders, settings, type
- * schemas and templates, near-duplicate types and tags, diagrams. */
+ * schemas and templates, near-duplicate types and tags, diagrams, and
+ * agents' instructions. */
 export const okforestRules: readonly Rule[] = [
   okfVersionCurrent,
   settingsFile,
@@ -85,6 +87,7 @@ export const okforestRules: readonly Rule[] = [
   slug,
   placeholder,
   wikilink,
+  claudeMd,
   d2Syntax,
   mermaidSyntax,
   diagramUnchecked,

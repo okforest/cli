@@ -187,6 +187,13 @@ exports[`rule fixtures > okf/verified 1`] = `
 ]
 `;
 
+exports[`rule fixtures > okforest/claude-md 1`] = `
+[
+  "CLAUDE.md:1:1 warning okforest/claude-md Rename \`CLAUDE.md\` to \`AGENTS.md\`: agents of every provider read \`AGENTS.md\`, Claude Code too since 2.1.277, while only Claude Code reads \`CLAUDE.md\`.",
+  "operations/CLAUDE.md:1:1 warning okforest/claude-md Move what \`CLAUDE.md\` says into the \`AGENTS.md\` beside it, and delete it: agents of every provider read \`AGENTS.md\`, Claude Code too since 2.1.277, while only Claude Code reads \`CLAUDE.md\`.",
+]
+`;
+
 exports[`rule fixtures > okforest/d2-syntax 1`] = `
 [
   "diagram.md:12:1 error okforest/d2-syntax D2 syntax error: connection missing destination",

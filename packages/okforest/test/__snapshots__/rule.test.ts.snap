@@ -81,6 +81,7 @@ exports[`okforest rule > lists every rule without one 1`] = `
   okf/verified                  error    \`verified\` is a \`{ by, at }\` mapping or a list of them (OKF §5.2).
 
 OKForest conventions
+  okforest/claude-md            warning  Instructions for AI agents are in \`AGENTS.md\`, which agents of every provider read (Claude Code too, since 2.1.277), not \`CLAUDE.md\`, which only Claude Code reads.
   okforest/d2-syntax            error    \`d2\` code blocks are valid D2 (diagrams as code).
   okforest/diagram-unchecked    info     Reports diagram blocks whose syntax could not be checked (tool not installed or unsupported here).
   okforest/mermaid-syntax       error    \`mermaid\` code blocks are valid Mermaid (diagrams as code).
