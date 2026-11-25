@@ -893,6 +893,30 @@ One row per customer, with the date they joined and the date they cancelled.
     },
   },
 
+  "okforest/claude-md": {
+    why: `[\`AGENTS.md\`](https://agents.md/) is the open convention for the instructions people write for AI agents that work on a repository, and most coding agents read it. Claude Code does too, since [version 2.1.277](https://code.claude.com/docs/en/changelog#2-1-277) (September 18, 2026), so a \`CLAUDE.md\` beside an \`AGENTS.md\`, or one that only imports it (\`@AGENTS.md\`), is no longer needed. Instructions kept only in \`CLAUDE.md\` speak only to Claude Code: other agents, and [OKForest's AI](${SITE}/docs/app/#drafting-with-ai), which reads \`AGENTS.md\` whatever provider it runs on, don't see them. Rename \`CLAUDE.md\` to \`AGENTS.md\`, or, where an \`AGENTS.md\` is already beside it, move what it says there and delete it. A folder can have its own \`AGENTS.md\` for the files under it; the nearest one wins. This rule checks the tree's own folders: a \`CLAUDE.md\` above the tree, elsewhere in its repository, isn't part of it. A tree at its repository's root lists both in [\`ignore:\`](${SITE}/docs/settings/#files-that-are-not-concepts), as here, since neither is a concept.`,
+    example: {
+      file: "CLAUDE.md",
+      fails: `# Instructions for agents
+
+Write each concept's description in one sentence.
+`,
+      findings: [
+        "1:1 Rename `CLAUDE.md` to `AGENTS.md`: agents of every provider read `AGENTS.md`, Claude Code too since 2.1.277, while only Claude Code reads `CLAUDE.md`.",
+      ],
+      fixed: `# Instructions for agents
+
+Write each concept's description in one sentence.
+`,
+      fixedFile: "AGENTS.md",
+      context: {
+        "index.md": rootIndex(CHURN_ENTRY),
+        "churn.md": churn(),
+        ".okforest/settings.yaml": "ignore:\n  - AGENTS.md\n  - CLAUDE.md\n",
+      },
+    },
+  },
+
   "okforest/d2-syntax": {
     why: `[D2](https://d2lang.com/) is a language for writing diagrams as text, and OKForest draws \`d2\` code blocks as diagrams. This check compiles each one with D2's own compiler and reports the first syntax error, with its line; the [D2 tour](https://d2lang.com/tour/intro/) teaches the syntax. The CLI checks D2 only when \`@d2lang/d2\` is installed alongside it ([diagram checks](${SITE}/docs/cli/#diagram-checks)); otherwise the blocks are reported as [\`okforest/diagram-unchecked\`](${SITE}/docs/rules/okforest/diagram-unchecked/). The GitHub Action always checks them.`,
     example: {

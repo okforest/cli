@@ -510,6 +510,23 @@ describe("okforest/wikilink", () => {
   })
 })
 
+describe("okforest/claude-md", () => {
+  it("asks for AGENTS.md instead, in any folder, ignored or not", async () => {
+    const files = {
+      "index.md": '---\nokf_version: "0.3"\n---\n',
+      "CLAUDE.md": "Be brief.",
+      "ops/CLAUDE.md": "@AGENTS.md",
+      "ops/AGENTS.md": "Be brief.",
+      ".okforest/settings.yaml": "ignore:\n  - CLAUDE.md\n",
+      "notes/claude.md": concept(),
+    }
+    expect(await only("okforest/claude-md", files)).toEqual([
+      "CLAUDE.md:1:1 warning okforest/claude-md Rename `CLAUDE.md` to `AGENTS.md`: agents of every provider read `AGENTS.md`, Claude Code too since 2.1.277, while only Claude Code reads `CLAUDE.md`.",
+      "ops/CLAUDE.md:1:1 warning okforest/claude-md Move what `CLAUDE.md` says into the `AGENTS.md` beside it, and delete it: agents of every provider read `AGENTS.md`, Claude Code too since 2.1.277, while only Claude Code reads `CLAUDE.md`.",
+    ])
+  })
+})
+
 describe("okforest/slug", () => {
   it("does not judge reserved file names", async () => {
     expect(await only("okforest/slug", { "index.md": "# A\n", "notes/a-b.md": concept() })).toEqual(

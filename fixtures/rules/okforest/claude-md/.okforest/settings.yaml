@@ -1,0 +1,3 @@
+ignore:
+  - "**/AGENTS.md"
+  - "**/CLAUDE.md"
