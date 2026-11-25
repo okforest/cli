@@ -1,5 +1,16 @@
 # @okforest/validate
 
+## 0.19.0
+
+### Minor Changes
+
+- 1ae8a92: **`okforest/claude-md`** (warning): a `CLAUDE.md` in the tree is asked to become an `AGENTS.md`, the open convention that agents of every provider read, Claude Code included since [2.1.277](https://code.claude.com/docs/en/changelog#2-1-277). Where an `AGENTS.md` is already beside it, move what it says there and delete it.
+
+### Patch Changes
+
+- Updated dependencies [1ae8a92]
+  - @okforest/okf@0.19.0
+
 ## 0.18.1
 
 ### Patch Changes
