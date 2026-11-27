@@ -43,6 +43,12 @@ exports[`rule fixtures > okf/description 1`] = `
 ]
 `;
 
+exports[`rule fixtures > okf/draft-verified 1`] = `
+[
+  "reviewed.md:5:1 warning okf/draft-verified This draft is verified as it stands (by human:jane@acme.example, 2026-10-15T09:00:00Z), but \`draft\` means not reviewed yet: if the review approved it, mark it \`stable\`; if it isn't ready, it shouldn't be verified yet.",
+]
+`;
+
 exports[`rule fixtures > okf/extension-key 1`] = `
 [
   "example.md:5:1 warning okf/extension-key \`owner\` isn't a key OKF defines: start your own keys with \`x-\`, such as \`x-owner\`, so a later OKF version can't give \`owner\` another meaning.",

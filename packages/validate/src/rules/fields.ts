@@ -1,4 +1,12 @@
-import { type Concept, isRecord, isStatus, type KeyPath, OKF_FIELDS, visit } from "@okforest/okf"
+import {
+  type Concept,
+  currentVerifications,
+  isRecord,
+  isStatus,
+  type KeyPath,
+  OKF_FIELDS,
+  visit,
+} from "@okforest/okf"
 import type { CheckContext, Report, Rule } from "../types.js"
 import { at, describeType, isDatetime, isIsoDate, isOkf03, show, slugify } from "../util.js"
 import { headingText } from "./conformance.js"
@@ -458,5 +466,29 @@ export const legacy: Rule = {
         })
       }
     }
+  }),
+}
+
+/** OKF §5.4 calls a draft not reviewed yet, and §5.2–5.3 make a current
+ * verification someone's confirmation of the content as it stands: both at
+ * once contradict each other. Only current verifications count, as for the
+ * trust tier, so one older than `generated.at` (history) doesn't. A warning:
+ * each field is valid; together they mislead whoever reads them. */
+export const draftVerified: Rule = {
+  id: "okf/draft-verified",
+  severity: "warning",
+  description:
+    "A `draft` isn't verified as it stands: a draft is not reviewed yet (OKF §5.3, §5.4).",
+  checkFile: eachConcept((concept, fm, { report }) => {
+    if (fm.status !== "draft") return
+    const current = currentVerifications(concept.verified, concept.generated?.at)
+    const latest = [...current].sort((a, b) => (b.at ?? "").localeCompare(a.at ?? ""))[0]
+    if (!latest) return
+    reporter(report, concept)(
+      ["status"],
+      `This draft is verified as it stands (by ${latest.by}, ${latest.at}), but \`draft\` means not ` +
+        "reviewed yet: if the review approved it, mark it `stable`; if it isn't ready, it " +
+        "shouldn't be verified yet.",
+    )
   }),
 }
