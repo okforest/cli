@@ -483,13 +483,10 @@ export const draftVerified: Rule = {
   checkFile: eachConcept((concept, fm, { report }) => {
     if (fm.status !== "draft") return
     const current = currentVerifications(concept.verified, concept.generated?.at)
+    if (current.length === 0) return
     // The latest, by instant: offsets differ. Each current one has a readable `at`.
-    const when = (v: (typeof current)[number]) => parseTimestamp(v.at) ?? 0
-    const latest = current.reduce<(typeof current)[number] | undefined>(
-      (best, v) => (best && when(best) >= when(v) ? best : v),
-      undefined,
-    )
-    if (!latest) return
+    const instant = (v: (typeof current)[number]) => Number(parseTimestamp(v.at))
+    const latest = current.reduce((a, b) => (instant(b) > instant(a) ? b : a))
     reporter(report, concept)(
       ["status"],
       `This draft is verified as it stands (by ${latest.by}, ${latest.at}), but \`draft\` means not ` +

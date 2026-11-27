@@ -148,6 +148,12 @@ describe("OKF 0.3's own rules", () => {
     expect(
       await only("okf/draft-verified", at("0.3", page(`status: draft\n${generated}\n${two}`))),
     ).toEqual([expect.stringMatching(/\(by human:jane, 2026-10-20T01:00:00Z\)/)])
+    // Listed the other way round, the same.
+    const reversed =
+      "verified:\n  - { by: human:jane, at: 2026-10-20T01:00:00Z }\n  - { by: human:raj, at: 2026-10-20T09:00:00+09:00 }"
+    expect(
+      await only("okf/draft-verified", at("0.3", page(`status: draft\n${generated}\n${reversed}`))),
+    ).toEqual([expect.stringMatching(/\(by human:jane, 2026-10-20T01:00:00Z\)/)])
     // No generated.at to compare with: every timed verification counts.
     expect(
       await only("okf/draft-verified", at("0.3", page(`status: draft\n${after}`))),
