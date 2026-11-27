@@ -142,6 +142,12 @@ describe("OKF 0.3's own rules", () => {
     expect(
       await only("okf/draft-verified", at("0.3", page(`status: draft\n${generated}`))),
     ).toEqual([])
+    // Several current ones: the latest by instant is named, whatever its offset.
+    const two =
+      "verified:\n  - { by: human:raj, at: 2026-10-20T09:00:00+09:00 }\n  - { by: human:jane, at: 2026-10-20T01:00:00Z }"
+    expect(
+      await only("okf/draft-verified", at("0.3", page(`status: draft\n${generated}\n${two}`))),
+    ).toEqual([expect.stringMatching(/\(by human:jane, 2026-10-20T01:00:00Z\)/)])
     // No generated.at to compare with: every timed verification counts.
     expect(
       await only("okf/draft-verified", at("0.3", page(`status: draft\n${after}`))),

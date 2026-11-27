@@ -5,6 +5,7 @@ import {
   isStatus,
   type KeyPath,
   OKF_FIELDS,
+  parseTimestamp,
   visit,
 } from "@okforest/okf"
 import type { CheckContext, Report, Rule } from "../types.js"
@@ -482,7 +483,12 @@ export const draftVerified: Rule = {
   checkFile: eachConcept((concept, fm, { report }) => {
     if (fm.status !== "draft") return
     const current = currentVerifications(concept.verified, concept.generated?.at)
-    const latest = [...current].sort((a, b) => (b.at ?? "").localeCompare(a.at ?? ""))[0]
+    // The latest, by instant: offsets differ. Each current one has a readable `at`.
+    const when = (v: (typeof current)[number]) => parseTimestamp(v.at) ?? 0
+    const latest = current.reduce<(typeof current)[number] | undefined>(
+      (best, v) => (best && when(best) >= when(v) ? best : v),
+      undefined,
+    )
     if (!latest) return
     reporter(report, concept)(
       ["status"],
