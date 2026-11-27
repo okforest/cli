@@ -11,6 +11,10 @@ internals (dependencies point one way: private → public).
   only `packages/okf/src/node.ts` may import `node:*`, and `@okforest/okf`'s
   only runtime dependencies are its YAML and markdown parsers (no SDKs or
   frameworks). `packages/okf/test/boundaries.test.ts` enforces this.
+- Node 22 is the oldest supported (`engines`), so it's what development
+  runs on (`devEngines`, downloaded when missing) and what `@types/node`
+  describes: tests and typecheck then catch what wouldn't work on it. Keep
+  both on 22 when updating, whatever `pnpm outdated` says is latest.
 - Diagram checks use the optional peers `@d2lang/d2` and `mermaid`, loaded
   with dynamic `import()` only; never add them as dependencies.
 - Validation is deterministic: no model calls, no network, and output sorted
