@@ -452,6 +452,23 @@ title: History
     },
   },
 
+  "okf/draft-verified": {
+    why: `\`status: draft\` says a concept is not reviewed yet ([§5.4](${SPEC}#54-lifecycle-status-and-superseded_by)), and a verification says someone confirmed it as it stands ([§5.2](${SPEC}#52-trust-generated-and-verified)). Both at once leave readers, and the assistants answering from the concept, unsure whether to rely on it: it shows as a draft and as reviewed. Only current verifications count, those on or after \`generated.at\` ([§5.3](${SPEC}#53-trust-tiers)), so one from before the content last changed is history, and doesn't trip this. If the review approved the content, mark it \`stable\`; if it isn't ready, it shouldn't be verified yet.`,
+    example: {
+      file: "churn.md",
+      fails: churn(
+        "status: draft\ngenerated: { by: human:ana@acme.example, at: 2026-10-01T09:00:00Z }\nverified: { by: human:jane@acme.example, at: 2026-10-15T09:00:00Z }\n",
+      ),
+      findings: [
+        "5:1 This draft is verified as it stands (by human:jane@acme.example, 2026-10-15T09:00:00Z), but `draft` means not reviewed yet: if the review approved it, mark it `stable`; if it isn't ready, it shouldn't be verified yet.",
+      ],
+      fixed: churn(
+        "status: stable\ngenerated: { by: human:ana@acme.example, at: 2026-10-01T09:00:00Z }\nverified: { by: human:jane@acme.example, at: 2026-10-15T09:00:00Z }\n",
+      ),
+      context: { "index.md": rootIndex(CHURN_ENTRY) },
+    },
+  },
+
   "okf/datetime": {
     why: `OKF's timestamps (\`generated.at\`, \`verified.at\`, \`stale_after\`, and the sources' \`last_modified\` and \`usage_window\`) are ISO 8601 date-times with an explicit UTC offset, such as \`2026-06-30T14:00:00Z\`, or dates, such as \`2026-06-30\`, which mean the start of that day in UTC ([§5](${SPEC}#5-provenance-trust-and-lifecycle)). Either way an instant means the same everywhere, and whether a concept is stale is a plain comparison ([§5.5](${SPEC}#55-lifecycle-stale_after)). A time with no offset depends on where it's read.`,
     example: {

@@ -115,6 +115,51 @@ describe("OKF 0.3's own rules", () => {
     expect(await only("okf/log-frontmatter", at("0.2", log))).toEqual([])
   })
 
+  it("finds a draft verified as it stands, but not one verified before it changed", async () => {
+    const page = (fm: string) => ({ "a.md": concept(fm) })
+    const generated = "generated: { by: human:ana, at: 2026-10-01T00:00:00Z }"
+    const after = "verified: { by: human:jane, at: 2026-10-15T00:00:00Z }"
+    const before = "verified: { by: human:jane, at: 2026-09-15T00:00:00Z }"
+    for (const version of ["0.2", "0.3"]) {
+      expect(
+        await only(
+          "okf/draft-verified",
+          at(version, page(`status: draft\n${generated}\n${after}`)),
+        ),
+      ).toEqual([
+        expect.stringMatching(
+          /^a\.md:\d+:1 warning okf\/draft-verified This draft is verified as it stands \(by human:jane, 2026-10-15T00:00:00Z\)/,
+        ),
+      ])
+    }
+    // History, a stable page, or a draft nobody verified: nothing to say.
+    expect(
+      await only("okf/draft-verified", at("0.3", page(`status: draft\n${generated}\n${before}`))),
+    ).toEqual([])
+    expect(
+      await only("okf/draft-verified", at("0.3", page(`status: stable\n${generated}\n${after}`))),
+    ).toEqual([])
+    expect(
+      await only("okf/draft-verified", at("0.3", page(`status: draft\n${generated}`))),
+    ).toEqual([])
+    // Several current ones: the latest by instant is named, whatever its offset.
+    const two =
+      "verified:\n  - { by: human:raj, at: 2026-10-20T09:00:00+09:00 }\n  - { by: human:jane, at: 2026-10-20T01:00:00Z }"
+    expect(
+      await only("okf/draft-verified", at("0.3", page(`status: draft\n${generated}\n${two}`))),
+    ).toEqual([expect.stringMatching(/\(by human:jane, 2026-10-20T01:00:00Z\)/)])
+    // Listed the other way round, the same.
+    const reversed =
+      "verified:\n  - { by: human:jane, at: 2026-10-20T01:00:00Z }\n  - { by: human:raj, at: 2026-10-20T09:00:00+09:00 }"
+    expect(
+      await only("okf/draft-verified", at("0.3", page(`status: draft\n${generated}\n${reversed}`))),
+    ).toEqual([expect.stringMatching(/\(by human:jane, 2026-10-20T01:00:00Z\)/)])
+    // No generated.at to compare with: every timed verification counts.
+    expect(
+      await only("okf/draft-verified", at("0.3", page(`status: draft\n${after}`))),
+    ).toHaveLength(1)
+  })
+
   it("pairs superseded_by with deprecated, under 0.3 only", async () => {
     const page = (fm: string) => ({ "a.md": concept(fm) })
     expect(
